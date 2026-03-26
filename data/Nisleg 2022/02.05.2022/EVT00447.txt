@@ -1,0 +1,921 @@
+######.###-ICCS Startup
+######.###-License check succeeded
+######.###-Boot Counter Value -  447
+######.###-Checking SATA/IDE Devices
+######.###-Drive c:\ OK
+######.###-Checking USB Devices
+######.###-Drive g:\ OK
+######.###-Storage folder g:\ -- OK
+######.###-Data folder g:\Data\ -- OK
+######.###-Navigation folder g:\Navigation\ -- OK
+######.###-Compensation folder g:\Compensation -- OK
+######.###-Start Testing g:\
+######.###-Drv[65536]: g:\ - Used: 4% of 14799Mbytes Bin(r/w speed kps): 847/341
+######.###-Starting Event Log
+######.###-Starting .......
+######.###-Drivers installed
+######.###-Settings Loaded from GDini.xml
+######.###-Nav: Loading navigation file [TestSurveyNav.csv]
+######.###-Nav: Navigation file [TestSurveyNav.csv] loaded
+######.###-Navigation TestSurveyNav.csv file loaded
+######.###-Initialising COM1 Baud:115200 Control:00000003
+######.###-      Port COM1 TX ':F0001' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':40001' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':C0000' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':20000' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':0051A' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':F0000' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Initialise on port COM1 OK
+######.###-Building Settings Window.....
+######.###-Building Startup Window.....
+######.###-Building Configuration Window.....
+######.###-Building Events Window.....
+######.###-Building Compensator.....
+######.###-Compensation CMP_0043 loaded
+######.###-Opening Serial Ports.....
+######.###-      COM3: Macro GEMK1 compiles Baud:115200/None/8/One-None Addr:0xFFF Irq:10 - opened
+######.###-      COM4: Macro GEMK2 compiles Baud:115200/None/8/One-None Addr:0x200 Irq:10 - opened
+######.###-      COM5: Macro GDRAlt compiles Baud:57600/None/8/One-None Addr:0x400 Irq:10 - opened
+######.###-      COM6: Macro GD485 compiles Baud:57600/None/8/One-None Addr:0x600 Irq:10 - opened
+######.###-      COM7: Macro XSENS compiles Baud:115200/None/8/One-None Addr:0x800 Irq:10 - opened
+######.###-      COM8: Macro GDGPS compiles Baud:115200/None/8/One-None Addr:0xA00 Irq:10 - opened
+######.###-      COM9: Macro GDSpec compiles Baud:57600/None/8/One-None Addr:0xC00 Irq:10 - opened
+######.###-      COM10: Macro GDLas compiles Baud:19200/None/8/One-None Addr:0xE00 Irq:10 - opened
+######.###-Character Rate on COM3 is 0.0 chars/second
+######.###-Character Rate on COM4 is 0.0 chars/second
+######.###-Character Rate on COM5 is 0.0 chars/second
+######.###-Character Rate on COM6 is 0.0 chars/second
+######.###-Character Rate on COM7 is 0.0 chars/second
+######.###-Character Rate on COM8 is 0.0 chars/second
+######.###-Character Rate on COM9 is 0.0 chars/second
+######.###-Character Rate on COM10 is 0.0 chars/second
+######.###-Creating Mux M1 0x03652800
+######.###-      Mux1 Macro Mux1 Compiled
+######.###-      Mux1 TxPort: TimeOut:80ms
+######.###-      Mux1 Synch IRQ attached
+######.###-Creating Mux M2 0x03573000
+######.###-      Mux2 Macro Mux2 Compiled
+######.###-      Mux2 TxPort: TimeOut:200ms
+######.###-      Mux2 Synch IRQ attached
+######.###-Creating Mux M3 0x033e9000
+######.###-      Mux3 Macro Mux3 Compiled
+######.###-      Mux3 TxPort: TimeOut:100ms
+######.###-      Mux3 Asynch scheduled
+######.###-Global List Compiled
+######.###-Resolving References
+######.###-      Checking References for Macro for Mux1 
+######.###-      Checking References for Macro for Mux2 
+######.###-      Checking References for Macro for Mux3 
+######.###- Mux M1 is Synch on Bit/1
+######.###-      M1 latches port COM7 runs macro XSENS
+######.###-      M1 latches port COM5 runs macro GDRAlt
+######.###-      M1 latches port COM10 runs macro GDLas
+######.###-      M1 latches port COM4 runs macro GEMK2
+######.###-      M1 latches port COM3 runs macro GEMK1
+######.###-      M1 latches port COM6 runs macro GD485
+######.###- Mux M2 is Synch on Bit/7
+######.###-      M2 latches port COM9 runs macro GDSpec
+######.###- Mux M3 is Asynch on Chr/
+######.###-      M3 latches port COM8 runs macro GDGPS
+######.###-Checking Input Ports uniquely assigned to Mux's
+######.###-Mux1 - Running
+######.###-Mux2 - Running
+######.###-Mux3 - Running
+######.###-DataInterrupts on HWCLOCKPORT Baud=115200 started
+222501.951-Int Data[9f 9f df 9f 9f 9f 9f 9f 9f 9f 9f 9f df 9f 9f 9f 9f 9f 9f 9f 9f 9f df 9f 9f 9f 9f 9f 9f 9f 9f 9f df
+222501.953-Building Terminal Window.....
+222502.165-TerminalWin::NextPort is COM3
+222502.175-Building Analog Window.....
+222502.202-Building Timing Window.....
+222502.208-Building Data Window.....
+222502.211-Building Array Window.....
+222502.213-Building Macro Window.....
+222502.220-Building Gps Window.....
+222502.303-Nav: Loading navigation file [TestSurveyNav.csv]
+222502.384-Nav: Navigation file [TestSurveyNav.csv] loaded
+222502.935-MuxSerial::Collector M1 03652800 Clock Stats over 50 samples. Avg=95.9 Min:101.0 Max:24.0
+222505.779-Streams Started
+222505.998-Health Warning: P5 Framing|FIFO|
+222505.998-Health Warning: P7 Overrun|
+222505.998-Health Warning: P8 Overrun|
+222505.998-Health Warning: M1 TimeO|TimeO_COM7|
+222505.998-Health Warning: M3 TimeO_COM8|TimeO|
+222505.999-Health Warning: Nv WayP|
+222507.905-Working Config copied to g:\Data\Cfg00447.xml
+222511.976-Health Warning: M1 TimeO|
+222511.976-Health Warning: M3 TimeO_COM8|TimeO|
+222511.976-Health Warning: Nv WayP|
+222517.979-Health Warning: M1 TimeO|
+222517.979-Health Warning: M3 TimeO_COM8|TimeO|
+222517.979-Health Warning: Nv WayP|
+222520.240-User acknowledged disclaimer
+222521.261-User confirmed acknowledging disclaimer
+222523.974-Health Warning: M1 TimeO|
+222523.974-Health Warning: M3 TimeO_COM8|TimeO|
+222523.974-Health Warning: Nv WayP|
+222526.782-Navigator:: Screen Map View selected
+222529.969-Health Warning: M1 TimeO|
+222529.969-Health Warning: M3 TimeO_COM8|TimeO|
+222529.969-Health Warning: Nv WayP|
+222535.965-Health Warning: M1 TimeO|
+222535.965-Health Warning: M3 TimeO_COM8|TimeO|
+222535.965-Health Warning: Nv WayP|
+222541.992-Health Warning: M1 TimeO|
+222541.993-Health Warning: M3 TimeO_COM8|TimeO|
+222541.993-Health Warning: Nv WayP|
+222547.234-MuxSerial::Collector M2 03573000 Clock Stats over 50 samples. Avg=995.9 Min:1001.0 Max:876.0
+222547.995-Health Warning: M1 TimeO|
+222547.995-Health Warning: M3 TimeO_COM8|
+222547.996-Health Warning: Nv WayP|
+222553.992-Health Warning: M1 TimeO|
+222553.992-Health Warning: M3 TimeO_COM8|
+222553.992-Health Warning: Nv WayP|
+222559.988-Health Warning: M1 TimeO|
+222559.988-Health Warning: M3 TimeO_COM8|TimeO|
+222605.984-Health Warning: M1 TimeO|
+222605.984-Health Warning: M3 TimeO_COM8|TimeO|
+222608.980-Health Warning: M1 TimeO|
+222608.980-Health Warning: M3 TimeO_COM8|
+222615.010-Health Warning: M1 TimeO|
+222615.010-Health Warning: M3 TimeO_COM8|TimeO|
+222621.013-Health Warning: M1 TimeO|
+222621.013-Health Warning: M3 TimeO_COM8|
+222627.008-Health Warning: M1 TimeO|
+222627.009-Health Warning: M3 TimeO_COM8|
+222633.004-Health Warning: M1 TimeO|
+222633.004-Health Warning: M3 TimeO_COM8|TimeO|
+222639.000-Health Warning: M1 TimeO|
+222639.000-Health Warning: M3 TimeO_COM8|
+222644.958-Health Warning: M1 TimeO|
+222644.958-Health Warning: M3 TimeO_COM8|
+222651.029-Health Warning: M1 TimeO|
+222651.029-Health Warning: M3 TimeO_COM8|TimeO|
+222657.030-Health Warning: M1 TimeO|
+222657.030-Health Warning: M3 TimeO_COM8|TimeO|
+222703.025-Health Warning: M1 TimeO|
+222703.025-Health Warning: M3 TimeO_COM8|TimeO|
+222709.021-Health Warning: M1 TimeO|
+222709.021-Health Warning: M3 TimeO_COM8|TimeO|
+222715.018-Health Warning: M1 TimeO|
+222715.018-Health Warning: M3 TimeO_COM8|TimeO|
+222721.044-Health Warning: M1 TimeO|
+222721.045-Health Warning: M3 TimeO_COM8|
+222727.042-Health Warning: M1 TimeO|
+222727.042-Health Warning: M3 TimeO_COM8|TimeO|
+222733.037-Health Warning: M1 TimeO|
+222733.037-Health Warning: M3 TimeO_COM8|TimeO|
+222739.054-Health Warning: M1 TimeO|
+222739.054-Health Warning: M3 TimeO_COM8|TimeO|
+222745.054-Health Warning: M1 TimeO|
+222745.054-Health Warning: M3 TimeO_COM8|TimeO|
+222751.050-Health Warning: M1 TimeO|
+222751.050-Health Warning: M3 TimeO|TimeO_COM8|
+222757.063-Health Warning: M1 TimeO|
+222757.063-Health Warning: M3 TimeO_COM8|
+222803.061-Health Warning: M1 TimeO|
+222803.061-Health Warning: M3 TimeO_COM8|TimeO|
+222809.068-Health Warning: M1 TimeO|
+222809.069-Health Warning: M3 TimeO_COM8|TimeO|
+222815.072-Health Warning: M1 TimeO|
+222815.072-Health Warning: M3 TimeO_COM8|TimeO|
+222821.070-Health Warning: M1 TimeO|
+222821.070-Health Warning: M3 TimeO_COM8|TimeO|
+222827.068-Health Warning: M1 TimeO|
+222827.068-Health Warning: M3 TimeO_COM8|TimeO|
+222833.082-Health Warning: M1 TimeO|
+222833.082-Health Warning: M3 TimeO|TimeO_COM8|
+222839.061-Health Warning: M1 TimeO|
+222839.061-Health Warning: M3 TimeO_COM8|TimeO|
+222845.087-Health Warning: M1 TimeO|
+222845.087-Health Warning: M3 TimeO_COM8|TimeO|
+222851.092-Health Warning: M1 TimeO|
+222851.092-Health Warning: M3 TimeO_COM8|
+222857.095-Health Warning: M1 TimeO|
+222857.095-Health Warning: M3 TimeO_COM8|TimeO|
+222903.091-Health Warning: M1 TimeO|
+222903.092-Health Warning: M3 TimeO_COM8|TimeO|
+222909.086-Health Warning: M1 TimeO|
+222909.086-Health Warning: M3 TimeO|TimeO_COM8|
+222915.083-Health Warning: M1 TimeO|
+222915.083-Health Warning: M3 TimeO|TimeO_COM8|
+222921.080-Health Warning: M1 TimeO|
+222921.080-Health Warning: M3 TimeO_COM8|TimeO|
+222927.109-Health Warning: M1 TimeO|
+222927.109-Health Warning: M3 TimeO_COM8|TimeO|
+222933.113-Health Warning: M1 TimeO|
+222933.113-Health Warning: M3 TimeO_COM8|
+222939.049-Health Warning: M1 TimeO|
+222939.049-Health Warning: M3 TimeO_COM8|TimeO|
+222945.111-Health Warning: M1 TimeO|
+222945.111-Health Warning: M3 TimeO_COM8|
+222951.106-Health Warning: M1 TimeO|
+222951.107-Health Warning: M3 TimeO_COM8|TimeO|
+222957.103-Health Warning: M1 TimeO|
+222957.103-Health Warning: M3 TimeO_COM8|
+223003.100-Health Warning: M1 TimeO|
+223003.100-Health Warning: M3 TimeO_COM8|TimeO|
+223009.132-Health Warning: M1 TimeO|
+223009.132-Health Warning: M3 TimeO_COM8|TimeO|
+223015.135-Health Warning: M1 TimeO|
+223015.135-Health Warning: M3 TimeO_COM8|TimeO|
+223021.134-Health Warning: M1 TimeO|
+223021.134-Health Warning: M3 TimeO_COM8|TimeO|
+223027.133-Health Warning: M3 TimeO_COM8|TimeO|
+223033.130-Health Warning: M3 TimeO|TimeO_COM8|
+223039.150-Health Warning: M3 TimeO_COM8|
+223039.150-Health Warning: Nv NoINS|
+223045.123-Health Warning: M3 TimeO|TimeO_COM8|
+223051.153-Health Warning: M3 TimeO_COM8|TimeO|
+223057.158-Health Warning: M3 TimeO_COM8|
+223103.156-Health Warning: M3 TimeO_COM8|
+223109.163-Health Warning: M3 TimeO_COM8|TimeO|
+223115.166-Health Warning: M3 TimeO|TimeO_COM8|
+223121.169-Health Warning: M3 TimeO_COM8|TimeO|
+223127.167-Health Warning: M3 TimeO_COM8|TimeO|
+223133.168-Health Warning: M3 TimeO_COM8|
+223139.162-Health Warning: M3 TimeO_COM8|TimeO|
+223145.183-Health Warning: M3 TimeO_COM8|TimeO|
+223151.158-Health Warning: M3 TimeO_COM8|TimeO|
+223157.203-Health Warning: M3 TimeO_COM8|TimeO|
+223203.191-Health Warning: M3 TimeO_COM8|TimeO|
+223209.196-Health Warning: M3 TimeO|TimeO_COM8|
+223215.193-Health Warning: M3 TimeO_COM8|TimeO|
+223221.189-Health Warning: M3 TimeO_COM8|TimeO|
+223227.188-Health Warning: M3 TimeO_COM8|TimeO|
+223233.185-Health Warning: M3 TimeO_COM8|
+223239.184-Health Warning: M3 TimeO_COM8|TimeO|
+223245.212-Health Warning: M3 TimeO|TimeO_COM8|
+223251.215-Health Warning: M3 TimeO_COM8|TimeO|
+223257.218-Health Warning: M3 TimeO_COM8|TimeO|
+223303.219-Health Warning: M3 TimeO_COM8|TimeO|
+223309.215-Health Warning: M3 TimeO_COM8|TimeO|
+223315.214-Health Warning: M3 TimeO_COM8|
+223321.212-Health Warning: M3 TimeO_COM8|
+223327.210-Health Warning: M3 TimeO_COM8|TimeO|
+223333.237-Health Warning: M3 TimeO|TimeO_COM8|
+223339.240-Health Warning: M3 TimeO_COM8|TimeO|
+223345.243-Health Warning: M3 TimeO_COM8|TimeO|
+223351.246-Health Warning: M3 TimeO_COM8|TimeO|
+223357.245-Health Warning: M3 TimeO_COM8|TimeO|
+223403.256-Health Warning: M3 TimeO_COM8|
+223409.256-Health Warning: M3 TimeO_COM8|TimeO|
+223415.259-Health Warning: M3 TimeO|TimeO_COM8|
+223421.259-Health Warning: M3 TimeO_COM8|TimeO|
+223427.257-Health Warning: M3 TimeO_COM8|TimeO|
+223433.255-Health Warning: M3 TimeO_COM8|TimeO|
+223439.255-Health Warning: M3 TimeO_COM8|TimeO|
+223445.255-Health Warning: M3 TimeO_COM8|TimeO|
+223451.255-Health Warning: M3 TimeO_COM8|TimeO|
+223457.281-Health Warning: M3 TimeO_COM8|TimeO|
+223503.284-Health Warning: M3 TimeO_COM8|TimeO|
+223509.287-Health Warning: M3 TimeO_COM8|TimeO|
+223515.287-Health Warning: M3 TimeO_COM8|TimeO|
+223521.287-Health Warning: M3 TimeO_COM8|TimeO|
+223527.286-Health Warning: M3 TimeO_COM8|TimeO|
+223533.283-Health Warning: M3 TimeO|TimeO_COM8|
+223539.282-Health Warning: M3 TimeO_COM8|TimeO|
+223545.282-Health Warning: M3 TimeO_COM8|
+223551.307-Health Warning: M3 TimeO_COM8|TimeO|
+223557.311-Health Warning: M3 TimeO_COM8|TimeO|
+223603.314-Health Warning: M3 TimeO_COM8|TimeO|
+223609.317-Health Warning: M3 TimeO|TimeO_COM8|
+223609.317-Health Warning: Nv NoINS|
+223615.317-Health Warning: M3 TimeO|TimeO_COM8|
+223621.315-Health Warning: M3 TimeO_COM8|
+223627.313-Health Warning: M3 TimeO_COM8|TimeO|
+223633.313-Health Warning: M3 TimeO_COM8|TimeO|
+223639.313-Health Warning: M3 TimeO_COM8|TimeO|
+223645.313-Health Warning: M3 TimeO|TimeO_COM8|
+223651.338-Health Warning: M3 TimeO_COM8|TimeO|
+223657.342-Health Warning: M3 TimeO_COM8|
+223703.345-Health Warning: M3 TimeO_COM8|
+223709.348-Health Warning: M3 TimeO_COM8|TimeO|
+223715.348-Health Warning: M3 TimeO_COM8|TimeO|
+223721.354-Health Warning: M3 TimeO_COM8|TimeO|
+223727.357-Health Warning: M3 TimeO_COM8|TimeO|
+223733.362-Health Warning: M3 TimeO|TimeO_COM8|
+223739.364-Health Warning: M3 TimeO_COM8|TimeO|
+223745.364-Health Warning: M3 TimeO_COM8|
+223751.365-Health Warning: M3 TimeO_COM8|TimeO|
+223757.364-Health Warning: M3 TimeO_COM8|TimeO|
+223803.363-Health Warning: M3 TimeO_COM8|TimeO|
+223809.362-Health Warning: M3 TimeO_COM8|TimeO|
+223815.362-Health Warning: M3 TimeO_COM8|TimeO|
+223821.361-Health Warning: M3 TimeO_COM8|TimeO|
+223827.361-Health Warning: M3 TimeO_COM8|TimeO|
+223833.391-Health Warning: M3 TimeO_COM8|TimeO|
+223839.394-Health Warning: M3 TimeO|TimeO_COM8|
+223845.397-Health Warning: M3 TimeO_COM8|TimeO|
+223845.397-Health Warning: Nv NoINS|
+223851.401-Health Warning: M3 TimeO_COM8|TimeO|
+223857.401-Health Warning: M3 TimeO_COM8|TimeO|
+223903.400-Health Warning: M3 TimeO_COM8|TimeO|
+223909.398-Health Warning: M3 TimeO|TimeO_COM8|
+223915.388-Health Warning: M3 TimeO|TimeO_COM8|
+223921.416-Health Warning: M3 TimeO|TimeO_COM8|
+223927.419-Health Warning: M3 TimeO_COM8|TimeO|
+223933.422-Health Warning: M3 TimeO|TimeO_COM8|
+223939.425-Health Warning: M3 TimeO_COM8|
+223945.428-Health Warning: M3 TimeO_COM8|TimeO|
+223951.430-Health Warning: M3 TimeO_COM8|TimeO|
+223957.429-Health Warning: M3 TimeO_COM8|TimeO|
+224003.428-Health Warning: M3 TimeO_COM8|TimeO|
+224009.428-Health Warning: M3 TimeO_COM8|TimeO|
+224015.426-Health Warning: M3 TimeO_COM8|TimeO|
+224021.449-Health Warning: M3 TimeO_COM8|
+224027.426-Health Warning: M3 TimeO_COM8|
+224033.449-Health Warning: M3 TimeO_COM8|TimeO|
+224039.450-Health Warning: M3 TimeO|TimeO_COM8|
+224045.460-Health Warning: M3 TimeO|TimeO_COM8|
+224045.460-Health Warning: Nv NoINS|
+224051.463-Health Warning: M3 TimeO_COM8|TimeO|
+224051.463-Health Warning: Nv NoRad|
+224057.449-Health Warning: M3 TimeO_COM8|TimeO|
+224057.449-Health Warning: Nv NoINS|
+224103.467-Health Warning: M3 TimeO_COM8|TimeO|
+224109.468-Health Warning: M3 TimeO_COM8|TimeO|
+224115.475-Health Warning: M3 TimeO_COM8|
+224121.478-Health Warning: M3 TimeO_COM8|TimeO|
+224127.481-Health Warning: M3 TimeO_COM8|TimeO|
+224133.484-Health Warning: M3 TimeO_COM8|TimeO|
+224139.488-Health Warning: M3 TimeO_COM8|TimeO|
+224145.488-Health Warning: M3 TimeO_COM8|
+224151.489-Health Warning: M3 TimeO_COM8|
+224157.487-Health Warning: M3 TimeO|TimeO_COM8|
+224203.488-Health Warning: M3 TimeO_COM8|
+224209.488-Health Warning: M3 TimeO_COM8|TimeO|
+224215.488-Health Warning: M3 TimeO_COM8|
+224221.488-Health Warning: M3 TimeO_COM8|
+224227.488-Health Warning: M3 TimeO_COM8|TimeO|
+224233.489-Health Warning: M3 TimeO_COM8|TimeO|
+224239.519-Health Warning: M3 TimeO_COM8|TimeO|
+224245.522-Health Warning: M3 TimeO_COM8|
+224251.571-Health Warning: M3 TimeO_COM8|TimeO|
+224257.528-Health Warning: M3 TimeO_COM8|
+224303.541-Health Warning: M3 TimeO_COM8|
+224309.533-Health Warning: M3 TimeO_COM8|TimeO|
+224315.559-Health Warning: M3 TimeO_COM8|TimeO|
+224321.535-Health Warning: M3 TimeO_COM8|TimeO|
+224327.533-Health Warning: M3 TimeO|TimeO_COM8|
+224333.550-Health Warning: M3 TimeO_COM8|TimeO|
+224339.551-Health Warning: M3 TimeO_COM8|TimeO|
+224345.554-Health Warning: M3 TimeO_COM8|
+224351.556-Health Warning: M3 TimeO_COM8|TimeO|
+224357.556-Health Warning: M3 TimeO_COM8|TimeO|
+224403.555-Health Warning: M3 TimeO_COM8|TimeO|
+224409.556-Health Warning: M3 TimeO_COM8|TimeO|
+224415.599-Health Warning: M3 TimeO|TimeO_COM8|
+224421.557-Health Warning: M3 TimeO_COM8|TimeO|
+224427.557-Health Warning: M3 TimeO_COM8|TimeO|
+224433.558-Health Warning: M3 TimeO|TimeO_COM8|
+224439.559-Health Warning: M3 TimeO_COM8|TimeO|
+224445.559-Health Warning: M3 TimeO_COM8|TimeO|
+224451.560-Health Warning: M3 TimeO_COM8|TimeO|
+224457.590-Health Warning: M3 TimeO_COM8|TimeO|
+224503.593-Health Warning: M3 TimeO_COM8|TimeO|
+224509.596-Health Warning: M3 TimeO_COM8|TimeO|
+224515.599-Health Warning: M3 TimeO_COM8|TimeO|
+224521.602-Health Warning: M3 TimeO_COM8|TimeO|
+224527.606-Health Warning: M3 TimeO_COM8|TimeO|
+224533.606-Health Warning: M3 TimeO_COM8|TimeO|
+224539.606-Health Warning: M3 TimeO_COM8|TimeO|
+224545.606-Health Warning: M3 TimeO_COM8|TimeO|
+224551.607-Health Warning: M3 TimeO_COM8|
+224557.607-Health Warning: M3 TimeO_COM8|TimeO|
+224603.608-Health Warning: M3 TimeO_COM8|TimeO|
+224609.609-Health Warning: M3 TimeO_COM8|TimeO|
+224615.610-Health Warning: M3 TimeO_COM8|TimeO|
+224621.612-Health Warning: M3 TimeO_COM8|
+224627.611-Health Warning: M3 TimeO_COM8|TimeO|
+224633.640-Health Warning: M3 TimeO_COM8|TimeO|
+224639.644-Health Warning: M3 TimeO_COM8|TimeO|
+224645.648-Health Warning: M3 TimeO_COM8|TimeO|
+224651.651-Health Warning: M3 TimeO_COM8|TimeO|
+224657.652-Health Warning: M3 TimeO_COM8|
+224703.655-Health Warning: M3 TimeO|TimeO_COM8|
+224709.659-Health Warning: M3 TimeO_COM8|
+224715.660-Health Warning: M3 TimeO_COM8|TimeO|
+224721.660-Health Warning: M3 TimeO_COM8|TimeO|
+224727.669-Health Warning: M3 TimeO|TimeO_COM8|
+224733.672-Health Warning: M3 TimeO_COM8|TimeO|
+224739.674-Health Warning: M3 TimeO_COM8|
+224745.677-Health Warning: M3 TimeO_COM8|TimeO|
+224751.680-Health Warning: M3 TimeO_COM8|TimeO|
+224757.684-Health Warning: M3 TimeO_COM8|
+224803.687-Health Warning: M3 TimeO_COM8|
+224809.688-Health Warning: M3 TimeO_COM8|TimeO|
+224815.691-Health Warning: M3 TimeO_COM8|
+224821.691-Health Warning: M3 TimeO_COM8|TimeO|
+224827.691-Health Warning: M3 TimeO|TimeO_COM8|
+224833.692-Health Warning: M3 TimeO_COM8|TimeO|
+224839.693-Health Warning: M3 TimeO_COM8|
+224845.694-Health Warning: M3 TimeO|TimeO_COM8|
+224851.696-Health Warning: M3 TimeO_COM8|TimeO|
+224857.697-Health Warning: M3 TimeO_COM8|
+224903.698-Health Warning: M3 TimeO_COM8|
+224909.699-Health Warning: M3 TimeO_COM8|TimeO|
+224915.700-Health Warning: M3 TimeO_COM8|TimeO|
+224921.701-Health Warning: M3 TimeO_COM8|
+224927.731-Health Warning: M3 TimeO_COM8|TimeO|
+224933.734-Health Warning: M3 TimeO_COM8|TimeO|
+224939.736-Health Warning: M3 TimeO_COM8|
+224945.738-Health Warning: M3 TimeO_COM8|
+224951.737-Health Warning: M3 TimeO|TimeO_COM8|
+224957.738-Health Warning: M3 TimeO_COM8|TimeO|
+225003.752-Health Warning: M3 TimeO_COM8|
+225009.755-Health Warning: M3 TimeO_COM8|TimeO|
+225015.757-Health Warning: M3 TimeO_COM8|TimeO|
+225021.759-Health Warning: M3 TimeO_COM8|TimeO|
+225027.762-Health Warning: M3 TimeO_COM8|TimeO|
+225033.765-Health Warning: M3 TimeO_COM8|TimeO|
+225039.767-Health Warning: M3 TimeO_COM8|TimeO|
+225045.769-Health Warning: M3 TimeO_COM8|TimeO|
+225051.770-Health Warning: M3 TimeO_COM8|TimeO|
+225051.770-Health Warning: Nv NoINS|
+225057.770-Health Warning: M3 TimeO|TimeO_COM8|
+225103.770-Health Warning: M3 TimeO_COM8|TimeO|
+225109.771-Health Warning: M3 TimeO_COM8|TimeO|
+225115.772-Health Warning: M3 TimeO_COM8|TimeO|
+225121.772-Health Warning: M3 TimeO_COM8|
+225127.773-Health Warning: M3 TimeO_COM8|
+225133.773-Health Warning: M3 TimeO_COM8|
+225139.774-Health Warning: M3 TimeO_COM8|
+225145.803-Health Warning: M3 TimeO_COM8|TimeO|
+225151.828-Health Warning: M3 TimeO_COM8|TimeO|
+225157.809-Health Warning: M3 TimeO|TimeO_COM8|
+225203.812-Health Warning: M3 TimeO_COM8|
+225209.815-Health Warning: M3 TimeO_COM8|TimeO|
+225215.818-Health Warning: M3 TimeO_COM8|
+225221.821-Health Warning: M3 TimeO|TimeO_COM8|
+225227.823-Health Warning: M3 TimeO_COM8|TimeO|
+225233.825-Health Warning: M3 TimeO_COM8|TimeO|
+225239.826-Health Warning: M3 TimeO|TimeO_COM8|
+225245.827-Health Warning: M3 TimeO_COM8|TimeO|
+225251.831-Health Warning: M3 TimeO|TimeO_COM8|
+225257.831-Health Warning: M3 TimeO_COM8|TimeO|
+225303.832-Health Warning: M3 TimeO_COM8|TimeO|
+225309.833-Health Warning: M3 TimeO_COM8|TimeO|
+225315.851-Health Warning: M3 TimeO_COM8|
+225321.855-Health Warning: M3 TimeO_COM8|
+225327.855-Health Warning: M3 TimeO_COM8|TimeO|
+225333.859-Health Warning: M3 TimeO_COM8|
+225339.862-Health Warning: M3 TimeO_COM8|TimeO|
+225345.865-Health Warning: M3 TimeO_COM8|TimeO|
+225351.868-Health Warning: M3 TimeO_COM8|TimeO|
+225357.876-Health Warning: M3 TimeO_COM8|TimeO|
+225403.873-Health Warning: M3 TimeO_COM8|TimeO|
+225409.932-Health Warning: M3 TimeO_COM8|TimeO|
+225415.879-Health Warning: M3 TimeO_COM8|
+225421.908-Health Warning: M3 TimeO_COM8|TimeO|
+225427.883-Health Warning: M3 TimeO_COM8|TimeO|
+225433.895-Health Warning: M3 TimeO_COM8|TimeO|
+225439.889-Health Warning: M3 TimeO_COM8|
+225445.896-Health Warning: M3 TimeO_COM8|TimeO|
+225451.895-Health Warning: M3 TimeO_COM8|TimeO|
+225457.898-Health Warning: M3 TimeO_COM8|TimeO|
+225503.900-Health Warning: M3 TimeO_COM8|
+225509.902-Health Warning: M3 TimeO_COM8|
+225515.906-Health Warning: M3 TimeO_COM8|TimeO|
+225521.906-Health Warning: M3 TimeO_COM8|TimeO|
+225527.909-Health Warning: M3 TimeO_COM8|TimeO|
+225533.912-Health Warning: M3 TimeO_COM8|TimeO|
+225539.914-Health Warning: M3 TimeO_COM8|TimeO|
+225545.914-Health Warning: M3 TimeO|TimeO_COM8|
+225551.917-Health Warning: M3 TimeO_COM8|TimeO|
+225557.919-Health Warning: M3 TimeO_COM8|TimeO|
+225603.922-Health Warning: M3 TimeO_COM8|TimeO|
+225609.923-Health Warning: M3 TimeO|TimeO_COM8|
+225615.926-Health Warning: M3 TimeO_COM8|TimeO|
+225621.928-Health Warning: M3 TimeO_COM8|
+225627.950-Health Warning: M3 TimeO_COM8|TimeO|
+225633.953-Health Warning: M3 TimeO_COM8|
+225639.954-Health Warning: M3 TimeO_COM8|TimeO|
+225645.957-Health Warning: M3 TimeO_COM8|TimeO|
+225651.960-Health Warning: M3 TimeO_COM8|TimeO|
+225657.962-Health Warning: M3 TimeO_COM8|TimeO|
+225703.964-Health Warning: M3 TimeO_COM8|
+225709.966-Health Warning: M3 TimeO_COM8|TimeO|
+225715.969-Health Warning: M3 TimeO_COM8|TimeO|
+225721.971-Health Warning: M3 TimeO_COM8|TimeO|
+225727.974-Health Warning: M3 TimeO_COM8|
+225733.976-Health Warning: M3 TimeO_COM8|TimeO|
+225739.978-Health Warning: M3 TimeO_COM8|
+225745.981-Health Warning: M3 TimeO_COM8|
+225751.983-Health Warning: M3 TimeO_COM8|
+225757.983-Health Warning: M3 TimeO_COM8|
+225803.986-Health Warning: M3 TimeO_COM8|TimeO|
+225809.988-Health Warning: M3 TimeO_COM8|TimeO|
+225816.190-Health Warning: M3 TimeO_COM8|
+225822.193-Health Warning: M3 TimeO_COM8|
+225828.195-Health Warning: M3 TimeO_COM8|
+225834.197-Health Warning: M3 TimeO_COM8|
+225840.200-Health Warning: M3 TimeO_COM8|
+225846.202-Health Warning: M3 TimeO_COM8|TimeO|
+225852.204-Health Warning: M3 TimeO_COM8|TimeO|
+225858.207-Health Warning: M3 TimeO_COM8|TimeO|
+225904.209-Health Warning: M3 TimeO_COM8|
+225910.211-Health Warning: M3 TimeO_COM8|TimeO|
+225916.214-Health Warning: M3 TimeO_COM8|
+225922.216-Health Warning: M3 TimeO_COM8|
+225928.219-Health Warning: M3 TimeO_COM8|
+225934.222-Health Warning: M3 TimeO_COM8|
+225940.224-Health Warning: M3 TimeO_COM8|
+225946.250-Health Warning: M3 TimeO|TimeO_COM8|
+225952.253-Health Warning: M3 TimeO_COM8|TimeO|
+225958.254-Health Warning: M3 TimeO|TimeO_COM8|
+230004.255-Health Warning: M3 TimeO_COM8|TimeO|
+230010.257-Health Warning: M3 TimeO_COM8|
+230016.260-Health Warning: M3 TimeO_COM8|TimeO|
+230022.264-Health Warning: M3 TimeO|TimeO_COM8|
+230028.263-Health Warning: M3 TimeO_COM8|
+230034.266-Health Warning: M3 TimeO|TimeO_COM8|
+230040.268-Health Warning: M3 TimeO_COM8|TimeO|
+230046.271-Health Warning: M3 TimeO_COM8|TimeO|
+230052.273-Health Warning: M3 TimeO_COM8|TimeO|
+230058.276-Health Warning: M3 TimeO_COM8|TimeO|
+230104.278-Health Warning: M3 TimeO_COM8|TimeO|
+230110.281-Health Warning: M3 TimeO_COM8|
+230116.285-Health Warning: M3 TimeO_COM8|TimeO|
+230122.287-Health Warning: M3 TimeO|TimeO_COM8|
+230128.288-Health Warning: M3 TimeO_COM8|TimeO|
+230134.291-Health Warning: M3 TimeO_COM8|TimeO|
+230140.294-Health Warning: M3 TimeO_COM8|TimeO|
+230146.297-Health Warning: M3 TimeO_COM8|TimeO|
+230152.300-Health Warning: M3 TimeO_COM8|TimeO|
+230158.303-Health Warning: M3 TimeO_COM8|TimeO|
+230204.305-Health Warning: M3 TimeO_COM8|
+230210.307-Health Warning: M3 TimeO_COM8|
+230216.309-Health Warning: M3 TimeO_COM8|
+230222.312-Health Warning: M3 TimeO_COM8|TimeO|
+230228.317-Health Warning: M3 TimeO_COM8|TimeO|
+230234.319-Health Warning: M3 TimeO_COM8|TimeO|
+230240.322-Health Warning: M3 TimeO_COM8|
+230246.323-Health Warning: M3 TimeO_COM8|TimeO|
+230252.349-Health Warning: M3 TimeO_COM8|TimeO|
+230258.350-Health Warning: M3 TimeO_COM8|
+230304.354-Health Warning: M3 TimeO|TimeO_COM8|
+230310.357-Health Warning: M3 TimeO|TimeO_COM8|
+230316.351-Health Warning: M3 TimeO_COM8|TimeO|
+230322.353-Health Warning: M3 TimeO_COM8|TimeO|
+230328.356-Health Warning: M3 TimeO_COM8|TimeO|
+230334.355-Health Warning: M3 TimeO|TimeO_COM8|
+230340.357-Health Warning: M3 TimeO_COM8|TimeO|
+230346.361-Health Warning: M3 TimeO_COM8|TimeO|
+230352.363-Health Warning: M3 TimeO_COM8|TimeO|
+230358.365-Health Warning: M3 TimeO_COM8|TimeO|
+230404.368-Health Warning: M3 TimeO|TimeO_COM8|
+230410.371-Health Warning: M3 TimeO_COM8|TimeO|
+230416.374-Health Warning: M3 TimeO_COM8|TimeO|
+230422.377-Health Warning: M3 TimeO_COM8|TimeO|
+230428.380-Health Warning: M3 TimeO_COM8|TimeO|
+230434.383-Health Warning: M3 TimeO_COM8|TimeO|
+230440.385-Health Warning: M3 TimeO_COM8|
+230446.388-Health Warning: M3 TimeO_COM8|
+230452.501-Health Warning: M3 TimeO_COM8|
+230458.394-Health Warning: M3 TimeO_COM8|
+230504.405-Health Warning: M3 TimeO_COM8|TimeO|
+230510.401-Health Warning: M3 TimeO_COM8|TimeO|
+230516.413-Health Warning: M3 TimeO_COM8|TimeO|
+230522.406-Health Warning: M3 TimeO_COM8|
+230528.408-Health Warning: M3 TimeO_COM8|TimeO|
+230534.412-Health Warning: M3 TimeO_COM8|TimeO|
+230540.790-Health Warning: M3 TimeO_COM8|
+230546.417-Health Warning: M3 TimeO_COM8|TimeO|
+230552.421-Health Warning: M3 TimeO_COM8|TimeO|
+230558.423-Health Warning: M3 TimeO|TimeO_COM8|
+230604.449-Health Warning: M3 TimeO_COM8|TimeO|
+230610.452-Health Warning: M3 TimeO_COM8|
+230616.454-Health Warning: M3 TimeO_COM8|
+230622.457-Health Warning: M3 TimeO_COM8|TimeO|
+230628.460-Health Warning: M3 TimeO_COM8|
+230634.463-Health Warning: M3 TimeO_COM8|
+230640.466-Health Warning: M3 TimeO_COM8|TimeO|
+230646.470-Health Warning: M3 TimeO_COM8|TimeO|
+230652.472-Health Warning: M3 TimeO_COM8|TimeO|
+230658.475-Health Warning: M3 TimeO_COM8|TimeO|
+230704.493-Health Warning: M3 TimeO_COM8|
+230710.482-Health Warning: M3 TimeO_COM8|TimeO|
+230716.485-Health Warning: M3 TimeO_COM8|TimeO|
+230722.489-Health Warning: M3 TimeO_COM8|
+230728.490-Health Warning: M3 TimeO|TimeO_COM8|
+230734.494-Health Warning: M3 TimeO_COM8|
+230740.496-Health Warning: M3 TimeO_COM8|
+230746.499-Health Warning: M3 TimeO_COM8|
+230752.502-Health Warning: M3 TimeO_COM8|
+230758.505-Health Warning: M3 TimeO_COM8|TimeO|
+230804.509-Health Warning: M3 TimeO_COM8|TimeO|
+230810.513-Health Warning: M3 TimeO_COM8|TimeO|
+230816.514-Health Warning: M3 TimeO_COM8|TimeO|
+230822.520-Health Warning: M3 TimeO_COM8|TimeO|
+230828.523-Health Warning: M3 TimeO_COM8|TimeO|
+230834.526-Health Warning: M3 TimeO|TimeO_COM8|
+230840.529-Health Warning: M3 TimeO_COM8|TimeO|
+230846.532-Health Warning: M3 TimeO_COM8|TimeO|
+230852.536-Health Warning: M3 TimeO|TimeO_COM8|
+230858.539-Health Warning: M3 TimeO_COM8|TimeO|
+230904.542-Health Warning: M3 TimeO_COM8|
+230910.545-Health Warning: M3 TimeO_COM8|TimeO|
+230916.548-Health Warning: M3 TimeO_COM8|TimeO|
+230916.548-Health Warning: Nv NoRad|
+230922.551-Health Warning: M3 TimeO_COM8|TimeO|
+230928.554-Health Warning: M3 TimeO|TimeO_COM8|
+230934.557-Health Warning: M3 TimeO_COM8|TimeO|
+230940.561-Health Warning: M3 TimeO_COM8|
+230946.564-Health Warning: M3 TimeO_COM8|
+230952.567-Health Warning: M3 TimeO_COM8|
+230958.551-Health Warning: M3 TimeO_COM8|TimeO|
+230958.551-Health Warning: Nv KinErr|
+231004.554-Health Warning: M3 TimeO_COM8|TimeO|
+231010.556-Health Warning: M3 TimeO_COM8|TimeO|
+231016.559-Health Warning: M3 TimeO_COM8|TimeO|
+231022.562-Health Warning: M3 TimeO_COM8|
+231028.566-Health Warning: M3 TimeO_COM8|
+231034.569-Health Warning: M3 TimeO_COM8|TimeO|
+231040.573-Health Warning: M3 TimeO_COM8|
+231046.776-Health Warning: M3 TimeO_COM8|TimeO|
+231053.580-Health Warning: M3 TimeO_COM8|
+231059.583-Health Warning: M3 TimeO_COM8|TimeO|
+231105.587-Health Warning: M3 TimeO_COM8|TimeO|
+231111.590-Health Warning: M3 TimeO_COM8|TimeO|
+231117.593-Health Warning: M3 TimeO_COM8|TimeO|
+231123.597-Health Warning: M3 TimeO_COM8|TimeO|
+231129.600-Health Warning: M3 TimeO|TimeO_COM8|
+231135.604-Health Warning: M3 TimeO_COM8|
+231141.607-Health Warning: M3 TimeO|TimeO_COM8|
+231147.611-Health Warning: M3 TimeO_COM8|TimeO|
+231153.614-Health Warning: M3 TimeO_COM8|
+231159.618-Health Warning: M3 TimeO_COM8|TimeO|
+231205.621-Health Warning: M1 TimeO|
+231205.621-Health Warning: M3 TimeO_COM8|TimeO|
+231211.625-Health Warning: M1 TimeO|
+231211.625-Health Warning: M3 TimeO_COM8|TimeO|
+231217.630-Health Warning: M3 TimeO_COM8|TimeO|
+231223.633-Health Warning: M3 TimeO_COM8|TimeO|
+231229.651-Health Warning: M3 TimeO_COM8|TimeO|
+231229.651-Health Warning: Nv KinErr|
+231235.651-Health Warning: M3 TimeO_COM8|TimeO|
+231241.653-Health Warning: M3 TimeO_COM8|
+231247.657-Health Warning: M3 TimeO_COM8|
+231253.660-Health Warning: M3 TimeO_COM8|
+231259.663-Health Warning: M3 TimeO|TimeO_COM8|
+231305.666-Health Warning: M3 TimeO_COM8|
+231311.669-Health Warning: M3 TimeO|TimeO_COM8|
+231317.672-Health Warning: M3 TimeO_COM8|TimeO|
+231323.675-Health Warning: M3 TimeO_COM8|TimeO|
+231329.678-Health Warning: M3 TimeO_COM8|
+231335.682-Health Warning: M3 TimeO_COM8|TimeO|
+231341.685-Health Warning: M3 TimeO_COM8|
+231347.661-Health Warning: M3 TimeO_COM8|
+231353.664-Health Warning: M3 TimeO_COM8|TimeO|
+231359.668-Health Warning: M3 TimeO_COM8|
+231405.671-Health Warning: M3 TimeO_COM8|TimeO|
+231412.461-Health Warning: M3 TimeO_COM8|TimeO|
+231418.079-Health Warning: M3 TimeO|TimeO_COM8|
+231424.083-Health Warning: M3 TimeO_COM8|TimeO|
+231430.086-Health Warning: M3 TimeO_COM8|TimeO|
+231436.090-Health Warning: M3 TimeO|TimeO_COM8|
+231442.094-Health Warning: M3 TimeO_COM8|TimeO|
+231448.097-Health Warning: M3 TimeO_COM8|
+231454.101-Health Warning: M3 TimeO_COM8|TimeO|
+231500.105-Health Warning: M3 TimeO_COM8|TimeO|
+231506.109-Health Warning: M3 TimeO_COM8|
+231512.112-Health Warning: M3 TimeO|TimeO_COM8|
+231518.116-Health Warning: M3 TimeO_COM8|
+231524.120-Health Warning: M3 TimeO_COM8|TimeO|
+231530.124-Health Warning: M3 TimeO_COM8|
+231536.127-Health Warning: M3 TimeO_COM8|TimeO|
+231542.149-Health Warning: M3 TimeO_COM8|
+231548.151-Health Warning: M3 TimeO_COM8|TimeO|
+231554.154-Health Warning: M3 TimeO_COM8|TimeO|
+231600.157-Health Warning: M3 TimeO_COM8|TimeO|
+231606.160-Health Warning: M3 TimeO|TimeO_COM8|
+231612.164-Health Warning: M3 TimeO|TimeO_COM8|
+231618.166-Health Warning: M3 TimeO|TimeO_COM8|
+231624.169-Health Warning: M3 TimeO_COM8|TimeO|
+231630.172-Health Warning: M3 TimeO_COM8|TimeO|
+231636.175-Health Warning: M3 TimeO_COM8|TimeO|
+231642.179-Health Warning: M3 TimeO|TimeO_COM8|
+231648.182-Health Warning: M3 TimeO|TimeO_COM8|
+231654.185-Health Warning: M3 TimeO_COM8|
+231700.188-Health Warning: M3 TimeO_COM8|
+231706.164-Health Warning: M3 TimeO_COM8|TimeO|
+231712.168-Health Warning: M3 TimeO|TimeO_COM8|
+231718.172-Health Warning: M3 TimeO_COM8|TimeO|
+231724.176-Health Warning: M3 TimeO_COM8|TimeO|
+231730.180-Health Warning: M3 TimeO_COM8|
+231736.184-Health Warning: M3 TimeO_COM8|TimeO|
+231742.188-Health Warning: M3 TimeO_COM8|TimeO|
+231748.191-Health Warning: M3 TimeO|TimeO_COM8|
+231754.196-Health Warning: M3 TimeO_COM8|TimeO|
+231800.199-Health Warning: M3 TimeO_COM8|TimeO|
+231806.203-Health Warning: M3 TimeO_COM8|TimeO|
+231812.207-Health Warning: M3 TimeO_COM8|TimeO|
+231818.211-Health Warning: M3 TimeO_COM8|TimeO|
+231824.215-Health Warning: M3 TimeO_COM8|TimeO|
+231830.219-Health Warning: M3 TimeO_COM8|TimeO|
+231836.223-Health Warning: M3 TimeO_COM8|TimeO|
+231842.228-Health Warning: M3 TimeO_COM8|TimeO|
+231848.231-Health Warning: M3 TimeO_COM8|TimeO|
+231854.249-Health Warning: M3 TimeO_COM8|TimeO|
+231900.252-Health Warning: M3 TimeO|TimeO_COM8|
+231912.257-Health Warning: M3 TimeO_COM8|
+231918.260-Health Warning: M3 TimeO_COM8|TimeO|
+231924.263-Health Warning: M3 TimeO_COM8|TimeO|
+231930.266-Health Warning: M3 TimeO_COM8|
+231936.262-Health Warning: M3 TimeO_COM8|
+231942.250-Health Warning: M3 TimeO_COM8|TimeO|
+231948.255-Health Warning: M3 TimeO_COM8|TimeO|
+231954.255-Health Warning: M3 TimeO_COM8|TimeO|
+232000.259-Health Warning: M3 TimeO_COM8|TimeO|
+232006.265-Health Warning: M3 TimeO_COM8|TimeO|
+232012.268-Health Warning: M3 TimeO_COM8|TimeO|
+232018.273-Health Warning: M3 TimeO_COM8|TimeO|
+232024.277-Health Warning: M3 TimeO_COM8|TimeO|
+232030.280-Health Warning: M3 TimeO_COM8|TimeO|
+232036.283-Health Warning: M3 TimeO_COM8|TimeO|
+232042.290-Health Warning: M3 TimeO|TimeO_COM8|
+232048.292-Health Warning: M3 TimeO|TimeO_COM8|
+232054.295-Health Warning: M3 TimeO_COM8|
+232100.301-Health Warning: M3 TimeO_COM8|TimeO|
+232106.304-Health Warning: M3 TimeO|TimeO_COM8|
+232112.310-Health Warning: M3 TimeO_COM8|TimeO|
+232118.313-Health Warning: M3 TimeO_COM8|TimeO|
+232124.318-Health Warning: M3 TimeO|TimeO_COM8|
+232130.323-Health Warning: M3 TimeO_COM8|TimeO|
+232136.326-Health Warning: M3 TimeO_COM8|TimeO|
+232142.330-Health Warning: M3 TimeO_COM8|
+232148.334-Health Warning: M3 TimeO_COM8|
+232154.338-Health Warning: M3 TimeO_COM8|
+232200.341-Health Warning: M3 TimeO_COM8|
+232206.347-Health Warning: M3 TimeO_COM8|
+232212.351-Health Warning: M3 TimeO_COM8|
+232218.353-Health Warning: M3 TimeO_COM8|TimeO|
+232224.356-Health Warning: M3 TimeO_COM8|TimeO|
+232230.362-Health Warning: M3 TimeO_COM8|TimeO|
+232236.349-Health Warning: M3 TimeO_COM8|
+232242.352-Health Warning: M3 TimeO_COM8|TimeO|
+232248.357-Health Warning: M3 TimeO_COM8|
+232254.361-Health Warning: M3 TimeO_COM8|
+232300.363-Health Warning: M3 TimeO_COM8|TimeO|
+232306.368-Health Warning: M3 TimeO_COM8|TimeO|
+232312.373-Health Warning: M3 TimeO_COM8|
+232318.377-Health Warning: M3 TimeO|TimeO_COM8|
+232324.380-Health Warning: M3 TimeO_COM8|TimeO|
+232330.385-Health Warning: M3 TimeO_COM8|TimeO|
+232336.390-Health Warning: M3 TimeO_COM8|TimeO|
+232342.394-Health Warning: M3 TimeO_COM8|TimeO|
+232348.400-Health Warning: M3 TimeO_COM8|
+232354.403-Health Warning: M3 TimeO_COM8|TimeO|
+232400.407-Health Warning: M3 TimeO_COM8|TimeO|
+232406.411-Health Warning: M3 TimeO_COM8|TimeO|
+232412.413-Health Warning: M3 TimeO_COM8|TimeO|
+232418.416-Health Warning: M3 TimeO_COM8|
+232424.420-Health Warning: M3 TimeO_COM8|TimeO|
+232430.423-Health Warning: M3 TimeO_COM8|
+232436.426-Health Warning: M3 TimeO|TimeO_COM8|
+232442.483-Health Warning: M3 TimeO_COM8|
+232448.432-Health Warning: M1 TimeO|
+232448.432-Health Warning: M3 TimeO_COM8|TimeO|
+232454.437-Health Warning: M1 TimeO|
+232454.437-Health Warning: M3 TimeO|TimeO_COM8|
+232500.438-Health Warning: M3 TimeO|TimeO_COM8|
+232506.471-Health Warning: M3 TimeO|TimeO_COM8|
+232512.420-Health Warning: M3 TimeO|TimeO_COM8|
+232518.422-Health Warning: M3 TimeO_COM8|TimeO|
+232524.451-Health Warning: M3 TimeO_COM8|
+232530.455-Health Warning: M3 TimeO|TimeO_COM8|
+232536.458-Health Warning: M3 TimeO_COM8|
+232542.461-Health Warning: M3 TimeO_COM8|
+232548.464-Health Warning: M3 TimeO_COM8|
+232554.467-Health Warning: M3 TimeO_COM8|
+232600.471-Health Warning: M3 TimeO_COM8|TimeO|
+232606.473-Health Warning: M3 TimeO_COM8|TimeO|
+232612.476-Health Warning: M3 TimeO_COM8|
+232618.487-Health Warning: M3 TimeO_COM8|
+232624.482-Health Warning: M3 TimeO_COM8|TimeO|
+232630.486-Health Warning: M3 TimeO_COM8|TimeO|
+232636.489-Health Warning: M3 TimeO_COM8|TimeO|
+232642.465-Health Warning: M3 TimeO_COM8|TimeO|
+232648.474-Health Warning: M3 TimeO|TimeO_COM8|
+232654.474-Health Warning: M3 TimeO|TimeO_COM8|
+232700.478-Health Warning: M3 TimeO_COM8|TimeO|
+232706.483-Health Warning: M3 TimeO_COM8|TimeO|
+232712.487-Health Warning: M3 TimeO_COM8|TimeO|
+232718.497-Health Warning: M3 TimeO_COM8|TimeO|
+232724.496-Health Warning: M3 TimeO_COM8|
+232730.501-Health Warning: M3 TimeO_COM8|TimeO|
+232730.502-Health Warning: Nv NoINS|
+232736.505-Health Warning: M3 TimeO_COM8|TimeO|
+232742.510-Health Warning: M3 TimeO_COM8|
+232748.521-Health Warning: M3 TimeO_COM8|
+232754.520-Health Warning: M3 TimeO_COM8|TimeO|
+232800.532-Health Warning: M3 TimeO|TimeO_COM8|
+232806.535-Health Warning: M3 TimeO|TimeO_COM8|
+232812.538-Health Warning: M3 TimeO|TimeO_COM8|
+232818.542-Health Warning: M3 TimeO|TimeO_COM8|
+232824.545-Health Warning: M3 TimeO_COM8|TimeO|
+232830.549-Health Warning: M3 TimeO|TimeO_COM8|
+232836.552-Health Warning: M3 TimeO_COM8|TimeO|
+232842.554-Health Warning: M3 TimeO|TimeO_COM8|
+232848.557-Health Warning: M3 TimeO|TimeO_COM8|
+232854.560-Health Warning: M3 TimeO|TimeO_COM8|
+232900.559-Health Warning: M3 TimeO_COM8|TimeO|
+232906.563-Health Warning: M3 TimeO_COM8|TimeO|
+232912.566-Health Warning: M3 TimeO_COM8|TimeO|
+232918.570-Health Warning: M3 TimeO|TimeO_COM8|
+232924.576-Health Warning: M3 TimeO_COM8|TimeO|
+232930.579-Health Warning: M3 TimeO_COM8|
+232936.582-Health Warning: M3 TimeO_COM8|TimeO|
+232942.585-Health Warning: M3 TimeO_COM8|TimeO|
+232948.588-Health Warning: M3 TimeO_COM8|TimeO|
+232954.591-Health Warning: M3 TimeO_COM8|TimeO|
+233000.595-Health Warning: M3 TimeO_COM8|TimeO|
+233006.598-Health Warning: M3 TimeO_COM8|TimeO|
+233012.601-Health Warning: M3 TimeO_COM8|TimeO|
+233018.578-Health Warning: M3 TimeO_COM8|TimeO|
+233024.582-Health Warning: M3 TimeO_COM8|TimeO|
+233030.587-Health Warning: M3 TimeO_COM8|TimeO|
+233036.592-Health Warning: M3 TimeO_COM8|TimeO|
+233042.597-Health Warning: M3 TimeO_COM8|TimeO|
+233048.601-Health Warning: M3 TimeO_COM8|TimeO|
+233054.605-Health Warning: M3 TimeO_COM8|TimeO|
+233100.610-Health Warning: M3 TimeO|TimeO_COM8|
+233106.615-Health Warning: M3 TimeO_COM8|TimeO|
+233112.620-Health Warning: M3 TimeO_COM8|TimeO|
+233118.624-Health Warning: M3 TimeO|TimeO_COM8|
+233124.629-Health Warning: M3 TimeO_COM8|TimeO|
+233130.634-Health Warning: M3 TimeO|TimeO_COM8|
+233136.638-Health Warning: M3 TimeO_COM8|TimeO|
+233142.645-Health Warning: M3 TimeO|TimeO_COM8|
+233148.651-Health Warning: M3 TimeO_COM8|TimeO|
+233154.653-Health Warning: M3 TimeO|TimeO_COM8|
+233200.656-Health Warning: M3 TimeO_COM8|TimeO|
+233206.659-Health Warning: M3 TimeO_COM8|TimeO|
+233212.662-Health Warning: M3 TimeO_COM8|TimeO|
+233218.665-Health Warning: M3 TimeO_COM8|
+233224.658-Health Warning: M3 TimeO_COM8|
+233224.658-Health Warning: Nv NoINS|
+233230.662-Health Warning: M3 TimeO|TimeO_COM8|
+233236.665-Health Warning: M3 TimeO_COM8|TimeO|
+233242.672-Health Warning: M3 TimeO_COM8|TimeO|
+233248.676-Health Warning: M3 TimeO_COM8|TimeO|
+233248.676-Health Warning: Nv NoINS|
+233254.681-Health Warning: M3 TimeO|TimeO_COM8|
+233300.686-Health Warning: M3 TimeO_COM8|
+233306.690-Health Warning: M3 TimeO_COM8|
+233312.694-Health Warning: M3 TimeO_COM8|
+233318.698-Health Warning: M3 TimeO_COM8|TimeO|
+233324.700-Health Warning: M3 TimeO_COM8|TimeO|
+233330.703-Health Warning: M3 TimeO_COM8|TimeO|
+233336.706-Health Warning: M3 TimeO_COM8|
+233342.709-Health Warning: M3 TimeO_COM8|TimeO|
+233348.712-Health Warning: M3 TimeO|TimeO_COM8|
+233354.715-Health Warning: M3 TimeO_COM8|
+233354.715-Health Warning: Nv NoINS|
+233400.693-Health Warning: M3 TimeO_COM8|
+233406.698-Health Warning: M3 TimeO_COM8|TimeO|
+233412.702-Health Warning: M3 TimeO|TimeO_COM8|
+233418.707-Health Warning: M3 TimeO_COM8|
+233424.712-Health Warning: M3 TimeO_COM8|TimeO|
+233430.718-Health Warning: M3 TimeO_COM8|TimeO|
+233436.723-Health Warning: M3 TimeO_COM8|TimeO|
+233442.727-Health Warning: M3 TimeO_COM8|TimeO|
+233448.740-Health Warning: M3 TimeO|TimeO_COM8|
+233454.745-Health Warning: M3 TimeO_COM8|TimeO|
+233500.751-Health Warning: M3 TimeO_COM8|TimeO|
+233506.754-Health Warning: M3 TimeO_COM8|TimeO|
+233512.757-Health Warning: M3 TimeO_COM8|TimeO|
+233518.760-Health Warning: M3 TimeO_COM8|
+233524.763-Health Warning: M3 TimeO_COM8|TimeO|
+233530.766-Health Warning: M3 TimeO_COM8|TimeO|
+233536.769-Health Warning: M1 TimeO|
+233536.769-Health Warning: M3 TimeO_COM8|TimeO|
+233542.766-Health Warning: M3 TimeO_COM8|TimeO|
+233548.771-Health Warning: M3 TimeO_COM8|TimeO|
+233554.815-Health Warning: M3 TimeO_COM8|TimeO|
+233600.835-Health Warning: M3 TimeO_COM8|TimeO|
+233606.785-Health Warning: M3 TimeO_COM8|TimeO|
+233612.814-Health Warning: M3 TimeO_COM8|TimeO|
+233618.791-Health Warning: M3 TimeO_COM8|TimeO|
+233624.811-Health Warning: M3 TimeO_COM8|TimeO|
+233630.797-Health Warning: M3 TimeO_COM8|TimeO|
+233636.801-Health Warning: M3 TimeO_COM8|TimeO|
+233642.804-Health Warning: M3 TimeO_COM8|TimeO|

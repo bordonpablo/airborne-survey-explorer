@@ -1,0 +1,236 @@
+Log file D:\Events\EVT00007.txt opened at Date:20260324 Time:15:01
+15:01:47.0: ICCS Starting
+15:01:47.0: Boot Counter = 7
+15:01:47.0: Process 6380 bumped up in priority
+15:01:47.0: Affinity adjusted from 0x0000000000000015 to 0x0000000000000008
+15:01:47.0: Current Folder is C:\GD\System
+15:01:52.2: Checking USB Devices
+15:01:52.2: Drive D:\ OK
+15:01:52.2: Storage folder D:\Data\ -- OK
+15:01:52.2: Events folder D:\Events\ -- OK
+15:01:52.2: Data folder D:\Data\ -- OK
+15:01:52.2: Navigation folder D:\Navigation\ -- OK
+15:01:52.2: Compensation folder D:\Compensation\ -- OK
+15:01:52.2: Start Testing D:\Data\
+15:01:53.9: Drv[D:\Data\] - Used: 0% of 3716Mbytes 10940/826
+15:01:53.9: Starting .......
+15:01:53.9: Loading XML Config
+15:01:54.0: Init file C:\GD\System\GDini.xml loaded
+15:01:56.0: Settings Loaded from GDini.xml
+15:01:56.0: Nav: Loading navigation file [TestSurveyNav.csv]
+15:01:56.0: Nav: Navigation file [TestSurveyNav.csv] loaded
+15:01:56.0: Navigation TestSurveyNav.csv file loaded
+15:01:56.0: File System Check done
+15:01:56.0: Building Settings Window.....
+15:01:56.0: Building Startup Window.....
+15:01:56.0: Building Configuration Window.....
+15:01:56.0: Building Colour Window.....
+15:01:56.0: Screen setup done
+15:01:56.0: Building Compensator.....
+15:01:56.0: >>COMPDEBUG>>SetConfigFromXml ptr 0 is NULL
+15:01:56.0: >>COMPDEBUG>>SetConfigFromXml ptr 0 is NULL
+15:01:56.0: >>COMPDEBUG>>MagOn=1 DynOn=0,Elev=6 Reg=10 Dlag=2 Alag=0
+15:01:56.0: >>COMPDEBUG>>Loading Compensation CMP_0043
+15:01:56.4: >>COMPDEBUG>>Aqmode is 
+15:01:56.4: >>COMPDEBUG>>AcquisitionMode is AQ_MODE_RECORD
+15:01:56.4: >>COMPDEBUG>>CompensatorStatus is STATUS_IS_SOLVED
+15:01:56.4: Compensation CMP_0043 loaded
+15:01:56.4: Mag Compensation Setup done
+15:01:56.4: Opening Serial Ports.....
+15:01:56.4:    COM3: Macro GEMK1 OK - 115200/None/8/One-None//
+15:01:56.4:    COM4: Macro GEMK2 OK - 115200/None/8/One-None//
+15:01:56.4:    COM5: Macro GDRAlt OK - 57600/None/8/One-None//
+15:01:56.4:    COM6: Macro GD485 OK - 57600/None/8/One-None//
+15:01:56.4:    COM7: Macro XSENS OK - 115200/None/8/One-None//
+15:01:56.4:    COM8: Macro GDGPS OK - 115200/None/8/One-None//
+15:01:56.4:    COM9: Macro GDSpec OK - 57600/None/8/One-None//
+15:01:56.4:    COM10: Macro GDLas OK - 19200/None/8/One-None//
+15:01:58.0: Testing ports for 5 seconds
+15:02:03.0: Character Rate on COM3 is 131.4 chars/second
+15:02:03.0: Character Rate on COM4 is 127.2 chars/second
+15:02:03.0: Character Rate on COM5 is 86.8 chars/second
+15:02:03.0: Character Rate on COM6 is 0.0 chars/second
+15:02:03.0: Character Rate on COM7 is 593.7 chars/second
+15:02:03.0: Character Rate on COM8 is 350.3 chars/second
+15:02:03.0: Character Rate on COM9 is 0.0 chars/second
+15:02:03.0: Character Rate on COM10 is 0.0 chars/second
+15:02:03.0: Creating Mux M1 0x06d548d8
+15:02:03.0:       Mux1 Macro Mux1 Compiled
+15:02:03.0: MuxSerial:M1 Created with timeout=80
+15:02:03.0:       Mux1 TxPort: TimeOut:80ms
+15:02:03.0:       Attached Hardware IRQ Clk:0 Mask:1
+15:02:03.0:       Mux1 Synch IRQ attached
+15:02:03.0: Creating Mux M2 0x06f46f78
+15:02:03.0:       Mux2 Macro Mux2 Compiled
+15:02:03.0: MuxSerial:M2 Created with timeout=200
+15:02:03.0:       Mux2 TxPort: TimeOut:200ms
+15:02:03.0:       Attached Hardware IRQ Clk:1 Mask:64
+15:02:03.0:       Mux2 Synch IRQ attached
+15:02:03.0: Creating Mux M3 0x0715fd58
+15:02:03.0:       Mux3 Macro Mux3 Compiled
+15:02:03.0: MuxSerial:M3 Created with timeout=100
+15:02:03.0:       Mux3 TxPort: TimeOut:100ms
+15:02:03.0:       Attached Hardware IRQ Clk:2 Mask:1
+15:02:03.0:       Mux3 Synch IRQ attached
+15:02:03.1: Global List Compiled
+15:02:03.1: Resolving References
+15:02:03.1:       Checking References for Macro for Mux1 
+15:02:03.1:       Checking References for Macro for Mux2 
+15:02:03.1:       Checking References for Macro for Mux3 
+15:02:03.1:  Mux M1 is Synch on Bit/1
+15:02:03.1:       M1 latches port COM7 runs macro XSENS
+15:02:03.1:       M1 latches port COM5 runs macro GDRAlt
+15:02:03.1:       M1 latches port COM10 runs macro GDLas
+15:02:03.1:       M1 latches port COM4 runs macro GEMK2
+15:02:03.1:       M1 latches port COM3 runs macro GEMK1
+15:02:03.1:       M1 latches port COM6 runs macro GD485
+15:02:03.1:  Mux M2 is Synch on Bit/7
+15:02:03.1:       M2 latches port COM9 runs macro GDSpec
+15:02:03.1:  Mux M3 is Synch on Bit/1
+15:02:03.1:       M3 latches port COM8 runs macro GDGPS
+15:02:03.1: Checking Input Ports uniquely assigned to Mux's
+15:02:03.1: Mux1 - Running
+15:02:03.1: Mux2 - Running
+15:02:03.1: Mux3 - Running
+15:02:03.1: Clock Port is defined as COM1 in config
+15:02:03.1: DataInterrupts on COM1 Baud=115200 started
+15:02:03.1: Setup String :F0000[0d][0a] sent
+15:02:03.1: Testing incoming clock for 3 seconds
+15:02:03.1: File: D:\Data\GGA00007.txt opened
+15:02:03.2: File: D:\Data\MAG00007.txt opened
+15:02:04.0: File: D:\Data\SPC00007.txt opened
+15:02:06.1: Int Data[bf bf bf bf bf bf bf ff bf bf bf bf bf bf bf bf bf ff bf bf bf bf bf bf bf bf bf ff bf bf bf ]
+15:02:06.1: Building Terminal Window.....
+15:02:06.1: TerminalWin::NextPort is COM3
+15:02:06.1: Building Analog Window.....
+15:02:06.1: Building Timing Window.....
+15:02:06.1: Building Data Window.....
+15:02:06.1: Building Array Window.....
+15:02:06.1: Building Macro Window.....
+15:02:06.1: Building Gps Window.....
+15:02:06.1: Data Acquisition Setup
+15:02:06.1: Nav: Loading navigation file [TestSurveyNav.csv]
+15:02:06.2: Nav: Navigation file [TestSurveyNav.csv] loaded
+15:02:06.2: Navigation Setup done
+15:02:06.2: Building GUI
+15:02:06.2: Starting GUI
+15:02:06.2: Streams Started...
+15:02:07.1: Working Config copied to D:\Data\Cfg00007.xml
+15:02:08.0: MuxSerial::Collector M3 0715fd58 Mux Timeout > 90% of clock!!!!!!!
+15:02:08.4: Tick OK - 0x0000000000000008 - 0x0000000000000000
+15:02:08.4: Health Warning: M1 TimeO|
+15:02:08.4: Health Warning: M2 TimeO|
+15:02:08.4: Health Warning: Nv WayP|
+15:02:14.0: Health Warning: M1 TimeO|
+15:02:14.0: Health Warning: M2 TimeO|
+15:02:14.0: Health Warning: Nv WayP|
+15:02:19.6: Health Warning: M1 TimeO|
+15:02:19.6: Health Warning: M2 TimeO|
+15:02:19.6: Health Warning: Nv WayP|
+15:02:25.3: Health Warning: M1 TimeO|
+15:02:25.3: Health Warning: M2 TimeO|
+15:02:25.3: Health Warning: Nv WayP|
+15:02:26.3: User acknowledged disclaimer
+15:02:30.9: Health Warning: M1 TimeO|
+15:02:30.9: Health Warning: M2 TimeO|
+15:02:30.9: Health Warning: Nv WayP|
+15:02:36.6: Health Warning: M1 TimeO|
+15:02:36.6: Health Warning: M2 TimeO|
+15:02:36.6: Health Warning: Nv WayP|
+15:02:42.2: Health Warning: M1 TimeO|
+15:02:42.2: Health Warning: M2 TimeO|
+15:02:42.2: Health Warning: Nv WayP|
+15:02:47.8: Health Warning: M1 TimeO|
+15:02:47.8: Health Warning: M2 TimeO|
+15:02:47.8: Health Warning: Nv WayP|
+15:02:53.5: Health Warning: M1 TimeO|
+15:02:53.5: Health Warning: M2 TimeO|
+15:02:53.5: Health Warning: M3 TimeO|
+15:02:53.5: Health Warning: Nv WayP|
+15:02:56.6: User confirmed acknowledging disclaimer
+15:02:59.3: Health Warning: M1 TimeO|
+15:02:59.3: Health Warning: M2 TimeO|
+15:02:59.3: Health Warning: M3 TimeO|
+15:02:59.3: Health Warning: Nv WayP|
+15:03:04.9: Tick OK - 0x0000000000000008 - 0x0000000000000000
+15:03:04.9: Health Warning: M1 TimeO|
+15:03:04.9: Health Warning: M2 TimeO|
+15:03:04.9: Health Warning: M3 TimeO|
+15:03:04.9: Health Warning: Nv WayP|
+15:03:10.7: Health Warning: M1 TimeO|
+15:03:10.7: Health Warning: M2 TimeO|
+15:03:10.7: Health Warning: M3 TimeO|
+15:03:10.7: Health Warning: Nv WayP|
+15:03:16.4: Health Warning: M1 TimeO|
+15:03:16.4: Health Warning: M2 TimeO|
+15:03:16.4: Health Warning: M3 TimeO|
+15:03:16.4: Health Warning: Nv WayP|
+15:03:22.0: Health Warning: M1 TimeO|
+15:03:22.0: Health Warning: M2 TimeO|
+15:03:22.0: Health Warning: M3 TimeO|
+15:03:22.0: Health Warning: Nv WayP|
+15:03:27.6: Health Warning: M1 TimeO|
+15:03:27.6: Health Warning: M2 TimeO|
+15:03:27.6: Health Warning: M3 TimeO|
+15:03:27.6: Health Warning: Nv WayP|
+15:03:33.3: Health Warning: M1 TimeO|
+15:03:33.3: Health Warning: M2 TimeO|
+15:03:33.3: Health Warning: M3 TimeO|
+15:03:33.3: Health Warning: Nv WayP|
+15:03:38.9: Health Warning: M1 TimeO|
+15:03:38.9: Health Warning: M2 TimeO|
+15:03:38.9: Health Warning: Nv WayP|
+15:03:44.5: Health Warning: M1 TimeO|
+15:03:44.5: Health Warning: M2 TimeO|
+15:03:44.5: Health Warning: Nv WayP|
+15:03:50.2: Health Warning: M1 TimeO|
+15:03:50.2: Health Warning: M2 TimeO|
+15:03:50.2: Health Warning: Aq 
+15:03:50.2: Health Warning: Nv WayP|
+15:03:55.8: Health Warning: M1 TimeO|
+15:03:55.8: Health Warning: M2 TimeO|
+15:03:55.8: Health Warning: Aq 
+15:03:55.8: Health Warning: Nv WayP|
+15:04:01.4: Tick OK - 0x0000000000000008 - 0x0000000000000000
+15:04:01.4: Health Warning: M1 TimeO|
+15:04:01.4: Health Warning: M2 TimeO|
+15:04:01.4: Health Warning: Aq 
+15:04:01.4: Health Warning: Nv WayP|
+15:04:07.1: Health Warning: M1 TimeO|
+15:04:07.1: Health Warning: M2 TimeO|
+15:04:07.1: Health Warning: Aq 
+15:04:07.1: Health Warning: Nv WayP|
+15:04:12.7: Health Warning: M1 TimeO|
+15:04:12.7: Health Warning: M2 TimeO|
+15:04:12.7: Health Warning: Aq 
+15:04:12.7: Health Warning: Nv WayP|
+15:04:18.3: Health Warning: M1 TimeO|
+15:04:18.3: Health Warning: M2 TimeO|
+15:04:18.3: Health Warning: Aq 
+15:04:18.3: Health Warning: Nv WayP|
+15:04:21.0: >>COMPDEBUG>>AcquisitionMode is AQ_MODE_OFF
+15:04:21.0: >>COMPDEBUG>>CompensatorStatus is STATUS_IS_SOLVED
+15:04:21.0: >>COMPDEBUG>>AcquisitionMode is AQ_MODE_OFF
+15:04:21.0: >>COMPDEBUG>> BUTTION ON AcquisitionMode is !AQ_MODE_CALIBRATE
+15:04:58.4: MessageWin: Message Displayed15:04:58.4: MessageWin Line: 1 The current compensation is: CMP_0043
+15:04:58.4: MessageWin Line: 2 The solution is for 3 channels of data as follows:
+15:04:58.4: MessageWin Line: 3 Chan:Mag1 has RMS=0.001 IR=13.0 FOM=8.60/0.18
+15:04:58.4: MessageWin Line: 4 Chan:Mag2 has RMS=0.001 IR=8.3 FOM=4.66/0.14
+15:04:58.4: MessageWin Line: 5 Chan:MagL has RMS=0.000 IR=16.2 FOM=0.55/0.01
+15:04:58.4: MessageWin Line: 6 This solution will be used for all subsequest acqusition!
+15:04:58.4: MessageWin Line: 7 Continue or return to Calibration screen to select another!
+15:04:58.4: MessageWin: Message Acknowledged15:06:00.9: >>COMPDEBUG>>DO_SOLVE
+15:06:00.9: >>COMPDEBUG>>SetConfigFromXml ptr 0 is NULL
+15:06:00.9: >>COMPDEBUG>>SetConfigFromXml ptr 0 is NULL
+15:06:00.9: >>COMPDEBUG>>MagOn=1 DynOn=0,Elev=6 Reg=10 Dlag=2 Alag=0
+15:12:17.7: MessageWin: Message Displayed15:12:17.7: MessageWin Line: 1 The compensation is loaded succesfully
+15:12:17.7: MessageWin Line: 2 This is now the selected compensation
+15:12:17.7: MessageWin: Message Acknowledged15:16:50.3: MessageWin: Message Displayed15:16:50.3: MessageWin Line: 1 The current compensation is: CMP_0043
+15:16:50.3: MessageWin Line: 2 The solution is for 3 channels of data as follows:
+15:16:50.3: MessageWin Line: 3 Chan:Mag1 has RMS=0.001 IR=13.0 FOM=8.60/0.18
+15:16:50.3: MessageWin Line: 4 Chan:Mag2 has RMS=0.001 IR=8.3 FOM=4.66/0.14
+15:16:50.3: MessageWin Line: 5 Chan:MagL has RMS=0.000 IR=16.2 FOM=0.55/0.01
+15:16:50.3: MessageWin Line: 6 This solution will be used for all subsequest acqusition!
+15:16:50.3: MessageWin Line: 7 Continue or return to Calibration screen to select another!
+15:16:50.3: MessageWin: Message Acknowledged15:16:58.4: Navigator:: Screen Stop/Config selected
+15:17:01.7: ConfigWin::Shutdown done

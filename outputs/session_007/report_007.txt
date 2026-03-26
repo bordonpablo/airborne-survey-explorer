@@ -1,0 +1,202 @@
+
+========================================================================
+  SESSION 007  –  Welzow Ground Test  –  2026-03-24
+========================================================================
+
+────────────────────────────────────────────────────────────────────────
+STEP 1 — EVT00007.txt
+────────────────────────────────────────────────────────────────────────
+
+a) Sensor-port mapping:
+   COM3 → GEMK1
+   COM4 → GEMK2
+   COM5 → GDRAlt
+   COM6 → GD485
+   COM7 → XSENS
+   COM8 → GDGPS
+   COM9 → GDSpec
+   COM10 → GDLas
+
+b) Connection status:
++-------+--------+-----------------------------------------+----------------+--------------+
+| COM    | Sensor     | Full Name                                      | Rate (chars/s)             | Status           |
++-------+--------+-----------------------------------------+----------------+--------------+
+| COM3    | GEMK1     | Magnetometer #1 (Port side)                                      | 131.4             | CONNECTED           |
+| COM4    | GEMK2     | Magnetometer #2 (Starboard side)                                      | 127.2             | CONNECTED           |
+| COM5    | GDRAlt     | Radar Altimeter                                      | 86.8             | CONNECTED           |
+| COM6    | GD485     | ADC 4-channel VLF receiver (RS-485 bus)                                      | 0.0             | DISCONNECTED           |
+| COM7    | XSENS     | AHRS / GPS attitude sensor                                      | 593.7             | CONNECTED           |
+| COM8    | GDGPS     | Septentrio differential GPS                                      | 350.3             | CONNECTED           |
+| COM9    | GDSpec     | Medusa Gamma-Ray Spectrometer                                      | 0.0             | DISCONNECTED           |
+| COM10    | GDLas     | Laser Altimeter                                      | 0.0             | DISCONNECTED           |
++-------+--------+-----------------------------------------+----------------+--------------+
+
+c) Mux assignments:
++-----+----------+--------+
+| Mux  | COM Port       | Sensor     |
++-----+----------+--------+
+| M1  | COM7       | XSENS     |
+| M1  | COM5       | GDRAlt     |
+| M1  | COM10       | GDLas     |
+| M1  | COM4       | GEMK2     |
+| M1  | COM3       | GEMK1     |
+| M1  | COM6       | GD485     |
+| M2  | COM9       | GDSpec     |
+| M3  | COM8       | GDGPS     |
++-----+----------+--------+
+
+d) Health warnings:
++----------+-------+------------------------------------------------------------------------+
+| Warning       | Count    | Meaning                                                                     |
++----------+-------+------------------------------------------------------------------------+
+| M1 TimeO       | 24    | Mux1 timeout – sensor on M1 not responding within 80 ms                                                                     |
+| M2 TimeO       | 24    | Mux2 timeout – sensor on M2 not responding within 200 ms                                                                     |
+| Nv WayP       | 24    | Navigation waypoint missing (normal on ground – no flight plan active)                                                                     |
+| M3 TimeO       | 8    | Mux3 timeout – sensor on M3 not responding within 100 ms                                                                     |
++----------+-------+------------------------------------------------------------------------+
+
+e) Critical errors (lines with '!!!!'):
+   [15:02:08.0] 15:02:08.0: MuxSerial::Collector M3 0715fd58 Mux Timeout > 90% of clock!!!!!!!
+
+f) Data files opened:
+   [15:02:03.1] D:\Data\GGA00007.txt
+   [15:02:03.2] D:\Data\MAG00007.txt
+   [15:02:04.0] D:\Data\SPC00007.txt
+
+g) Session timing:
+   Start   : 2026-03-24 15:01:47
+   End     : 2026-03-24 15:17:01.700000
+   Duration: 0:15:14.700000
+
+h) Cfg00007.xml configuration summary:
+   Compensation file : CMP_0043
+   Navigation file   : TestSurveyNav.csv
+   Clock port        : COM1
+   Web host          : BTUAirborne01
+   Survey line num   : 10010
+   Log level         : Normal
+
+   Port configuration (from XML):
++-------+-------+--------+--------+
+| COM    | State    | Baud     | Macro     |
++-------+-------+--------+--------+
+| COM1    | Off    | 115200     | GDgps     |
+| COM2    | Off    | 115200     | GDgps     |
+| COM3    | On    | 115200     | GEMK1     |
+| COM4    | On    | 115200     | GEMK2     |
+| COM5    | On    | 57600     | GDRAlt     |
+| COM6    | On    | 57600     | GD485     |
+| COM7    | On    | 115200     | XSENS     |
+| COM8    | On    | 115200     | GDGPS     |
+| COM9    | On    | 57600     | GDSpec     |
+| COM10    | On    | 19200     | GDLas     |
++-------+-------+--------+--------+
+
+────────────────────────────────────────────────────────────────────────
+STEP 2 — MAG00007.txt
+────────────────────────────────────────────────────────────────────────
+
+  Rows: 735   Columns: 40
+  Fully NaN   : ['Lalt', 'Vlf1', 'Vlf2', 'Vlf3', 'Vlf4']
+  Partial NaN : ['Xgps', 'Ygps', 'Zgps', 'Mag1', 'A1', 'T1', 'X1', 'Y1', 'Z1', 'Mag1D', 'Mag2', 'A2', 'T2', 'X2', 'Y2', 'Z2', 'Mag2D', 'MagL', 'Mag1C', 'Mag2C', 'MagLC', 'Roll', 'Pitch', 'Yaw']
+  Clean       : ['Raltr', 'Ralt']
+
+────────────────────────────────────────────────────────────────────────
+STEP 3 — GGA00007.txt
+────────────────────────────────────────────────────────────────────────
+
+  Rows: 737   Columns: 13
+  Fully NaN   : None
+  Partial NaN : ['Xdgps', 'Ydgps', 'Zdgps', 'dSNo', 'dHdop', 'dDOn', 'dAge', 'dSID']
+  Clean       : None
+
+  GPS quality (mean ± std):
+    Satellites (dSNo): 15.7 ± 1.53
+    HDOP (dHdop)     : 0.65 ± 0.059  [EXCELLENT]
+    Diff age (dAge)  : 14.3 ± 3.93 s
+    Position Xdgps σ : 0.000004°
+    Position Ydgps σ : 0.000002°
+
+────────────────────────────────────────────────────────────────────────
+STEP 4 — SPC00007.txt
+────────────────────────────────────────────────────────────────────────
+
+  Rows: 73   Columns: 26
+  GDSpec (COM9) is DISCONNECTED – spectrometer EM channels are NaN
+  Note: SPC file columns use right-aligned fixed-width boundaries.
+        'Sralt' in SPC = radar alt pass-through (same as MAG Ralt).
+        BaroV/TempV/HumdV = NaN (environmental sensors not active).
+        Sk/Su/Sth = constant default counts (spectrometer powered
+        but no active acquisition since GDSpec is disconnected).
+  Sralt   : mean=0.914  std=0.0000  (Spectrometer radar altimeter (m))  [CONSTANT]
+  Sk      : mean=341810.000  std=0.0000  (Spectrometer potassium channel (K))  [CONSTANT]
+  Su      : mean=251860.000  std=0.0000  (Spectrometer uranium channel (U))  [CONSTANT]
+  Sth     : mean=188895.000  std=0.0000  (Spectrometer thorium channel (Th))  [CONSTANT]
+  Fully NaN    : ['Sxgps', 'Szgps', 'BaroV', 'TempV', 'HumdV', 'Sbaro', 'Stemp', 'Shumd', 'Sreal', 'Slive', 'Srate', 'Sa0', 'Sa1', 'Sa2']
+  Partial NaN  : ['Sygps', 'Sralt']
+  Clean        : ['Sk', 'Su', 'Sth']
+
+────────────────────────────────────────────────────────────────────────
+STEP 5 — Plots  →  outputs/session_007/
+────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────
+STEP 6 — Stability analysis
+────────────────────────────────────────────────────────────────────────
++----------+-------------------------------------------------+-------------+-----------+-------------+-------------+------------------------+
+| Variable       | Description                                              | Mean          | Std        | Min          | Max          | Status                     |
++----------+-------------------------------------------------+-------------+-----------+-------------+-------------+------------------------+
+| Mag1       | Magnetometer 1 total field (nT)                                              | 49358.6666          | 0.3790        | 49358.0694          | 49360.5481          | OK (σ=0.3790)                     |
+| Mag2       | Magnetometer 2 total field (nT)                                              | 52060.3290          | 9150.5874        | 36241.0171          | 67643.1812          | HIGH STD >10.0 nT                     |
+| Mag1C       | Mag1 compensated total field (nT)                                              | 49360.2202          | 0.2074        | 49359.9850          | 49361.7352          | OK (σ=0.2074)                     |
+| Mag2C       | Mag2 compensated total field (nT)                                              | 49461.7620          | 0.0125        | 49461.7497          | 49461.7746          | OK (σ=0.0125)                     |
+| Mag1D       | Mag1 first derivative (nT/s)                                              | -0.0004          | 1.2945        | -3.6708          | 3.1252          | —                     |
+| Mag2D       | Mag2 first derivative (nT/s)                                              | 73.0883          | 424.7513        | -891.3308          | 3837.6336          | —                     |
+| MagL       | Mag2 – Mag1 difference field (nT)                                              | -255.8390          | 866.5348        | -1731.4834          | 1242.1948          | —                     |
+| MagLC       | Compensated Mag2 – Mag1 difference (nT)                                              | -9.4783          | 0.0005        | -9.4788          | -9.4778          | —                     |
+| Roll       | Roll angle (°, XSENS IMU)                                              | -0.0495          | 0.1267        | -0.4000          | 0.3200          | OK (σ=0.1267)                     |
+| Pitch       | Pitch angle (°, XSENS IMU)                                              | -5.6673          | 0.0911        | -5.8600          | -5.4000          | OK (σ=0.0911)                     |
+| Yaw       | Yaw/heading angle (°, XSENS IMU)                                              | -13.8410          | 0.2710        | -14.5000          | -13.2100          | OK (σ=0.2710)                     |
+| Ralt       | Radar altimeter – calibrated (m)                                              | 8.3681          | 56.6959        | -32.9500          | 546.7900          | HIGH STD >0.5 m                     |
+| Raltr       | Radar altimeter – raw channel (m)                                              | 8.3679          | 142.8722        | 0.9100          | 2741.6800          | HIGH STD >0.5 m                     |
+| Xgps       | GPS longitude (°)                                              | 14.1514          | 0.0000        | 14.1514          | 14.1514          | OK (σ=0.0000)                     |
+| Ygps       | GPS latitude (°)                                              | 51.5786          | 0.0000        | 51.5786          | 51.5786          | OK (σ=0.0000)                     |
+| Zgps       | GPS ellipsoidal altitude (m)                                              | 172.4778          | 2.9137        | 160.3000          | 175.1000          | —                     |
+| Xdgps       | Differential GPS longitude (°)                                              | 14.1514          | 0.0000        | 14.1514          | 14.1514          | OK (σ=0.0000)                     |
+| Ydgps       | Differential GPS latitude (°)                                              | 51.5786          | 0.0000        | 51.5786          | 51.5786          | OK (σ=0.0000)                     |
+| Zdgps       | Differential GPS altitude (m)                                              | 115.0598          | 0.2047        | 114.9400          | 115.9500          | —                     |
+| dSNo       | Number of GPS satellites                                              | 15.6574          | 1.5305        | 12.0000          | 17.0000          | —                     |
+| dHdop       | Horizontal dilution of precision (lower=better)                                              | 0.6523          | 0.0591        | 0.6000          | 0.8000          | OK (σ=0.0591)                     |
+| dAge       | Age of differential correction (s)                                              | 14.2969          | 3.9254        | 1.5000          | 23.0000          | —                     |
+| BaroV       | Barometric pressure voltage (V)                                              | —          | —        | —          | —          | NO DATA / DISCONNECTED                     |
+| Sralt       | Spectrometer radar altimeter (m)                                              | 0.9140          | 0.0000        | 0.9140          | 0.9140          | —                     |
+| Sk       | Spectrometer potassium channel (K)                                              | 341810.0000          | 0.0000        | 341810.0000          | 341810.0000          | —                     |
+| Su       | Spectrometer uranium channel (U)                                              | 251860.0000          | 0.0000        | 251860.0000          | 251860.0000          | —                     |
+| Sth       | Spectrometer thorium channel (Th)                                              | 188895.0000          | 0.0000        | 188895.0000          | 188895.0000          | —                     |
+| Sbaro       | Barometric pressure raw counts                                              | —          | —        | —          | —          | NO DATA / DISCONNECTED                     |
+| Stemp       | Temperature raw counts                                              | —          | —        | —          | —          | NO DATA / DISCONNECTED                     |
+| Shumd       | Humidity raw counts                                              | —          | —        | —          | —          | NO DATA / DISCONNECTED                     |
++----------+-------------------------------------------------+-------------+-----------+-------------+-------------+------------------------+
+
+────────────────────────────────────────────────────────────────────────
+STEP 7 — Cross-check EVT vs data files
+────────────────────────────────────────────────────────────────────────
++-------+--------+--------------+--------------------------------------------------------------------------+-------+
+| COM    | Sensor     | EVT Status           | MAG column NaN                                                                       | Match    |
++-------+--------+--------------+--------------------------------------------------------------------------+-------+
+| COM3    | GEMK1     | CONNECTED           | Mag1:PARTIAL(1.1%); Mag1D:PARTIAL(5.4%); Mag1C:PARTIAL(74.7%)                                                                       | OK    |
+| COM4    | GEMK2     | CONNECTED           | Mag2:PARTIAL(6.4%); Mag2D:PARTIAL(35.0%); Mag2C:PARTIAL(99.6%)                                                                       | OK    |
+| COM5    | GDRAlt     | CONNECTED           | Ralt:OK; Raltr:OK                                                                       | OK    |
+| COM6    | GD485     | DISCONNECTED           | MagL:PARTIAL(6.4%); MagLC:PARTIAL(99.6%)                                                                       | OK    |
+| COM7    | XSENS     | CONNECTED           | Roll:PARTIAL(0.8%); Pitch:PARTIAL(0.8%); Yaw:PARTIAL(0.8%)                                                                       | OK    |
+| COM8    | GDGPS     | CONNECTED           | Xgps:PARTIAL(0.8%); Ygps:PARTIAL(0.8%); Zgps:PARTIAL(0.8%); Lalt:ALL_NaN                                                                       | OK    |
+| COM9    | GDSpec     | DISCONNECTED           | Vlf1:ALL_NaN; Vlf2:ALL_NaN; Vlf3:ALL_NaN; Vlf4:ALL_NaN                                                                       | OK    |
+| COM10    | GDLas     | DISCONNECTED           | —                                                                       | OK    |
++-------+--------+--------------+--------------------------------------------------------------------------+-------+
+
+  All sensor statuses consistent between EVT and MAG. ✓
+
+  Mux TimeO vs MAG gaps:
+  Total health warnings: 80 (persistent every ~5-6 s – expected on ground)
+  Mag1: 8/735 NaN rows (1.1%) – gaps likely from Mux TimeO events
+  Mag2: 47/735 NaN rows (6.4%) – gaps likely from Mux TimeO events

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pyenv global:*)",
+      "Bash(python3 -m pip install matplotlib pandas numpy)",
+      "Bash(python3:*)",
+      "Bash(wc:*)",
+      "Bash(ls /mnt/d/Pablo/Repositorios/airborne-data/outputs/*.txt)",
+      "Bash(ls /mnt/d/Pablo/Repositorios/airborne-data/*.md)"
+    ]
+  }
+}

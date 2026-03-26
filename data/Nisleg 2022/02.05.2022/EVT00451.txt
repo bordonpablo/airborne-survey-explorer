@@ -1,0 +1,813 @@
+######.###-ICCS Startup
+######.###-License check succeeded
+######.###-Boot Counter Value -  451
+######.###-Checking SATA/IDE Devices
+######.###-Drive c:\ OK
+######.###-Checking USB Devices
+######.###-Drive g:\ OK
+######.###-Storage folder g:\ -- OK
+######.###-Data folder g:\Data\ -- OK
+######.###-Navigation folder g:\Navigation\ -- OK
+######.###-Compensation folder g:\Compensation -- OK
+######.###-Start Testing g:\
+######.###-Drv[65536]: g:\ - Used: 4% of 14799Mbytes Bin(r/w speed kps): 850/245
+######.###-Starting Event Log
+######.###-Starting .......
+######.###-Drivers installed
+######.###-Settings Loaded from GDini.xml
+######.###-Nav: Loading navigation file [TestSurveyNav.csv]
+######.###-Nav: Navigation file [TestSurveyNav.csv] loaded
+######.###-Navigation TestSurveyNav.csv file loaded
+######.###-Initialising COM1 Baud:115200 Control:00000003
+######.###-      Port COM1 TX ':F0001' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':40001' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':C0000' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':20000' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':0051A' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX ':F0000' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Port COM1 TX '[0a][0d]' done
+######.###-      Port COM1 Sleep for 10ms
+######.###-      Initialise on port COM1 OK
+######.###-Building Settings Window.....
+######.###-Building Startup Window.....
+######.###-Building Configuration Window.....
+######.###-Building Events Window.....
+######.###-Building Compensator.....
+######.###-Compensation CMP_0043 loaded
+######.###-Opening Serial Ports.....
+######.###-      COM3: Macro GEMK1 compiles Baud:115200/None/8/One-None Addr:0xFFF Irq:10 - opened
+######.###-      COM4: Macro GEMK2 compiles Baud:115200/None/8/One-None Addr:0x200 Irq:10 - opened
+######.###-      COM5: Macro GDRAlt compiles Baud:57600/None/8/One-None Addr:0x400 Irq:10 - opened
+######.###-      COM6: Macro GD485 compiles Baud:57600/None/8/One-None Addr:0x600 Irq:10 - opened
+######.###-      COM7: Macro XSENS compiles Baud:115200/None/8/One-None Addr:0x800 Irq:10 - opened
+######.###-      COM8: Macro GDGPS compiles Baud:115200/None/8/One-None Addr:0xA00 Irq:10 - opened
+######.###-      COM9: Macro GDSpec compiles Baud:57600/None/8/One-None Addr:0xC00 Irq:10 - opened
+######.###-      COM10: Macro GDLas compiles Baud:19200/None/8/One-None Addr:0xE00 Irq:10 - opened
+######.###-Character Rate on COM3 is 0.0 chars/second
+######.###-Character Rate on COM4 is 0.0 chars/second
+######.###-Character Rate on COM5 is 0.0 chars/second
+######.###-Character Rate on COM6 is 0.0 chars/second
+######.###-Character Rate on COM7 is 0.0 chars/second
+######.###-Character Rate on COM8 is 0.0 chars/second
+######.###-Character Rate on COM9 is 0.0 chars/second
+######.###-Character Rate on COM10 is 0.0 chars/second
+######.###-Creating Mux M1 0x03652800
+######.###-      Mux1 Macro Mux1 Compiled
+######.###-      Mux1 TxPort: TimeOut:80ms
+######.###-      Mux1 Synch IRQ attached
+######.###-Creating Mux M2 0x03573000
+######.###-      Mux2 Macro Mux2 Compiled
+######.###-      Mux2 TxPort: TimeOut:200ms
+######.###-      Mux2 Synch IRQ attached
+######.###-Creating Mux M3 0x033e9000
+######.###-      Mux3 Macro Mux3 Compiled
+######.###-      Mux3 TxPort: TimeOut:100ms
+######.###-      Mux3 Asynch scheduled
+######.###-Global List Compiled
+######.###-Resolving References
+######.###-      Checking References for Macro for Mux1 
+######.###-      Checking References for Macro for Mux2 
+######.###-      Checking References for Macro for Mux3 
+######.###- Mux M1 is Synch on Bit/1
+######.###-      M1 latches port COM7 runs macro XSENS
+######.###-      M1 latches port COM5 runs macro GDRAlt
+######.###-      M1 latches port COM10 runs macro GDLas
+######.###-      M1 latches port COM4 runs macro GEMK2
+######.###-      M1 latches port COM3 runs macro GEMK1
+######.###-      M1 latches port COM6 runs macro GD485
+######.###- Mux M2 is Synch on Bit/7
+######.###-      M2 latches port COM9 runs macro GDSpec
+######.###- Mux M3 is Asynch on Chr/
+######.###-      M3 latches port COM8 runs macro GDGPS
+######.###-Checking Input Ports uniquely assigned to Mux's
+######.###-Mux1 - Running
+######.###-Mux2 - Running
+######.###-Mux3 - Running
+######.###-DataInterrupts on HWCLOCKPORT Baud=115200 started
+010657.396-Int Data[1e df 9f 9f 9f 9f 9f 9f 9f 9f 9f df 9f 9f 9f 9f 9f 9f 9f 9f 9f df 9f 9f 9f 9f 9f 9f 9f 9f 9f df 9f
+010657.398-Building Terminal Window.....
+010657.539-TerminalWin::NextPort is COM3
+010657.568-Building Analog Window.....
+010657.658-Building Timing Window.....
+010657.664-Building Data Window.....
+010657.666-Building Array Window.....
+010657.670-Building Macro Window.....
+010657.672-Building Gps Window.....
+010657.754-Nav: Loading navigation file [TestSurveyNav.csv]
+010657.835-Nav: Navigation file [TestSurveyNav.csv] loaded
+010658.325-MuxSerial::Collector M1 03652800 Clock Stats over 50 samples. Avg=95.9 Min:101.0 Max:39.0
+010701.229-Streams Started
+010701.429-Health Warning: P7 Overrun|
+010701.429-Health Warning: P8 Overrun|
+010701.429-Health Warning: M1 TimeO|TimeO_COM7|TimeO_COM7_COM10_COM|
+010701.429-Health Warning: M3 TimeO_COM8|
+010701.429-Health Warning: Nv WayP|
+010703.292-Working Config copied to g:\Data\Cfg00451.xml
+010704.203-User acknowledged disclaimer
+010705.663-User confirmed acknowledging disclaimer
+010707.406-Health Warning: M3 TimeO_COM8|
+010707.406-Health Warning: Nv WayP|
+010709.569-Navigator:: Screen Map View selected
+010713.409-Health Warning: M3 TimeO|TimeO_COM8|
+010713.409-Health Warning: Nv WayP|
+010719.409-Health Warning: M3 TimeO_COM8|TimeO|
+010719.409-Health Warning: Nv WayP|
+010725.410-Health Warning: M3 TimeO_COM8|TimeO|
+010725.411-Health Warning: Nv NoRad|
+010731.411-Health Warning: M3 TimeO_COM8|TimeO|
+010737.412-Health Warning: M3 TimeO_COM8|TimeO|
+010742.432-MuxSerial::Collector M2 03573000 Clock Stats over 50 samples. Avg=995.9 Min:1001.0 Max:851.0
+010743.414-Health Warning: M3 TimeO_COM8|TimeO|
+010749.415-Health Warning: M3 TimeO_COM8|TimeO|
+010755.416-Health Warning: M3 TimeO_COM8|TimeO|
+010801.419-Health Warning: M3 TimeO_COM8|TimeO|
+010807.419-Health Warning: M3 TimeO_COM8|
+010813.421-Health Warning: M3 TimeO_COM8|TimeO|
+010819.422-Health Warning: M3 TimeO_COM8|
+010825.424-Health Warning: M3 TimeO_COM8|
+010831.425-Health Warning: M3 TimeO_COM8|TimeO|
+010837.427-Health Warning: M3 TimeO_COM8|TimeO|
+010840.429-Health Warning: M3 TimeO_COM8|TimeO|
+010846.461-Health Warning: M3 TimeO_COM8|
+010852.463-Health Warning: M3 TimeO_COM8|TimeO|
+010858.466-Health Warning: M3 TimeO_COM8|
+010904.458-Health Warning: M3 TimeO_COM8|TimeO|
+010910.461-Health Warning: M3 TimeO_COM8|TimeO|
+010916.462-Health Warning: M3 TimeO_COM8|TimeO|
+010922.463-Health Warning: M3 TimeO_COM8|TimeO|
+010928.465-Health Warning: M3 TimeO|TimeO_COM8|
+010934.465-Health Warning: M3 TimeO|TimeO_COM8|
+010940.467-Health Warning: M3 TimeO|TimeO_COM8|
+010946.470-Health Warning: M3 TimeO|TimeO_COM8|
+010952.471-Health Warning: M3 TimeO_COM8|TimeO|
+010958.474-Health Warning: M3 TimeO_COM8|TimeO|
+011004.475-Health Warning: M3 TimeO_COM8|TimeO|
+011010.478-Health Warning: M3 TimeO_COM8|
+011016.481-Health Warning: M3 TimeO|TimeO_COM8|
+011022.510-Health Warning: M3 TimeO_COM8|TimeO|
+011028.590-Health Warning: M3 TimeO_COM8|TimeO|
+011034.516-Health Warning: M3 TimeO_COM8|TimeO|
+011040.535-Health Warning: M3 TimeO|TimeO_COM8|
+011046.522-Health Warning: M3 TimeO_COM8|TimeO|
+011052.555-Health Warning: M3 TimeO_COM8|TimeO|
+011052.555-Health Warning: Nv NoRad|
+011058.528-Health Warning: M3 TimeO_COM8|
+011104.531-Health Warning: M3 TimeO|TimeO_COM8|
+011110.534-Health Warning: M3 TimeO_COM8|TimeO|
+011116.537-Health Warning: M3 TimeO_COM8|TimeO|
+011122.541-Health Warning: M3 TimeO|TimeO_COM8|
+011128.544-Health Warning: M3 TimeO|TimeO_COM8|
+011134.547-Health Warning: M3 TimeO|TimeO_COM8|
+011140.550-Health Warning: M3 TimeO_COM8|TimeO|
+011146.553-Health Warning: M3 TimeO_COM8|TimeO|
+011152.557-Health Warning: M3 TimeO|TimeO_COM8|
+011158.556-Health Warning: M3 TimeO_COM8|TimeO|
+011204.559-Health Warning: M3 TimeO_COM8|
+011210.562-Health Warning: M3 TimeO|TimeO_COM8|
+011216.567-Health Warning: M3 TimeO|TimeO_COM8|
+011222.567-Health Warning: M3 TimeO_COM8|TimeO|
+011228.569-Health Warning: M3 TimeO_COM8|TimeO|
+011234.571-Health Warning: M3 TimeO_COM8|TimeO|
+011240.581-Health Warning: M3 TimeO_COM8|TimeO|
+011246.584-Health Warning: M3 TimeO_COM8|TimeO|
+011252.587-Health Warning: M3 TimeO_COM8|TimeO|
+011258.590-Health Warning: M3 TimeO_COM8|TimeO|
+011304.594-Health Warning: M3 TimeO_COM8|
+011310.597-Health Warning: M3 TimeO_COM8|TimeO|
+011316.600-Health Warning: M3 TimeO_COM8|TimeO|
+011322.603-Health Warning: M3 TimeO_COM8|TimeO|
+011328.606-Health Warning: M3 TimeO_COM8|
+011334.609-Health Warning: M3 TimeO_COM8|TimeO|
+011340.612-Health Warning: M3 TimeO|TimeO_COM8|
+011346.615-Health Warning: M3 TimeO_COM8|TimeO|
+011352.618-Health Warning: M3 TimeO_COM8|
+011358.621-Health Warning: M3 TimeO_COM8|TimeO|
+011404.626-Health Warning: M3 TimeO_COM8|TimeO|
+011410.628-Health Warning: M3 TimeO_COM8|
+011416.631-Health Warning: M3 TimeO_COM8|TimeO|
+011422.634-Health Warning: M3 TimeO_COM8|TimeO|
+011428.664-Health Warning: M3 TimeO_COM8|
+011434.640-Health Warning: M3 TimeO|
+011440.643-Health Warning: M3 TimeO|TimeO_COM8|
+011446.646-Health Warning: M3 TimeO_COM8|TimeO|
+011452.651-Health Warning: M3 TimeO|
+011458.661-Health Warning: M3 TimeO|TimeO_COM8|
+011504.656-Health Warning: M3 TimeO|TimeO_COM8|
+011510.659-Health Warning: M3 TimeO_COM8|TimeO|
+011516.663-Health Warning: M3 TimeO_COM8|TimeO|
+011522.665-Health Warning: M3 TimeO|TimeO_COM8|
+011528.672-Health Warning: M3 TimeO|TimeO_COM8|
+011534.671-Health Warning: M3 TimeO|TimeO_COM8|
+011540.659-Health Warning: M3 TimeO|TimeO_COM8|
+011546.662-Health Warning: M3 TimeO|TimeO_COM8|
+011552.663-Health Warning: M3 TimeO_COM8|
+011558.666-Health Warning: M3 TimeO|TimeO_COM8|
+011604.669-Health Warning: M3 TimeO|TimeO_COM8|
+011610.672-Health Warning: M3 TimeO_COM8|TimeO|
+011616.675-Health Warning: M3 TimeO|TimeO_COM8|
+011622.678-Health Warning: M3 TimeO|TimeO_COM8|
+011628.681-Health Warning: M3 TimeO_COM8|TimeO|
+011634.684-Health Warning: M3 TimeO_COM8|
+011640.687-Health Warning: M3 TimeO|TimeO_COM8|
+011646.690-Health Warning: M3 TimeO_COM8|TimeO|
+011652.694-Health Warning: M3 TimeO_COM8|TimeO|
+011658.696-Health Warning: M3 TimeO|TimeO_COM8|
+011704.698-Health Warning: M3 TimeO_COM8|TimeO|
+011710.701-Health Warning: M3 TimeO|TimeO_COM8|
+011716.704-Health Warning: M3 TimeO_COM8|TimeO|
+011722.706-Health Warning: M3 TimeO|TimeO_COM8|
+011728.709-Health Warning: M3 TimeO_COM8|TimeO|
+011734.712-Health Warning: M3 TimeO|TimeO_COM8|
+011740.715-Health Warning: M3 TimeO_COM8|TimeO|
+011746.718-Health Warning: M3 TimeO_COM8|
+011752.721-Health Warning: M3 TimeO_COM8|TimeO|
+011758.725-Health Warning: M3 TimeO|
+011804.729-Health Warning: M3 TimeO_COM8|
+011810.733-Health Warning: M3 TimeO_COM8|TimeO|
+011816.737-Health Warning: M3 TimeO_COM8|TimeO|
+011822.761-Health Warning: M3 TimeO|TimeO_COM8|
+011828.763-Health Warning: M3 TimeO_COM8|TimeO|
+011834.765-Health Warning: M3 TimeO|TimeO_COM8|
+011840.768-Health Warning: M3 TimeO|TimeO_COM8|
+011846.771-Health Warning: M3 TimeO_COM8|TimeO|
+011852.774-Health Warning: M3 TimeO_COM8|TimeO|
+011858.778-Health Warning: M3 TimeO|TimeO_COM8|
+011904.781-Health Warning: M3 TimeO|TimeO_COM8|
+011910.784-Health Warning: M3 TimeO_COM8|TimeO|
+011916.787-Health Warning: M3 TimeO|TimeO_COM8|
+011922.790-Health Warning: M3 TimeO|TimeO_COM8|
+011928.793-Health Warning: M3 TimeO_COM8|TimeO|
+011934.796-Health Warning: M3 TimeO|TimeO_COM8|
+011940.799-Health Warning: M3 TimeO_COM8|TimeO|
+011946.776-Health Warning: M3 TimeO|TimeO_COM8|
+011952.779-Health Warning: M3 TimeO_COM8|TimeO|
+011958.782-Health Warning: M3 TimeO_COM8|
+012004.786-Health Warning: M3 TimeO|TimeO_COM8|
+012010.790-Health Warning: M3 TimeO_COM8|
+012016.794-Health Warning: M3 TimeO_COM8|TimeO|
+012022.798-Health Warning: M3 TimeO_COM8|TimeO|
+012028.802-Health Warning: M3 TimeO|TimeO_COM8|
+012034.805-Health Warning: M3 TimeO_COM8|TimeO|
+012040.809-Health Warning: M3 TimeO_COM8|TimeO|
+012046.813-Health Warning: M3 TimeO_COM8|
+012052.818-Health Warning: M3 TimeO_COM8|TimeO|
+012058.821-Health Warning: M3 TimeO|TimeO_COM8|
+012104.825-Health Warning: M3 TimeO_COM8|TimeO|
+012110.829-Health Warning: M3 TimeO_COM8|TimeO|
+012116.832-Health Warning: M3 TimeO_COM8|TimeO|
+012122.836-Health Warning: M3 TimeO_COM8|
+012128.858-Health Warning: M3 TimeO_COM8|TimeO|
+012134.860-Health Warning: M3 TimeO_COM8|TimeO|
+012140.863-Health Warning: M3 TimeO_COM8|TimeO|
+012146.920-Health Warning: M3 TimeO_COM8|TimeO|
+012152.867-Health Warning: M3 TimeO_COM8|TimeO|
+012158.896-Health Warning: M3 TimeO_COM8|TimeO|
+012158.896-Health Warning: Nv NoINS|
+012204.873-Health Warning: M3 TimeO_COM8|TimeO|
+012210.896-Health Warning: M3 TimeO_COM8|
+012216.880-Health Warning: M3 TimeO_COM8|TimeO|
+012222.858-Health Warning: M3 TimeO_COM8|TimeO|
+012228.862-Health Warning: M3 TimeO_COM8|TimeO|
+012234.875-Health Warning: M3 TimeO_COM8|TimeO|
+012240.868-Health Warning: M3 TimeO_COM8|TimeO|
+012246.872-Health Warning: M3 TimeO_COM8|TimeO|
+012252.876-Health Warning: M3 TimeO_COM8|TimeO|
+012258.880-Health Warning: M3 TimeO|TimeO_COM8|
+012304.887-Health Warning: M3 TimeO_COM8|
+012310.888-Health Warning: M3 TimeO|TimeO_COM8|
+012316.892-Health Warning: M3 TimeO_COM8|TimeO|
+012322.897-Health Warning: M3 TimeO|TimeO_COM8|
+012328.901-Health Warning: M3 TimeO|TimeO_COM8|
+012334.905-Health Warning: M3 TimeO_COM8|TimeO|
+012340.909-Health Warning: M3 TimeO_COM8|TimeO|
+012346.913-Health Warning: M3 TimeO|TimeO_COM8|
+012352.917-Health Warning: M3 TimeO|TimeO_COM8|
+012358.921-Health Warning: M3 TimeO_COM8|TimeO|
+012404.926-Health Warning: M3 TimeO_COM8|TimeO|
+012410.931-Health Warning: M3 TimeO|
+012416.935-Health Warning: M3 TimeO_COM8|TimeO|
+012422.939-Health Warning: M3 TimeO|TimeO_COM8|
+012428.943-Health Warning: M3 TimeO_COM8|TimeO|
+012434.947-Health Warning: M3 TimeO_COM8|TimeO|
+012440.952-Health Warning: M3 TimeO_COM8|
+012446.958-Health Warning: M3 TimeO_COM8|TimeO|
+012452.962-Health Warning: M3 TimeO|TimeO_COM8|
+012458.966-Health Warning: M3 TimeO_COM8|TimeO|
+012504.967-Health Warning: M3 TimeO_COM8|TimeO|
+012510.971-Health Warning: M3 TimeO|TimeO_COM8|
+012516.958-Health Warning: M3 TimeO_COM8|TimeO|
+012522.963-Health Warning: M3 TimeO|TimeO_COM8|
+012528.965-Health Warning: M3 TimeO_COM8|TimeO|
+012534.971-Health Warning: M3 TimeO|TimeO_COM8|
+012540.975-Health Warning: M3 TimeO_COM8|TimeO|
+012546.978-Health Warning: M3 TimeO_COM8|TimeO|
+012552.983-Health Warning: M3 TimeO_COM8|TimeO|
+012558.987-Health Warning: M3 TimeO_COM8|TimeO|
+012604.993-Health Warning: M3 TimeO_COM8|
+012610.997-Health Warning: M3 TimeO_COM8|TimeO|
+012617.001-Health Warning: M3 TimeO_COM8|TimeO|
+012623.006-Health Warning: M3 TimeO_COM8|
+012629.012-Health Warning: M3 TimeO_COM8|TimeO|
+012635.015-Health Warning: M3 TimeO|TimeO_COM8|
+012641.018-Health Warning: M3 TimeO|TimeO_COM8|
+012647.021-Health Warning: M3 TimeO_COM8|TimeO|
+012653.024-Health Warning: M3 TimeO|TimeO_COM8|
+012659.027-Health Warning: M3 TimeO|TimeO_COM8|
+012705.031-Health Warning: M3 TimeO_COM8|TimeO|
+012711.034-Health Warning: M3 TimeO_COM8|TimeO|
+012717.037-Health Warning: M3 TimeO_COM8|TimeO|
+012723.040-Health Warning: M3 TimeO|TimeO_COM8|
+012729.043-Health Warning: M3 TimeO_COM8|TimeO|
+012735.020-Health Warning: M3 TimeO_COM8|TimeO|
+012741.025-Health Warning: M3 TimeO_COM8|
+012747.029-Health Warning: M3 TimeO_COM8|
+012753.033-Health Warning: M3 TimeO_COM8|TimeO|
+012759.061-Health Warning: M3 TimeO|TimeO_COM8|
+012805.063-Health Warning: M3 TimeO_COM8|
+012811.065-Health Warning: M3 TimeO_COM8|TimeO|
+012817.068-Health Warning: M3 TimeO_COM8|TimeO|
+012823.071-Health Warning: M3 TimeO_COM8|TimeO|
+012829.074-Health Warning: M3 TimeO_COM8|TimeO|
+012835.077-Health Warning: M3 TimeO_COM8|TimeO|
+012841.081-Health Warning: M3 TimeO_COM8|
+012847.084-Health Warning: M3 TimeO_COM8|TimeO|
+012853.087-Health Warning: M3 TimeO|TimeO_COM8|
+012859.064-Health Warning: M3 TimeO_COM8|TimeO|
+012905.068-Health Warning: M3 TimeO_COM8|TimeO|
+012911.073-Health Warning: M3 TimeO_COM8|TimeO|
+012917.078-Health Warning: M3 TimeO|TimeO_COM8|
+012923.082-Health Warning: M3 TimeO_COM8|TimeO|
+012929.087-Health Warning: M3 TimeO|TimeO_COM8|
+012935.091-Health Warning: M3 TimeO|TimeO_COM8|
+012941.096-Health Warning: M3 TimeO_COM8|TimeO|
+012941.096-Health Warning: Nv NoRad|
+012947.101-Health Warning: M3 TimeO_COM8|TimeO|
+012953.106-Health Warning: M3 TimeO_COM8|
+012959.110-Health Warning: M3 TimeO_COM8|TimeO|
+013005.115-Health Warning: M3 TimeO|TimeO_COM8|
+013011.120-Health Warning: M3 TimeO|TimeO_COM8|
+013017.125-Health Warning: M3 TimeO_COM8|TimeO|
+013023.129-Health Warning: M3 TimeO_COM8|TimeO|
+013029.135-Health Warning: M3 TimeO_COM8|TimeO|
+013035.140-Health Warning: M3 TimeO_COM8|TimeO|
+013041.144-Health Warning: M3 TimeO_COM8|TimeO|
+013047.146-Health Warning: M3 TimeO|TimeO_COM8|
+013053.149-Health Warning: M3 TimeO|TimeO_COM8|
+013059.153-Health Warning: M3 TimeO|TimeO_COM8|
+013105.157-Health Warning: M3 TimeO_COM8|TimeO|
+013111.159-Health Warning: M3 TimeO|TimeO_COM8|
+013117.162-Health Warning: M3 TimeO|TimeO_COM8|
+013117.162-Health Warning: Nv NoINS|
+013123.158-Health Warning: M3 TimeO_COM8|TimeO|
+013129.162-Health Warning: M3 TimeO|TimeO_COM8|
+013135.167-Health Warning: M3 TimeO_COM8|TimeO|
+013141.173-Health Warning: M3 TimeO_COM8|
+013147.178-Health Warning: M3 TimeO|TimeO_COM8|
+013153.181-Health Warning: M3 TimeO|TimeO_COM8|
+013159.184-Health Warning: M3 TimeO_COM8|
+013205.187-Health Warning: M3 TimeO_COM8|TimeO|
+013211.190-Health Warning: M3 TimeO_COM8|TimeO|
+013217.194-Health Warning: M3 TimeO_COM8|TimeO|
+013223.196-Health Warning: M3 TimeO|TimeO_COM8|
+013229.199-Health Warning: M3 TimeO_COM8|TimeO|
+013235.203-Health Warning: M3 TimeO_COM8|TimeO|
+013241.180-Health Warning: M3 TimeO|TimeO_COM8|
+013247.185-Health Warning: M3 TimeO_COM8|TimeO|
+013253.303-Health Warning: M3 TimeO_COM8|
+013259.195-Health Warning: M3 TimeO_COM8|
+013305.906-Health Warning: M3 TimeO_COM8|TimeO|
+013311.683-Health Warning: M3 TimeO_COM8|
+013317.610-Health Warning: M3 TimeO_COM8|TimeO|
+013323.616-Health Warning: M3 TimeO_COM8|TimeO|
+013329.621-Health Warning: M3 TimeO_COM8|TimeO|
+013335.626-Health Warning: M3 TimeO_COM8|TimeO|
+013341.631-Health Warning: M3 TimeO_COM8|
+013347.636-Health Warning: M3 TimeO_COM8|TimeO|
+013353.641-Health Warning: M3 TimeO_COM8|
+013359.646-Health Warning: M3 TimeO_COM8|
+013405.650-Health Warning: M3 TimeO_COM8|TimeO|
+013411.653-Health Warning: M3 TimeO_COM8|TimeO|
+013417.656-Health Warning: M3 TimeO|TimeO_COM8|
+013423.659-Health Warning: M3 TimeO_COM8|TimeO|
+013429.663-Health Warning: M3 TimeO_COM8|TimeO|
+013429.663-Health Warning: Nv NoINS|
+013435.665-Health Warning: M3 TimeO_COM8|TimeO|
+013441.661-Health Warning: M3 TimeO_COM8|TimeO|
+013447.666-Health Warning: M3 TimeO_COM8|TimeO|
+013453.672-Health Warning: M3 TimeO|TimeO_COM8|
+013459.676-Health Warning: M3 TimeO_COM8|
+013505.681-Health Warning: M3 TimeO_COM8|
+013511.684-Health Warning: M3 TimeO_COM8|
+013517.687-Health Warning: M3 TimeO_COM8|
+013523.690-Health Warning: M3 TimeO_COM8|TimeO|
+013529.693-Health Warning: M3 TimeO_COM8|TimeO|
+013535.697-Health Warning: M3 TimeO_COM8|TimeO|
+013541.700-Health Warning: M3 TimeO_COM8|TimeO|
+013547.703-Health Warning: M3 TimeO_COM8|TimeO|
+013553.680-Health Warning: M3 TimeO_COM8|TimeO|
+013559.685-Health Warning: M3 TimeO|TimeO_COM8|
+013605.690-Health Warning: M3 TimeO_COM8|TimeO|
+013611.694-Health Warning: M3 TimeO_COM8|
+013617.699-Health Warning: M3 TimeO_COM8|TimeO|
+013623.704-Health Warning: M3 TimeO_COM8|
+013629.710-Health Warning: M3 TimeO_COM8|TimeO|
+013635.715-Health Warning: M3 TimeO|TimeO_COM8|
+013641.720-Health Warning: M3 TimeO_COM8|TimeO|
+013647.725-Health Warning: M3 TimeO_COM8|TimeO|
+013653.732-Health Warning: M3 TimeO_COM8|TimeO|
+013659.737-Health Warning: M3 TimeO|TimeO_COM8|
+013705.742-Health Warning: M3 TimeO_COM8|TimeO|
+013711.746-Health Warning: M3 TimeO_COM8|TimeO|
+013717.749-Health Warning: M3 TimeO_COM8|TimeO|
+013723.752-Health Warning: M3 TimeO_COM8|
+013729.755-Health Warning: M3 TimeO_COM8|
+013735.759-Health Warning: M3 TimeO_COM8|TimeO|
+013741.761-Health Warning: M3 TimeO|TimeO_COM8|
+013741.762-Health Warning: Nv NoRad|
+013747.758-Health Warning: M3 TimeO_COM8|TimeO|
+013753.763-Health Warning: M3 TimeO_COM8|TimeO|
+013759.769-Health Warning: M3 TimeO|TimeO_COM8|
+013805.774-Health Warning: M3 TimeO_COM8|
+013811.777-Health Warning: M3 TimeO_COM8|TimeO|
+013817.780-Health Warning: M3 TimeO_COM8|TimeO|
+013823.783-Health Warning: M3 TimeO|TimeO_COM8|
+013829.786-Health Warning: M3 TimeO_COM8|TimeO|
+013835.789-Health Warning: M3 TimeO|TimeO_COM8|
+013841.793-Health Warning: M3 TimeO_COM8|
+013847.770-Health Warning: M3 TimeO_COM8|TimeO|
+013853.775-Health Warning: M3 TimeO_COM8|TimeO|
+013859.780-Health Warning: M3 TimeO_COM8|TimeO|
+013905.786-Health Warning: M3 TimeO_COM8|TimeO|
+013911.791-Health Warning: M3 TimeO_COM8|TimeO|
+013917.796-Health Warning: M3 TimeO_COM8|TimeO|
+013923.802-Health Warning: M3 TimeO|TimeO_COM8|
+013929.807-Health Warning: M3 TimeO|TimeO_COM8|
+013935.812-Health Warning: M3 TimeO|TimeO_COM8|
+013941.820-Health Warning: M3 TimeO_COM8|TimeO|
+013947.824-Health Warning: M3 TimeO|TimeO_COM8|
+013953.830-Health Warning: M3 TimeO_COM8|TimeO|
+013959.833-Health Warning: M3 TimeO_COM8|TimeO|
+014005.836-Health Warning: M3 TimeO|TimeO_COM8|
+014011.840-Health Warning: M3 TimeO_COM8|TimeO|
+014017.843-Health Warning: M3 TimeO_COM8|
+014023.846-Health Warning: M3 TimeO|
+014029.849-Health Warning: M3 TimeO_COM8|
+014035.825-Health Warning: M3 TimeO|TimeO_COM8|
+014041.831-Health Warning: M3 TimeO|TimeO_COM8|
+014047.859-Health Warning: M3 TimeO_COM8|TimeO|
+014053.862-Health Warning: M3 TimeO_COM8|
+014059.867-Health Warning: M3 TimeO_COM8|TimeO|
+014105.869-Health Warning: M3 TimeO|TimeO_COM8|
+014111.871-Health Warning: M3 TimeO_COM8|TimeO|
+014117.875-Health Warning: M3 TimeO_COM8|TimeO|
+014123.877-Health Warning: M3 TimeO_COM8|TimeO|
+014129.875-Health Warning: M3 TimeO_COM8|
+014135.862-Health Warning: M3 TimeO_COM8|TimeO|
+014141.865-Health Warning: M3 TimeO_COM8|TimeO|
+014148.563-Health Warning: M3 TimeO_COM8|TimeO|
+014154.277-Health Warning: M3 TimeO_COM8|
+014200.282-Health Warning: M3 TimeO_COM8|TimeO|
+014206.287-Health Warning: M3 TimeO|TimeO_COM8|
+014212.293-Health Warning: M3 TimeO_COM8|TimeO|
+014218.297-Health Warning: M3 TimeO|TimeO_COM8|
+014224.305-Health Warning: M3 TimeO|TimeO_COM8|
+014230.311-Health Warning: M3 TimeO_COM8|TimeO|
+014236.381-Health Warning: M3 TimeO_COM8|TimeO|
+014242.319-Health Warning: M3 TimeO_COM8|TimeO|
+014248.337-Health Warning: M3 TimeO_COM8|
+014254.325-Health Warning: M3 TimeO_COM8|
+014300.344-Health Warning: M3 TimeO|TimeO_COM8|
+014306.331-Health Warning: M3 TimeO_COM8|TimeO|
+014312.309-Health Warning: M3 TimeO_COM8|TimeO|
+014318.313-Health Warning: M3 TimeO_COM8|TimeO|
+014324.319-Health Warning: M3 TimeO_COM8|TimeO|
+014330.324-Health Warning: M3 TimeO_COM8|TimeO|
+014336.329-Health Warning: M3 TimeO_COM8|
+014342.335-Health Warning: M3 TimeO_COM8|TimeO|
+014348.341-Health Warning: M3 TimeO_COM8|
+014354.358-Health Warning: M3 TimeO_COM8|TimeO|
+014400.363-Health Warning: M3 TimeO|TimeO_COM8|
+014406.357-Health Warning: M3 TimeO_COM8|TimeO|
+014412.365-Health Warning: M3 TimeO_COM8|TimeO|
+014418.369-Health Warning: M3 TimeO|TimeO_COM8|
+014424.372-Health Warning: M3 TimeO|TimeO_COM8|
+014430.361-Health Warning: M3 TimeO|TimeO_COM8|
+014436.365-Health Warning: M3 TimeO|TimeO_COM8|
+014442.370-Health Warning: M3 TimeO_COM8|TimeO|
+014448.376-Health Warning: M3 TimeO|TimeO_COM8|
+014454.381-Health Warning: M3 TimeO|TimeO_COM8|
+014500.387-Health Warning: M3 TimeO|TimeO_COM8|
+014506.394-Health Warning: M3 TimeO_COM8|TimeO|
+014512.397-Health Warning: M3 TimeO_COM8|TimeO|
+014518.400-Health Warning: M3 TimeO_COM8|
+014524.403-Health Warning: M3 TimeO_COM8|TimeO|
+014530.407-Health Warning: M3 TimeO_COM8|TimeO|
+014536.410-Health Warning: M3 TimeO_COM8|TimeO|
+014542.386-Health Warning: M3 TimeO_COM8|TimeO|
+014548.391-Health Warning: M3 TimeO_COM8|
+014554.397-Health Warning: M3 TimeO_COM8|
+014600.403-Health Warning: M3 TimeO_COM8|TimeO|
+014606.408-Health Warning: M3 TimeO_COM8|TimeO|
+014612.414-Health Warning: M3 TimeO_COM8|
+014618.419-Health Warning: M3 TimeO|TimeO_COM8|
+014624.425-Health Warning: M3 TimeO|TimeO_COM8|
+014630.430-Health Warning: M3 TimeO_COM8|TimeO|
+014636.436-Health Warning: M3 TimeO_COM8|
+014642.442-Health Warning: M3 TimeO_COM8|TimeO|
+014648.447-Health Warning: M3 TimeO|TimeO_COM8|
+014654.450-Health Warning: M3 TimeO_COM8|TimeO|
+014700.453-Health Warning: M3 TimeO_COM8|TimeO|
+014706.457-Health Warning: M3 TimeO_COM8|TimeO|
+014712.460-Health Warning: M3 TimeO_COM8|TimeO|
+014718.458-Health Warning: M3 TimeO|TimeO_COM8|
+014724.463-Health Warning: M3 TimeO_COM8|TimeO|
+014730.467-Health Warning: M3 TimeO|TimeO_COM8|
+014736.472-Health Warning: M3 TimeO_COM8|
+014742.475-Health Warning: M3 TimeO_COM8|TimeO|
+014748.479-Health Warning: M3 TimeO_COM8|TimeO|
+014754.482-Health Warning: M3 TimeO_COM8|TimeO|
+014800.485-Health Warning: M3 TimeO|TimeO_COM8|
+014806.488-Health Warning: M3 TimeO_COM8|
+014812.466-Health Warning: M3 TimeO_COM8|TimeO|
+014818.472-Health Warning: M2 TimeO_COM9|
+014818.472-Health Warning: M3 TimeO_COM8|TimeO|
+014824.478-Health Warning: M3 TimeO_COM8|TimeO|
+014830.484-Health Warning: M3 TimeO_COM8|TimeO|
+014836.490-Health Warning: M3 TimeO_COM8|TimeO|
+014842.494-Health Warning: M3 TimeO_COM8|TimeO|
+014848.500-Health Warning: M3 TimeO_COM8|TimeO|
+014854.506-Health Warning: M3 TimeO|TimeO_COM8|
+014900.513-Health Warning: M3 TimeO|TimeO_COM8|
+014906.519-Health Warning: M3 TimeO_COM8|TimeO|
+014912.522-Health Warning: M3 TimeO_COM8|TimeO|
+014918.525-Health Warning: M3 TimeO|TimeO_COM8|
+014924.529-Health Warning: M3 TimeO_COM8|TimeO|
+014930.532-Health Warning: M3 TimeO_COM8|TimeO|
+014936.535-Health Warning: M3 TimeO_COM8|TimeO|
+014942.512-Health Warning: M3 TimeO_COM8|TimeO|
+014948.519-Health Warning: M3 TimeO|TimeO_COM8|
+014954.525-Health Warning: M3 TimeO_COM8|TimeO|
+015000.528-Health Warning: M3 TimeO_COM8|TimeO|
+015006.535-Health Warning: M3 TimeO|TimeO_COM8|
+015012.542-Health Warning: M3 TimeO_COM8|TimeO|
+015018.559-Health Warning: M3 TimeO_COM8|TimeO|
+015024.562-Health Warning: M3 TimeO_COM8|TimeO|
+015030.558-Health Warning: M3 TimeO_COM8|TimeO|
+015036.563-Health Warning: M3 TimeO_COM8|TimeO|
+015042.570-Health Warning: M3 TimeO_COM8|
+015048.558-Health Warning: M3 TimeO_COM8|TimeO|
+015054.563-Health Warning: M3 TimeO_COM8|
+015100.566-Health Warning: M3 TimeO_COM8|TimeO|
+015106.572-Health Warning: M3 TimeO_COM8|TimeO|
+015112.579-Health Warning: M3 TimeO|TimeO_COM8|
+015118.583-Health Warning: M3 TimeO_COM8|TimeO|
+015124.588-Health Warning: M3 TimeO|TimeO_COM8|
+015130.594-Health Warning: M3 TimeO_COM8|TimeO|
+015136.597-Health Warning: M3 TimeO_COM8|
+015142.600-Health Warning: M3 TimeO_COM8|
+015148.604-Health Warning: M3 TimeO|TimeO_COM8|
+015154.607-Health Warning: M3 TimeO|TimeO_COM8|
+015200.583-Health Warning: M3 TimeO_COM8|TimeO|
+015206.590-Health Warning: M3 TimeO_COM8|TimeO|
+015212.595-Health Warning: M3 TimeO_COM8|TimeO|
+015218.600-Health Warning: M3 TimeO_COM8|TimeO|
+015224.606-Health Warning: M3 TimeO_COM8|TimeO|
+015230.613-Health Warning: M3 TimeO|TimeO_COM8|
+015236.618-Health Warning: M3 TimeO_COM8|TimeO|
+015242.622-Health Warning: M3 TimeO_COM8|TimeO|
+015248.628-Health Warning: M3 TimeO_COM8|TimeO|
+015254.634-Health Warning: M3 TimeO_COM8|TimeO|
+015300.640-Health Warning: M3 TimeO_COM8|TimeO|
+015306.643-Health Warning: M3 TimeO_COM8|TimeO|
+015312.646-Health Warning: M3 TimeO_COM8|TimeO|
+015318.651-Health Warning: M3 TimeO_COM8|TimeO|
+015324.654-Health Warning: M3 TimeO_COM8|TimeO|
+015330.629-Health Warning: M3 TimeO_COM8|TimeO|
+015336.634-Health Warning: M3 TimeO_COM8|TimeO|
+015342.662-Health Warning: M3 TimeO_COM8|TimeO|
+015348.665-Health Warning: M3 TimeO|TimeO_COM8|
+015354.728-Health Warning: M3 TimeO_COM8|TimeO|
+015400.672-Health Warning: M3 TimeO_COM8|TimeO|
+015406.694-Health Warning: M3 TimeO_COM8|TimeO|
+015412.678-Health Warning: M3 TimeO|TimeO_COM8|
+015418.658-Health Warning: M3 TimeO_COM8|TimeO|
+015424.661-Health Warning: M3 TimeO|TimeO_COM8|
+015430.667-Health Warning: M3 TimeO_COM8|
+015436.673-Health Warning: M3 TimeO_COM8|TimeO|
+015442.678-Health Warning: M3 TimeO_COM8|TimeO|
+015448.684-Health Warning: M3 TimeO_COM8|TimeO|
+015454.690-Health Warning: M3 TimeO|TimeO_COM8|
+015500.696-Health Warning: M3 TimeO|TimeO_COM8|
+015506.702-Health Warning: M3 TimeO|TimeO_COM8|
+015512.709-Health Warning: M3 TimeO_COM8|TimeO|
+015512.710-Health Warning: Nv NoINS|
+015518.712-Health Warning: M3 TimeO_COM8|TimeO|
+015524.715-Health Warning: M3 TimeO_COM8|TimeO|
+015530.719-Health Warning: M3 TimeO_COM8|TimeO|
+015536.722-Health Warning: M3 TimeO_COM8|TimeO|
+015542.725-Health Warning: M3 TimeO_COM8|TimeO|
+015548.702-Health Warning: M3 TimeO_COM8|TimeO|
+015554.708-Health Warning: M3 TimeO_COM8|TimeO|
+015600.714-Health Warning: M3 TimeO_COM8|TimeO|
+015606.720-Health Warning: M3 TimeO_COM8|TimeO|
+015612.726-Health Warning: M3 TimeO_COM8|TimeO|
+015618.732-Health Warning: M3 TimeO|TimeO_COM8|
+015624.737-Health Warning: M3 TimeO_COM8|TimeO|
+015630.744-Health Warning: M3 TimeO_COM8|TimeO|
+015636.749-Health Warning: M3 TimeO_COM8|TimeO|
+015642.756-Health Warning: M3 TimeO_COM8|TimeO|
+015648.760-Health Warning: M3 TimeO_COM8|TimeO|
+015654.762-Health Warning: M3 TimeO_COM8|TimeO|
+015700.766-Health Warning: M3 TimeO|TimeO_COM8|
+015706.760-Health Warning: M3 TimeO_COM8|TimeO|
+015712.764-Health Warning: M3 TimeO_COM8|TimeO|
+015718.770-Health Warning: M3 TimeO_COM8|TimeO|
+015724.775-Health Warning: M3 TimeO_COM8|TimeO|
+015730.805-Health Warning: M3 TimeO_COM8|TimeO|
+015736.784-Health Warning: M3 TimeO_COM8|TimeO|
+015742.787-Health Warning: M3 TimeO_COM8|TimeO|
+015748.791-Health Warning: M3 TimeO_COM8|TimeO|
+015754.794-Health Warning: M3 TimeO_COM8|TimeO|
+015800.791-Health Warning: M3 TimeO_COM8|TimeO|
+015806.776-Health Warning: M3 TimeO|TimeO_COM8|
+015812.781-Health Warning: M3 TimeO_COM8|TimeO|
+015818.787-Health Warning: M3 TimeO_COM8|TimeO|
+015824.794-Health Warning: M3 TimeO_COM8|TimeO|
+015830.804-Health Warning: M3 TimeO_COM8|TimeO|
+015836.805-Health Warning: M3 TimeO_COM8|TimeO|
+015842.811-Health Warning: M3 TimeO_COM8|TimeO|
+015848.815-Health Warning: M3 TimeO_COM8|TimeO|
+015854.822-Health Warning: M3 TimeO_COM8|TimeO|
+015900.829-Health Warning: M3 TimeO_COM8|TimeO|
+015906.832-Health Warning: M3 TimeO_COM8|TimeO|
+015912.834-Health Warning: M3 TimeO_COM8|TimeO|
+015918.838-Health Warning: M3 TimeO_COM8|TimeO|
+015924.843-Health Warning: M3 TimeO_COM8|TimeO|
+015930.845-Health Warning: M3 TimeO_COM8|TimeO|
+015936.822-Health Warning: M3 TimeO_COM8|TimeO|
+015942.828-Health Warning: M3 TimeO_COM8|TimeO|
+015948.833-Health Warning: M3 TimeO_COM8|TimeO|
+015954.858-Health Warning: M3 TimeO_COM8|TimeO|
+020000.863-Health Warning: M3 TimeO_COM8|TimeO|
+020006.863-Health Warning: M3 TimeO_COM8|TimeO|
+020012.867-Health Warning: M3 TimeO_COM8|TimeO|
+020018.870-Health Warning: M3 TimeO|TimeO_COM8|
+020024.866-Health Warning: M3 TimeO_COM8|
+020030.872-Health Warning: M3 TimeO_COM8|TimeO|
+020036.859-Health Warning: M3 TimeO_COM8|TimeO|
+020042.864-Health Warning: M3 TimeO_COM8|TimeO|
+020048.870-Health Warning: M3 TimeO_COM8|TimeO|
+020054.875-Health Warning: M3 TimeO_COM8|TimeO|
+020100.881-Health Warning: M3 TimeO_COM8|TimeO|
+020106.887-Health Warning: M3 TimeO_COM8|TimeO|
+020112.893-Health Warning: M3 TimeO_COM8|TimeO|
+020118.898-Health Warning: M3 TimeO_COM8|TimeO|
+020124.904-Health Warning: M3 TimeO_COM8|TimeO|
+020130.907-Health Warning: M3 TimeO_COM8|TimeO|
+020136.910-Health Warning: M3 TimeO_COM8|TimeO|
+020142.914-Health Warning: M3 TimeO_COM8|TimeO|
+020148.917-Health Warning: M3 TimeO_COM8|TimeO|
+020154.895-Health Warning: M3 TimeO_COM8|TimeO|
+020200.901-Health Warning: M3 TimeO_COM8|TimeO|
+020206.907-Health Warning: M3 TimeO_COM8|TimeO|
+020212.913-Health Warning: M3 TimeO_COM8|TimeO|
+020218.919-Health Warning: M3 TimeO_COM8|TimeO|
+020224.925-Health Warning: M3 TimeO_COM8|TimeO|
+020230.931-Health Warning: M3 TimeO_COM8|TimeO|
+020236.937-Health Warning: M3 TimeO_COM8|TimeO|
+020242.945-Health Warning: M3 TimeO_COM8|TimeO|
+020248.949-Health Warning: M3 TimeO_COM8|TimeO|
+020254.952-Health Warning: M3 TimeO_COM8|TimeO|
+020300.954-Health Warning: M3 TimeO_COM8|TimeO|
+020306.957-Health Warning: M3 TimeO_COM8|TimeO|
+020312.935-Health Warning: M3 TimeO_COM8|TimeO|
+020318.964-Health Warning: M3 TimeO_COM8|TimeO|
+020324.967-Health Warning: M3 TimeO_COM8|
+020330.970-Health Warning: M3 TimeO_COM8|TimeO|
+020336.973-Health Warning: M3 TimeO_COM8|TimeO|
+020342.976-Health Warning: M3 TimeO_COM8|
+020348.975-Health Warning: M3 TimeO_COM8|TimeO|
+020354.963-Health Warning: M3 TimeO_COM8|
+020400.968-Health Warning: M3 TimeO_COM8|TimeO|
+020406.975-Health Warning: M3 TimeO_COM8|TimeO|
+020412.981-Health Warning: M3 TimeO_COM8|TimeO|
+020418.988-Health Warning: M3 TimeO_COM8|TimeO|
+020424.995-Health Warning: M3 TimeO_COM8|TimeO|
+020431.001-Health Warning: M3 TimeO_COM8|TimeO|
+020437.004-Health Warning: M3 TimeO_COM8|TimeO|
+020443.007-Health Warning: M3 TimeO_COM8|TimeO|
+020449.011-Health Warning: M3 TimeO_COM8|TimeO|
+020454.988-Health Warning: M3 TimeO_COM8|TimeO|
+020501.103-Health Warning: M3 TimeO_COM8|TimeO|
+020501.103-Health Warning: Nv KinErr|
+020507.002-Health Warning: M3 TimeO_COM8|TimeO|
+020513.015-Health Warning: M3 TimeO_COM8|TimeO|
+020519.016-Health Warning: M3 TimeO|TimeO_COM8|
+020525.042-Health Warning: M3 TimeO_COM8|TimeO|
+020531.029-Health Warning: M3 TimeO_COM8|TimeO|
+020537.036-Health Warning: M3 TimeO_COM8|TimeO|
+020543.039-Health Warning: M3 TimeO_COM8|
+020549.042-Health Warning: M3 TimeO_COM8|TimeO|
+020555.046-Health Warning: M3 TimeO_COM8|TimeO|
+020601.024-Health Warning: M3 TimeO_COM8|TimeO|
+020607.031-Health Warning: M3 TimeO_COM8|
+020613.038-Health Warning: M3 TimeO_COM8|TimeO|
+020619.059-Health Warning: M3 TimeO_COM8|TimeO|
+020625.063-Health Warning: M3 TimeO_COM8|TimeO|
+020631.058-Health Warning: M3 TimeO_COM8|TimeO|
+020637.067-Health Warning: M3 TimeO_COM8|TimeO|
+020643.071-Health Warning: M3 TimeO_COM8|
+020649.060-Health Warning: M3 TimeO_COM8|TimeO|
+020655.066-Health Warning: M3 TimeO|TimeO_COM8|
+020701.073-Health Warning: M3 TimeO_COM8|TimeO|
+020707.079-Health Warning: M3 TimeO_COM8|TimeO|
+020713.086-Health Warning: M3 TimeO_COM8|
+020719.089-Health Warning: M3 TimeO_COM8|TimeO|
+020725.092-Health Warning: M3 TimeO_COM8|
+020731.096-Health Warning: M3 TimeO_COM8|TimeO|
+020737.073-Health Warning: M3 TimeO_COM8|TimeO|
+020743.079-Health Warning: M3 TimeO_COM8|TimeO|
+020749.086-Health Warning: M3 TimeO_COM8|TimeO|
+020755.093-Health Warning: M3 TimeO_COM8|
+020801.100-Health Warning: M3 TimeO|TimeO_COM8|
+020807.106-Health Warning: M3 TimeO_COM8|
+020813.113-Health Warning: M3 TimeO|TimeO_COM8|
+020819.121-Health Warning: M3 TimeO|TimeO_COM8|
+020825.123-Health Warning: M3 TimeO_COM8|TimeO|
+020831.126-Health Warning: M3 TimeO_COM8|TimeO|
+020837.130-Health Warning: M3 TimeO_COM8|TimeO|
+020843.106-Health Warning: M1 TimeO|
+020843.106-Health Warning: M3 TimeO|TimeO_COM8|
+020849.113-Health Warning: M1 TimeO|
+020849.114-Health Warning: M3 TimeO_COM8|TimeO|
+020855.119-Health Warning: M1 TimeO|
+020855.119-Health Warning: M3 TimeO|TimeO_COM8|
+020901.126-Health Warning: M1 TimeO|
+020901.126-Health Warning: M3 TimeO_COM8|
+020907.133-Health Warning: M3 TimeO|TimeO_COM8|
+020913.138-Health Warning: M3 TimeO_COM8|TimeO|
+020919.145-Health Warning: M3 TimeO_COM8|TimeO|
+020925.153-Health Warning: M3 TimeO_COM8|TimeO|
+020931.158-Health Warning: M3 TimeO_COM8|TimeO|
+020937.160-Health Warning: M1 TimeO|
+020937.160-Health Warning: M3 TimeO_COM8|TimeO|
+020937.160-Health Warning: Nv NoINS|
+020943.163-Health Warning: M3 TimeO_COM8|TimeO|
+020949.159-Health Warning: M3 TimeO_COM8|
+020955.164-Health Warning: M3 TimeO_COM8|TimeO|
+021001.172-Health Warning: M3 TimeO_COM8|
+021007.175-Health Warning: M3 TimeO_COM8|TimeO|
+021013.179-Health Warning: M3 TimeO|TimeO_COM8|
+021019.182-Health Warning: M3 TimeO_COM8|TimeO|
+021025.185-Health Warning: M3 TimeO_COM8|TimeO|
+021031.165-Health Warning: M3 TimeO_COM8|TimeO|
+021037.172-Health Warning: M3 TimeO|TimeO_COM8|
+021043.178-Health Warning: M3 TimeO_COM8|
+021049.185-Health Warning: M3 TimeO_COM8|
+021055.191-Health Warning: M3 TimeO_COM8|
+021101.198-Health Warning: M3 TimeO_COM8|TimeO|
+021107.207-Health Warning: M3 TimeO_COM8|TimeO|
+021113.210-Health Warning: M3 TimeO_COM8|TimeO|
+021119.213-Health Warning: M3 TimeO_COM8|TimeO|
+021125.216-Health Warning: M3 TimeO|TimeO_COM8|
+021131.219-Health Warning: M3 TimeO_COM8|TimeO|
+021137.198-Health Warning: M3 TimeO_COM8|TimeO|
+021143.205-Health Warning: M3 TimeO|TimeO_COM8|
+021149.211-Health Warning: M3 TimeO_COM8|
+021155.218-Health Warning: M3 TimeO|TimeO_COM8|
+021201.225-Health Warning: M3 TimeO_COM8|TimeO|
+021207.231-Health Warning: M3 TimeO|TimeO_COM8|
+021213.239-Health Warning: M3 TimeO_COM8|TimeO|
+021219.245-Health Warning: M3 TimeO_COM8|TimeO|
+021225.247-Health Warning: M3 TimeO|TimeO_COM8|
+021231.251-Health Warning: M3 TimeO_COM8|TimeO|
+021237.254-Health Warning: M3 TimeO_COM8|TimeO|
+021243.231-Health Warning: M3 TimeO_COM8|TimeO|
+021249.261-Health Warning: M3 TimeO_COM8|TimeO|
+021255.263-Health Warning: M3 TimeO|TimeO_COM8|
+021301.266-Health Warning: M3 TimeO_COM8|TimeO|
+021307.269-Health Warning: M3 TimeO_COM8|TimeO|
+021313.273-Health Warning: M3 TimeO|TimeO_COM8|
+021319.272-Health Warning: M3 TimeO|TimeO_COM8|
+021325.258-Health Warning: M3 TimeO|TimeO_COM8|
+021331.263-Health Warning: M3 TimeO_COM8|
+021337.270-Health Warning: M3 TimeO_COM8|TimeO|
+021343.276-Health Warning: M3 TimeO_COM8|TimeO|
+021349.282-Health Warning: M3 TimeO_COM8|TimeO|
+021355.291-Health Warning: M3 TimeO|TimeO_COM8|

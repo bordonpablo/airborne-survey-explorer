@@ -1,0 +1,5 @@
+00447- Rainer (Messung, Surveyline 10390 - 10420, komplet gespeichert nur bis 10410)
+Bei der Linie 10420 fehlen Daten.
+
+00451- Rainer (Messung, Surveyline 10430 - 10440, komplet gespeichert nur bis 10430)
+Bei der Linie 10440 fehlen Daten.

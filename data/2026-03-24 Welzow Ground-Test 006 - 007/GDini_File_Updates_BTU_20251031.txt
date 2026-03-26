@@ -1,0 +1,7 @@
+<Cfg00141_Sync_Mux3.xml> Tested prior to shipment to Germany
+
+COM1 Clock Setup Script added
+Clock Setup String Removed [:20000,,{Turns Clk Off} GGA String Clock COM8 Removed Critical]
+This was removed by GDexe being Hard Coded to send only :F0000,, NOT the Config String
+Multi Clocking on Async COM8 Problem Solved by turning 'MUXSYNC'--'On'
+Mux Testing Script Added Li2013 'Operational System Tests'

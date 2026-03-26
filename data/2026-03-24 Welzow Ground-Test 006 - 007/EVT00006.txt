@@ -1,0 +1,786 @@
+Log file D:\Events\EVT00006.txt opened at Date:20260324 Time:14:34
+14:34:33.6: ICCS Starting
+14:34:33.6: Boot Counter = 6
+14:34:33.6: Process 6336 bumped up in priority
+14:34:33.6: Affinity adjusted from 0x0000000000000015 to 0x0000000000000008
+14:34:33.6: Current Folder is C:\GD\System
+14:34:39.0: Checking USB Devices
+14:34:39.0: Drive D:\ OK
+14:34:39.0: Storage folder D:\Data\ -- OK
+14:34:39.0: Events folder D:\Events\ -- OK
+14:34:39.0: Data folder D:\Data\ -- OK
+14:34:39.0: Navigation folder D:\Navigation\ -- OK
+14:34:39.0: Compensation folder D:\Compensation\ -- OK
+14:34:39.0: Start Testing D:\Data\
+14:34:40.2: Drv[D:\Data\] - Used: 0% of 3716Mbytes 11034/1144
+14:34:40.2: Starting .......
+14:34:40.2: Loading XML Config
+14:34:40.3: Init file C:\GD\System\GDini.xml loaded
+14:34:42.4: Settings Loaded from GDini.xml
+14:34:42.4: Nav: Loading navigation file [TestSurveyNav.csv]
+14:34:42.4: Nav: Navigation file [TestSurveyNav.csv] loaded
+14:34:42.4: Navigation TestSurveyNav.csv file loaded
+14:34:42.4: File System Check done
+14:34:42.4: Building Settings Window.....
+14:34:42.4: Building Startup Window.....
+14:34:42.4: Building Configuration Window.....
+14:34:42.4: Building Colour Window.....
+14:34:42.4: Screen setup done
+14:34:42.4: Building Compensator.....
+14:34:42.4: >>COMPDEBUG>>SetConfigFromXml ptr 0 is NULL
+14:34:42.4: >>COMPDEBUG>>SetConfigFromXml ptr 0 is NULL
+14:34:42.4: >>COMPDEBUG>>MagOn=1 DynOn=0,Elev=6 Reg=10 Dlag=2 Alag=0
+14:34:42.4: >>COMPDEBUG>>Loading Compensation CMP_0043
+14:34:42.8: >>COMPDEBUG>>Aqmode is 
+14:34:42.8: >>COMPDEBUG>>AcquisitionMode is AQ_MODE_RECORD
+14:34:42.8: >>COMPDEBUG>>CompensatorStatus is STATUS_IS_SOLVED
+14:34:42.8: Compensation CMP_0043 loaded
+14:34:42.8: Mag Compensation Setup done
+14:34:42.8: Opening Serial Ports.....
+14:34:42.8:    COM3: Macro GEMK1 OK - 115200/None/8/One-None//
+14:34:42.8:    COM4: Macro GEMK2 OK - 115200/None/8/One-None//
+14:34:42.8:    COM5: Macro GDRAlt OK - 57600/None/8/One-None//
+14:34:42.8:    COM6: Macro GD485 OK - 57600/None/8/One-None//
+14:34:42.8:    COM7: Macro XSENS OK - 115200/None/8/One-None//
+14:34:42.8:    COM8: Macro GDGPS OK - 115200/None/8/One-None//
+14:34:42.8:    COM9: Macro GDSpec OK - 57600/None/8/One-None//
+14:34:42.8:    COM10: Macro GDLas OK - 19200/None/8/One-None//
+14:34:44.4: Testing ports for 5 seconds
+14:34:49.4: Character Rate on COM3 is 130.8 chars/second
+14:34:49.4: Character Rate on COM4 is 131.3 chars/second
+14:34:49.4: Character Rate on COM5 is 89.4 chars/second
+14:34:49.4: Character Rate on COM6 is 0.0 chars/second
+14:34:49.4: Character Rate on COM7 is 599.3 chars/second
+14:34:49.4: Character Rate on COM8 is 326.2 chars/second
+14:34:49.4: Character Rate on COM9 is 0.0 chars/second
+14:34:49.4: Character Rate on COM10 is 0.0 chars/second
+14:34:49.4: Creating Mux M1 0x06d74100
+14:34:49.4:       Mux1 Macro Mux1 Compiled
+14:34:49.4: MuxSerial:M1 Created with timeout=80
+14:34:49.4:       Mux1 TxPort: TimeOut:80ms
+14:34:49.4:       Attached Hardware IRQ Clk:0 Mask:1
+14:34:49.4:       Mux1 Synch IRQ attached
+14:34:49.4: Creating Mux M2 0x06c41c18
+14:34:49.4:       Mux2 Macro Mux2 Compiled
+14:34:49.4: MuxSerial:M2 Created with timeout=200
+14:34:49.4:       Mux2 TxPort: TimeOut:200ms
+14:34:49.4:       Attached Hardware IRQ Clk:1 Mask:64
+14:34:49.4:       Mux2 Synch IRQ attached
+14:34:49.4: Creating Mux M3 0x07177d68
+14:34:49.4:       Mux3 Macro Mux3 Compiled
+14:34:49.4: MuxSerial:M3 Created with timeout=100
+14:34:49.4:       Mux3 TxPort: TimeOut:100ms
+14:34:49.4:       Attached Hardware IRQ Clk:2 Mask:1
+14:34:49.4:       Mux3 Synch IRQ attached
+14:34:49.4: Global List Compiled
+14:34:49.4: Resolving References
+14:34:49.4:       Checking References for Macro for Mux1 
+14:34:49.4:       Checking References for Macro for Mux2 
+14:34:49.4:       Checking References for Macro for Mux3 
+14:34:49.4:  Mux M1 is Synch on Bit/1
+14:34:49.4:       M1 latches port COM7 runs macro XSENS
+14:34:49.4:       M1 latches port COM5 runs macro GDRAlt
+14:34:49.4:       M1 latches port COM10 runs macro GDLas
+14:34:49.4:       M1 latches port COM4 runs macro GEMK2
+14:34:49.4:       M1 latches port COM3 runs macro GEMK1
+14:34:49.5:       M1 latches port COM6 runs macro GD485
+14:34:49.5:  Mux M2 is Synch on Bit/7
+14:34:49.5:       M2 latches port COM9 runs macro GDSpec
+14:34:49.5:  Mux M3 is Synch on Bit/1
+14:34:49.5:       M3 latches port COM8 runs macro GDGPS
+14:34:49.5: Checking Input Ports uniquely assigned to Mux's
+14:34:49.5: Mux1 - Running
+14:34:49.5: Mux2 - Running
+14:34:49.5: Mux3 - Running
+14:34:49.5: Clock Port is defined as COM1 in config
+14:34:49.5: DataInterrupts on COM1 Baud=115200 started
+14:34:49.5: Setup String :F0000[0d][0a] sent
+14:34:49.5: Testing incoming clock for 3 seconds
+14:34:49.6: File: D:\Data\GGA00006.txt opened
+14:34:49.6: File: D:\Data\MAG00006.txt opened
+14:34:49.7: File: D:\Data\SPC00006.txt opened
+14:34:52.5: Int Data[ff bf bf bf bf bf bf bf bf bf ff bf bf bf bf bf bf bf bf bf ff bf bf bf bf bf bf bf bf bf ff ]
+14:34:52.5: Building Terminal Window.....
+14:34:52.5: TerminalWin::NextPort is COM3
+14:34:52.5: Building Analog Window.....
+14:34:52.5: Building Timing Window.....
+14:34:52.5: Building Data Window.....
+14:34:52.5: Building Array Window.....
+14:34:52.5: Building Macro Window.....
+14:34:52.5: Building Gps Window.....
+14:34:52.5: Data Acquisition Setup
+14:34:52.6: Nav: Loading navigation file [TestSurveyNav.csv]
+14:34:52.6: Nav: Navigation file [TestSurveyNav.csv] loaded
+14:34:52.6: Navigation Setup done
+14:34:52.6: Building GUI
+14:34:52.6: Starting GUI
+14:34:52.6: Streams Started...
+14:34:53.4: Working Config copied to D:\Data\Cfg00006.xml
+14:34:54.3: MuxSerial::Collector M3 07177d68 Mux Timeout > 90% of clock!!!!!!!
+14:34:54.6: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:34:54.6: Health Warning: M1 TimeO|
+14:34:54.6: Health Warning: M2 TimeO|
+14:34:54.6: Health Warning: M3 TimeO|
+14:34:54.6: Health Warning: Nv WayP|
+14:35:00.2: Health Warning: M1 TimeO|
+14:35:00.2: Health Warning: M2 TimeO|
+14:35:00.2: Health Warning: Nv WayP|
+14:35:05.9: Health Warning: M1 TimeO|
+14:35:05.9: Health Warning: M2 TimeO|
+14:35:05.9: Health Warning: Nv WayP|
+14:35:11.5: Health Warning: M1 TimeO|
+14:35:11.5: Health Warning: M2 TimeO|
+14:35:11.5: Health Warning: Nv WayP|
+14:35:13.9: User acknowledged disclaimer
+14:35:17.3: Health Warning: M1 TimeO|
+14:35:17.3: Health Warning: M2 TimeO|
+14:35:17.3: Health Warning: Nv WayP|
+14:35:22.9: Health Warning: M1 TimeO|
+14:35:22.9: Health Warning: M2 TimeO|
+14:35:22.9: Health Warning: Nv WayP|
+14:35:28.6: Health Warning: M1 TimeO|
+14:35:28.6: Health Warning: M2 TimeO|
+14:35:28.6: Health Warning: Nv WayP|
+14:35:34.2: Health Warning: M1 TimeO|
+14:35:34.2: Health Warning: M2 TimeO|
+14:35:34.2: Health Warning: Nv WayP|
+14:35:39.8: Health Warning: M1 TimeO|
+14:35:39.8: Health Warning: M2 TimeO|
+14:35:39.8: Health Warning: Nv WayP|
+14:35:45.4: Health Warning: M1 TimeO|
+14:35:45.4: Health Warning: M2 TimeO|
+14:35:45.4: Health Warning: Nv WayP|
+14:35:51.0: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:35:51.0: Health Warning: M1 TimeO|
+14:35:51.0: Health Warning: M2 TimeO|
+14:35:51.0: Health Warning: Nv WayP|
+14:35:56.7: Health Warning: M1 TimeO|
+14:35:56.7: Health Warning: M2 TimeO|
+14:35:56.7: Health Warning: Nv WayP|
+14:36:02.3: Health Warning: M1 TimeO|
+14:36:02.3: Health Warning: M2 TimeO|
+14:36:02.3: Health Warning: Nv WayP|
+14:36:08.0: Health Warning: M1 TimeO|
+14:36:08.0: Health Warning: M2 TimeO|
+14:36:08.0: Health Warning: Nv WayP|
+14:36:13.6: Health Warning: M1 TimeO|
+14:36:13.6: Health Warning: M2 TimeO|
+14:36:13.6: Health Warning: Nv WayP|
+14:36:19.2: Health Warning: M1 TimeO|
+14:36:19.2: Health Warning: M2 TimeO|
+14:36:19.3: Health Warning: Nv WayP|
+14:36:24.9: Health Warning: M1 TimeO|
+14:36:24.9: Health Warning: M2 TimeO|
+14:36:24.9: Health Warning: Nv WayP|
+14:36:30.5: Health Warning: M1 TimeO|
+14:36:30.5: Health Warning: M2 TimeO|
+14:36:30.5: Health Warning: Nv WayP|
+14:36:36.1: Health Warning: M1 TimeO|
+14:36:36.1: Health Warning: M2 TimeO|
+14:36:36.1: Health Warning: Nv WayP|
+14:36:41.8: Health Warning: M1 TimeO|
+14:36:41.8: Health Warning: M2 TimeO|
+14:36:41.8: Health Warning: Nv WayP|
+14:36:47.4: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:36:47.4: Health Warning: M1 TimeO|
+14:36:47.4: Health Warning: M2 TimeO|
+14:36:47.4: Health Warning: Nv WayP|
+14:36:53.0: Health Warning: M1 TimeO|
+14:36:53.0: Health Warning: M2 TimeO|
+14:36:53.1: Health Warning: Nv WayP|
+14:36:58.7: Health Warning: M1 TimeO|
+14:36:58.7: Health Warning: M2 TimeO|
+14:36:58.7: Health Warning: Nv WayP|
+14:37:04.3: Health Warning: M1 TimeO|
+14:37:04.3: Health Warning: M2 TimeO|
+14:37:04.3: Health Warning: Nv WayP|
+14:37:09.9: Health Warning: M1 TimeO|
+14:37:09.9: Health Warning: M2 TimeO|
+14:37:09.9: Health Warning: Nv WayP|
+14:37:15.6: Health Warning: M1 TimeO|
+14:37:15.6: Health Warning: M2 TimeO|
+14:37:15.6: Health Warning: Nv WayP|
+14:37:21.2: Health Warning: M1 TimeO|
+14:37:21.2: Health Warning: M2 TimeO|
+14:37:21.2: Health Warning: Nv WayP|
+14:37:26.8: Health Warning: M1 TimeO|
+14:37:26.8: Health Warning: M2 TimeO|
+14:37:26.9: Health Warning: Nv WayP|
+14:37:32.5: Health Warning: M1 TimeO|
+14:37:32.5: Health Warning: M2 TimeO|
+14:37:32.5: Health Warning: Nv WayP|
+14:37:38.1: Health Warning: M1 TimeO|
+14:37:38.1: Health Warning: M2 TimeO|
+14:37:38.1: Health Warning: Nv WayP|
+14:37:43.7: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:37:43.7: Health Warning: M1 TimeO|
+14:37:43.7: Health Warning: M2 TimeO|
+14:37:43.7: Health Warning: Nv WayP|
+14:37:49.3: Health Warning: M1 TimeO|
+14:37:49.3: Health Warning: M2 TimeO|
+14:37:49.3: Health Warning: Nv WayP|
+14:37:55.0: Health Warning: M1 TimeO|
+14:37:55.0: Health Warning: M2 TimeO|
+14:37:55.0: Health Warning: Nv WayP|
+14:38:00.6: Health Warning: M1 TimeO|
+14:38:00.6: Health Warning: M2 TimeO|
+14:38:00.6: Health Warning: Nv WayP|
+14:38:06.2: Health Warning: M1 TimeO|
+14:38:06.2: Health Warning: M2 TimeO|
+14:38:06.2: Health Warning: Nv WayP|
+14:38:11.9: Health Warning: M1 TimeO|
+14:38:11.9: Health Warning: M2 TimeO|
+14:38:11.9: Health Warning: Nv WayP|
+14:38:17.5: Health Warning: M1 TimeO|
+14:38:17.5: Health Warning: M2 TimeO|
+14:38:17.5: Health Warning: Nv WayP|
+14:38:23.1: Health Warning: M1 TimeO|
+14:38:23.1: Health Warning: M2 TimeO|
+14:38:23.1: Health Warning: Nv WayP|
+14:38:28.7: Health Warning: M1 TimeO|
+14:38:28.7: Health Warning: M2 TimeO|
+14:38:28.7: Health Warning: Nv WayP|
+14:38:34.4: Health Warning: M1 TimeO|
+14:38:34.4: Health Warning: M2 TimeO|
+14:38:34.4: Health Warning: Nv WayP|
+14:38:40.0: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:38:40.0: Health Warning: M1 TimeO|
+14:38:40.0: Health Warning: M2 TimeO|
+14:38:40.0: Health Warning: Nv WayP|
+14:38:45.6: Health Warning: M1 TimeO|
+14:38:45.6: Health Warning: M2 TimeO|
+14:38:45.6: Health Warning: Nv WayP|
+14:38:51.2: Health Warning: M1 TimeO|
+14:38:51.2: Health Warning: M2 TimeO|
+14:38:51.3: Health Warning: Nv WayP|
+14:38:56.9: Health Warning: M1 TimeO|
+14:38:56.9: Health Warning: M2 TimeO|
+14:38:56.9: Health Warning: Nv WayP|
+14:39:02.5: Health Warning: M1 TimeO|
+14:39:02.5: Health Warning: M2 TimeO|
+14:39:02.5: Health Warning: Nv WayP|
+14:39:08.1: Health Warning: M1 TimeO|
+14:39:08.1: Health Warning: M2 TimeO|
+14:39:08.1: Health Warning: Nv WayP|
+14:39:13.7: Health Warning: M1 TimeO|
+14:39:13.7: Health Warning: M2 TimeO|
+14:39:13.8: Health Warning: Nv WayP|
+14:39:19.4: Health Warning: M1 TimeO|
+14:39:19.4: Health Warning: M2 TimeO|
+14:39:19.4: Health Warning: Nv WayP|
+14:39:25.0: Health Warning: M1 TimeO|
+14:39:25.0: Health Warning: M2 TimeO|
+14:39:25.0: Health Warning: Nv WayP|
+14:39:30.6: Health Warning: M1 TimeO|
+14:39:30.6: Health Warning: M2 TimeO|
+14:39:30.6: Health Warning: Nv WayP|
+14:39:36.2: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:39:36.2: Health Warning: M1 TimeO|
+14:39:36.2: Health Warning: M2 TimeO|
+14:39:36.3: Health Warning: Nv WayP|
+14:39:41.9: Health Warning: M1 TimeO|
+14:39:41.9: Health Warning: M2 TimeO|
+14:39:41.9: Health Warning: Nv WayP|
+14:39:47.5: Health Warning: M1 TimeO|
+14:39:47.5: Health Warning: M2 TimeO|
+14:39:47.5: Health Warning: Nv WayP|
+14:39:53.1: Health Warning: M1 TimeO|
+14:39:53.1: Health Warning: M2 TimeO|
+14:39:53.1: Health Warning: Nv WayP|
+14:39:58.7: Health Warning: M1 TimeO|
+14:39:58.7: Health Warning: M2 TimeO|
+14:39:58.8: Health Warning: Nv WayP|
+14:40:04.4: Health Warning: M1 TimeO|
+14:40:04.4: Health Warning: M2 TimeO|
+14:40:04.4: Health Warning: Nv WayP|
+14:40:10.0: Health Warning: M1 TimeO|
+14:40:10.0: Health Warning: M2 TimeO|
+14:40:10.0: Health Warning: Nv WayP|
+14:40:15.6: Health Warning: M1 TimeO|
+14:40:15.6: Health Warning: M2 TimeO|
+14:40:15.6: Health Warning: Nv WayP|
+14:40:21.2: Health Warning: M1 TimeO|
+14:40:21.2: Health Warning: M2 TimeO|
+14:40:21.3: Health Warning: Nv WayP|
+14:40:26.9: Health Warning: M1 TimeO|
+14:40:26.9: Health Warning: M2 TimeO|
+14:40:26.9: Health Warning: Nv WayP|
+14:40:32.5: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:40:32.5: Health Warning: M1 TimeO|
+14:40:32.5: Health Warning: M2 TimeO|
+14:40:32.5: Health Warning: Nv WayP|
+14:40:32.8: User confirmed acknowledging disclaimer
+14:40:38.4: Health Warning: M1 TimeO|
+14:40:38.4: Health Warning: M2 TimeO|
+14:40:38.4: Health Warning: Nv WayP|
+14:40:44.0: Health Warning: M1 TimeO|
+14:40:44.0: Health Warning: M2 TimeO|
+14:40:44.0: Health Warning: Nv WayP|
+14:40:49.6: Health Warning: M1 TimeO|
+14:40:49.6: Health Warning: M2 TimeO|
+14:40:49.6: Health Warning: Nv WayP|
+14:40:55.2: Health Warning: M1 TimeO|
+14:40:55.2: Health Warning: M2 TimeO|
+14:40:55.3: Health Warning: Nv WayP|
+14:41:00.9: Health Warning: M1 TimeO|
+14:41:00.9: Health Warning: M2 TimeO|
+14:41:00.9: Health Warning: Nv WayP|
+14:41:06.5: Health Warning: M1 TimeO|
+14:41:06.5: Health Warning: M2 TimeO|
+14:41:06.5: Health Warning: Nv WayP|
+14:41:12.1: Health Warning: M1 TimeO|
+14:41:12.1: Health Warning: M2 TimeO|
+14:41:12.1: Health Warning: Nv WayP|
+14:41:17.7: Health Warning: M1 TimeO|
+14:41:17.7: Health Warning: M2 TimeO|
+14:41:17.7: Health Warning: Nv WayP|
+14:41:23.4: Health Warning: M1 TimeO|
+14:41:23.4: Health Warning: M2 TimeO|
+14:41:23.4: Health Warning: Nv WayP|
+14:41:29.0: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:41:29.0: Health Warning: M1 TimeO|
+14:41:29.0: Health Warning: M2 TimeO|
+14:41:29.0: Health Warning: Nv WayP|
+14:41:34.6: Health Warning: M1 TimeO|
+14:41:34.6: Health Warning: M2 TimeO|
+14:41:34.6: Health Warning: Nv WayP|
+14:41:40.2: Health Warning: M1 TimeO|
+14:41:40.2: Health Warning: M2 TimeO|
+14:41:40.3: Health Warning: Nv WayP|
+14:41:45.9: Health Warning: M1 TimeO|
+14:41:45.9: Health Warning: M2 TimeO|
+14:41:45.9: Health Warning: Nv WayP|
+14:41:51.5: Health Warning: M1 TimeO|
+14:41:51.5: Health Warning: M2 TimeO|
+14:41:51.5: Health Warning: Nv WayP|
+14:41:57.2: Health Warning: M1 TimeO|
+14:41:57.2: Health Warning: M2 TimeO|
+14:41:57.2: Health Warning: Nv WayP|
+14:42:02.8: Health Warning: M1 TimeO|
+14:42:02.8: Health Warning: M2 TimeO|
+14:42:02.8: Health Warning: Nv WayP|
+14:42:08.5: Health Warning: M1 TimeO|
+14:42:08.5: Health Warning: M2 TimeO|
+14:42:08.5: Health Warning: Nv WayP|
+14:42:14.1: Health Warning: M1 TimeO|
+14:42:14.1: Health Warning: M2 TimeO|
+14:42:14.1: Health Warning: Nv WayP|
+14:42:19.7: Health Warning: M1 TimeO|
+14:42:19.7: Health Warning: M2 TimeO|
+14:42:19.7: Health Warning: Nv WayP|
+14:42:25.4: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:42:25.4: Health Warning: M1 TimeO|
+14:42:25.4: Health Warning: M2 TimeO|
+14:42:25.4: Health Warning: Nv WayP|
+14:42:31.0: Health Warning: M1 TimeO|
+14:42:31.0: Health Warning: M2 TimeO|
+14:42:31.0: Health Warning: Nv WayP|
+14:42:36.6: Health Warning: M1 TimeO|
+14:42:36.6: Health Warning: M2 TimeO|
+14:42:36.6: Health Warning: Nv WayP|
+14:42:42.2: Health Warning: M1 TimeO|
+14:42:42.2: Health Warning: M2 TimeO|
+14:42:42.3: Health Warning: Nv WayP|
+14:42:43.2: Navigator:: Screen Map View selected
+14:42:47.9: Health Warning: M1 TimeO|
+14:42:47.9: Health Warning: M2 TimeO|
+14:42:47.9: Health Warning: M3 TimeO_COM8|
+14:42:47.9: Health Warning: Nv WayP|
+14:42:53.5: Health Warning: M1 TimeO|
+14:42:53.5: Health Warning: M2 TimeO|
+14:42:53.5: Health Warning: Nv WayP|
+14:42:59.1: Health Warning: M1 TimeO|
+14:42:59.1: Health Warning: M2 TimeO|
+14:42:59.1: Health Warning: Nv WayP|
+14:43:04.8: Health Warning: M1 TimeO|
+14:43:04.8: Health Warning: M2 TimeO|
+14:43:04.8: Health Warning: Nv WayP|
+14:43:10.4: Health Warning: M1 TimeO|
+14:43:10.4: Health Warning: M2 TimeO|
+14:43:10.4: Health Warning: Nv WayP|
+14:43:16.0: Health Warning: M1 TimeO|
+14:43:16.0: Health Warning: M2 TimeO|
+14:43:16.0: Health Warning: Nv WayP|
+14:43:21.6: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:43:21.7: Health Warning: M1 TimeO|
+14:43:21.7: Health Warning: M2 TimeO|
+14:43:21.7: Health Warning: Nv WayP|
+14:43:27.3: Health Warning: M1 TimeO|
+14:43:27.3: Health Warning: M2 TimeO|
+14:43:27.3: Health Warning: Nv WayP|
+14:43:32.9: Health Warning: M1 TimeO|
+14:43:32.9: Health Warning: M2 TimeO|
+14:43:32.9: Health Warning: Nv WayP|
+14:43:38.5: Health Warning: M1 TimeO|
+14:43:38.5: Health Warning: M2 TimeO|
+14:43:38.5: Health Warning: Nv WayP|
+14:43:44.1: Health Warning: M1 TimeO|
+14:43:44.1: Health Warning: M2 TimeO|
+14:43:44.2: Health Warning: Nv WayP|
+14:43:49.8: Health Warning: M1 TimeO|
+14:43:49.8: Health Warning: M2 TimeO|
+14:43:49.8: Health Warning: Nv WayP|
+14:43:55.4: Health Warning: M1 TimeO|
+14:43:55.4: Health Warning: M2 TimeO|
+14:43:55.4: Health Warning: Nv WayP|
+14:44:01.0: Health Warning: M1 TimeO|
+14:44:01.0: Health Warning: M2 TimeO|
+14:44:01.0: Health Warning: Nv WayP|
+14:44:06.6: Health Warning: M1 TimeO|
+14:44:06.6: Health Warning: M2 TimeO|
+14:44:06.7: Health Warning: Nv WayP|
+14:44:12.3: Health Warning: M1 TimeO|
+14:44:12.3: Health Warning: M2 TimeO|
+14:44:12.3: Health Warning: Nv WayP|
+14:44:17.9: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:44:17.9: Health Warning: M1 TimeO|
+14:44:17.9: Health Warning: M2 TimeO|
+14:44:17.9: Health Warning: Nv WayP|
+14:44:23.5: Health Warning: M1 TimeO|
+14:44:23.5: Health Warning: M2 TimeO|
+14:44:23.5: Health Warning: Nv WayP|
+14:44:29.2: Health Warning: M1 TimeO|
+14:44:29.2: Health Warning: M2 TimeO|
+14:44:29.2: Health Warning: Nv WayP|
+14:44:34.8: Health Warning: M1 TimeO|
+14:44:34.8: Health Warning: M2 TimeO|
+14:44:34.8: Health Warning: Nv WayP|
+14:44:40.4: Health Warning: M1 TimeO|
+14:44:40.4: Health Warning: M2 TimeO|
+14:44:40.4: Health Warning: Nv WayP|
+14:44:46.1: Health Warning: M1 TimeO|
+14:44:46.1: Health Warning: M2 TimeO|
+14:44:46.1: Health Warning: Nv WayP|
+14:44:51.7: Health Warning: M1 TimeO|
+14:44:51.7: Health Warning: M2 TimeO|
+14:44:51.7: Health Warning: Nv WayP|
+14:44:57.3: Health Warning: M1 TimeO|
+14:44:57.3: Health Warning: M2 TimeO|
+14:44:57.3: Health Warning: Nv WayP|
+14:45:02.9: Health Warning: M1 TimeO|
+14:45:02.9: Health Warning: M2 TimeO|
+14:45:02.9: Health Warning: Nv WayP|
+14:45:08.5: Health Warning: M1 TimeO|
+14:45:08.5: Health Warning: M2 TimeO|
+14:45:08.6: Health Warning: Nv WayP|
+14:45:14.2: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:45:14.2: Health Warning: M1 TimeO|
+14:45:14.2: Health Warning: M2 TimeO|
+14:45:14.2: Health Warning: Nv WayP|
+14:45:19.8: Health Warning: M1 TimeO|
+14:45:19.8: Health Warning: M2 TimeO|
+14:45:19.8: Health Warning: Nv WayP|
+14:45:25.4: Health Warning: M1 TimeO|
+14:45:25.4: Health Warning: M2 TimeO|
+14:45:25.4: Health Warning: Nv WayP|
+14:45:31.0: Health Warning: M1 TimeO|
+14:45:31.0: Health Warning: M2 TimeO|
+14:45:31.1: Health Warning: Nv WayP|
+14:45:36.7: Health Warning: M1 TimeO|
+14:45:36.7: Health Warning: M2 TimeO|
+14:45:36.7: Health Warning: M3 TimeO|
+14:45:36.7: Health Warning: Nv WayP|
+14:45:42.3: Health Warning: M1 TimeO|
+14:45:42.3: Health Warning: M2 TimeO|
+14:45:42.3: Health Warning: Nv WayP|
+14:45:47.9: Health Warning: M1 TimeO|
+14:45:47.9: Health Warning: M2 TimeO|
+14:45:47.9: Health Warning: Nv WayP|
+14:45:53.5: Health Warning: M1 TimeO|
+14:45:53.5: Health Warning: M2 TimeO|
+14:45:53.6: Health Warning: Nv WayP|
+14:45:59.2: Health Warning: M1 TimeO|
+14:45:59.2: Health Warning: M2 TimeO|
+14:45:59.2: Health Warning: Nv WayP|
+14:46:04.8: Health Warning: M1 TimeO|
+14:46:04.8: Health Warning: M2 TimeO|
+14:46:04.8: Health Warning: Nv WayP|
+14:46:10.4: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:46:10.4: Health Warning: M1 TimeO|
+14:46:10.4: Health Warning: M2 TimeO|
+14:46:10.4: Health Warning: Nv WayP|
+14:46:16.0: Health Warning: M1 TimeO|
+14:46:16.0: Health Warning: M2 TimeO|
+14:46:16.1: Health Warning: Nv WayP|
+14:46:21.7: Health Warning: M1 TimeO|
+14:46:21.7: Health Warning: M2 TimeO|
+14:46:21.7: Health Warning: Nv WayP|
+14:46:27.3: Health Warning: M1 TimeO|
+14:46:27.3: Health Warning: M2 TimeO|
+14:46:27.3: Health Warning: Nv WayP|
+14:46:32.9: Health Warning: M1 TimeO|
+14:46:32.9: Health Warning: M2 TimeO|
+14:46:32.9: Health Warning: Nv WayP|
+14:46:38.5: Health Warning: M1 TimeO|
+14:46:38.5: Health Warning: M2 TimeO|
+14:46:38.6: Health Warning: Nv WayP|
+14:46:44.2: Health Warning: M1 TimeO|
+14:46:44.2: Health Warning: M2 TimeO|
+14:46:44.2: Health Warning: Nv WayP|
+14:46:49.8: Health Warning: M1 TimeO|
+14:46:49.8: Health Warning: M2 TimeO|
+14:46:49.8: Health Warning: Nv WayP|
+14:46:55.4: Health Warning: M1 TimeO|
+14:46:55.4: Health Warning: M2 TimeO|
+14:46:55.4: Health Warning: Nv WayP|
+14:47:01.0: Health Warning: M1 TimeO|
+14:47:01.0: Health Warning: M2 TimeO|
+14:47:01.1: Health Warning: Nv WayP|
+14:47:06.7: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:47:06.7: Health Warning: M1 TimeO|
+14:47:06.7: Health Warning: M2 TimeO|
+14:47:06.7: Health Warning: Nv WayP|
+14:47:12.3: Health Warning: M1 TimeO|
+14:47:12.3: Health Warning: M2 TimeO|
+14:47:12.3: Health Warning: Nv WayP|
+14:47:17.9: Health Warning: M1 TimeO|
+14:47:17.9: Health Warning: M2 TimeO|
+14:47:17.9: Health Warning: Nv WayP|
+14:47:23.5: Health Warning: M1 TimeO|
+14:47:23.5: Health Warning: M2 TimeO|
+14:47:23.6: Health Warning: Nv WayP|
+14:47:29.2: Health Warning: M1 TimeO|
+14:47:29.2: Health Warning: M2 TimeO|
+14:47:29.2: Health Warning: Nv WayP|
+14:47:34.8: Health Warning: M1 TimeO|
+14:47:34.8: Health Warning: M2 TimeO|
+14:47:34.8: Health Warning: Nv WayP|
+14:47:40.4: Health Warning: M1 TimeO|
+14:47:40.4: Health Warning: M2 TimeO|
+14:47:40.5: Health Warning: Nv WayP|
+14:47:46.1: Health Warning: M1 TimeO|
+14:47:46.1: Health Warning: M2 TimeO|
+14:47:46.1: Health Warning: Nv WayP|
+14:47:51.7: Health Warning: M1 TimeO|
+14:47:51.7: Health Warning: M2 TimeO|
+14:47:51.7: Health Warning: Nv WayP|
+14:47:57.3: Health Warning: M1 TimeO|
+14:47:57.3: Health Warning: M2 TimeO|
+14:47:57.3: Health Warning: Nv WayP|
+14:48:02.9: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:48:02.9: Health Warning: M1 TimeO|
+14:48:02.9: Health Warning: M2 TimeO|
+14:48:03.0: Health Warning: Nv WayP|
+14:48:08.6: Health Warning: M1 TimeO|
+14:48:08.6: Health Warning: M2 TimeO|
+14:48:08.6: Health Warning: Nv WayP|
+14:48:14.2: Health Warning: M1 TimeO|
+14:48:14.2: Health Warning: M2 TimeO|
+14:48:14.2: Health Warning: Nv WayP|
+14:48:19.8: Health Warning: M1 TimeO|
+14:48:19.8: Health Warning: M2 TimeO|
+14:48:19.8: Health Warning: Nv WayP|
+14:48:25.4: Health Warning: M1 TimeO|
+14:48:25.4: Health Warning: M2 TimeO|
+14:48:25.5: Health Warning: Nv WayP|
+14:48:31.1: Health Warning: M1 TimeO|
+14:48:31.1: Health Warning: M2 TimeO|
+14:48:31.1: Health Warning: Nv WayP|
+14:48:36.7: Health Warning: M1 TimeO|
+14:48:36.7: Health Warning: M2 TimeO|
+14:48:36.7: Health Warning: Nv WayP|
+14:48:42.3: Health Warning: M1 TimeO|
+14:48:42.3: Health Warning: M2 TimeO|
+14:48:42.3: Health Warning: Nv WayP|
+14:48:47.9: Health Warning: M1 TimeO|
+14:48:47.9: Health Warning: M2 TimeO|
+14:48:48.0: Health Warning: Nv WayP|
+14:48:53.6: Health Warning: M1 TimeO|
+14:48:53.6: Health Warning: M2 TimeO|
+14:48:53.6: Health Warning: Nv WayP|
+14:48:59.2: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:48:59.2: Health Warning: M1 TimeO|
+14:48:59.2: Health Warning: M2 TimeO|
+14:48:59.2: Health Warning: Nv WayP|
+14:49:04.8: Health Warning: M1 TimeO|
+14:49:04.8: Health Warning: M2 TimeO|
+14:49:04.8: Health Warning: Nv WayP|
+14:49:10.4: Health Warning: M1 TimeO|
+14:49:10.4: Health Warning: M2 TimeO|
+14:49:10.5: Health Warning: Nv WayP|
+14:49:16.1: Health Warning: M1 TimeO|
+14:49:16.1: Health Warning: M2 TimeO|
+14:49:16.1: Health Warning: Nv WayP|
+14:49:21.7: Health Warning: M1 TimeO|
+14:49:21.7: Health Warning: M2 TimeO|
+14:49:21.7: Health Warning: Nv WayP|
+14:49:27.3: Health Warning: M1 TimeO|
+14:49:27.3: Health Warning: M2 TimeO|
+14:49:27.4: Health Warning: Nv WayP|
+14:49:33.0: Health Warning: M1 TimeO|
+14:49:33.0: Health Warning: M2 TimeO|
+14:49:33.0: Health Warning: Nv WayP|
+14:49:38.6: Health Warning: M1 TimeO|
+14:49:38.6: Health Warning: M2 TimeO|
+14:49:38.6: Health Warning: Nv WayP|
+14:49:44.2: Health Warning: M1 TimeO|
+14:49:44.2: Health Warning: M2 TimeO|
+14:49:44.3: Health Warning: Nv WayP|
+14:49:49.9: Health Warning: M1 TimeO|
+14:49:49.9: Health Warning: M2 TimeO|
+14:49:49.9: Health Warning: Nv WayP|
+14:49:55.5: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:49:55.5: Health Warning: M1 TimeO|
+14:49:55.5: Health Warning: M2 TimeO|
+14:49:55.5: Health Warning: Nv WayP|
+14:50:01.2: Health Warning: M1 TimeO|
+14:50:01.2: Health Warning: M2 TimeO|
+14:50:01.2: Health Warning: Nv WayP|
+14:50:06.8: Health Warning: M1 TimeO|
+14:50:06.8: Health Warning: M2 TimeO|
+14:50:06.8: Health Warning: Nv WayP|
+14:50:12.4: Health Warning: M1 TimeO|
+14:50:12.4: Health Warning: M2 TimeO|
+14:50:12.4: Health Warning: Nv WayP|
+14:50:18.1: Health Warning: M1 TimeO|
+14:50:18.1: Health Warning: M2 TimeO|
+14:50:18.1: Health Warning: Nv WayP|
+14:50:23.7: Health Warning: M1 TimeO|
+14:50:23.7: Health Warning: M2 TimeO|
+14:50:23.7: Health Warning: Nv WayP|
+14:50:29.3: Health Warning: M1 TimeO|
+14:50:29.3: Health Warning: M2 TimeO|
+14:50:29.3: Health Warning: Nv WayP|
+14:50:34.9: Health Warning: M1 TimeO|
+14:50:34.9: Health Warning: M2 TimeO|
+14:50:34.9: Health Warning: Nv WayP|
+14:50:40.6: Health Warning: M1 TimeO|
+14:50:40.6: Health Warning: M2 TimeO|
+14:50:40.6: Health Warning: Nv WayP|
+14:50:46.2: Health Warning: M1 TimeO|
+14:50:46.2: Health Warning: M2 TimeO|
+14:50:46.2: Health Warning: Nv WayP|
+14:50:51.8: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:50:51.8: Health Warning: M1 TimeO|
+14:50:51.8: Health Warning: M2 TimeO|
+14:50:51.8: Health Warning: Nv WayP|
+14:50:57.4: Health Warning: M1 TimeO|
+14:50:57.4: Health Warning: M2 TimeO|
+14:50:57.4: Health Warning: Nv WayP|
+14:51:03.1: Health Warning: M1 TimeO|
+14:51:03.1: Health Warning: M2 TimeO|
+14:51:03.1: Health Warning: Nv WayP|
+14:51:08.7: Health Warning: M1 TimeO|
+14:51:08.7: Health Warning: M2 TimeO|
+14:51:08.7: Health Warning: Nv WayP|
+14:51:14.3: Health Warning: M1 TimeO|
+14:51:14.3: Health Warning: M2 TimeO|
+14:51:14.3: Health Warning: Nv WayP|
+14:51:19.9: Health Warning: M1 TimeO|
+14:51:19.9: Health Warning: M2 TimeO|
+14:51:19.9: Health Warning: Nv WayP|
+14:51:25.5: Health Warning: M1 TimeO|
+14:51:25.5: Health Warning: M2 TimeO|
+14:51:25.6: Health Warning: Nv WayP|
+14:51:31.2: Health Warning: M1 TimeO|
+14:51:31.2: Health Warning: M2 TimeO|
+14:51:31.2: Health Warning: Nv WayP|
+14:51:36.8: Health Warning: M1 TimeO|
+14:51:36.8: Health Warning: M2 TimeO|
+14:51:36.8: Health Warning: Nv WayP|
+14:51:42.4: Health Warning: M1 TimeO|
+14:51:42.4: Health Warning: M2 TimeO|
+14:51:42.4: Health Warning: Nv WayP|
+14:51:48.0: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:51:48.0: Health Warning: M1 TimeO|
+14:51:48.0: Health Warning: M2 TimeO|
+14:51:48.1: Health Warning: Nv WayP|
+14:51:53.7: Health Warning: M1 TimeO|
+14:51:53.7: Health Warning: M2 TimeO|
+14:51:53.7: Health Warning: Nv WayP|
+14:51:59.3: Health Warning: M1 TimeO|
+14:51:59.3: Health Warning: M2 TimeO|
+14:51:59.3: Health Warning: Nv WayP|
+14:52:04.9: Health Warning: M1 TimeO|
+14:52:04.9: Health Warning: M2 TimeO|
+14:52:05.0: Health Warning: Nv WayP|
+14:52:10.6: Health Warning: M1 TimeO|
+14:52:10.6: Health Warning: M2 TimeO|
+14:52:10.6: Health Warning: Nv WayP|
+14:52:16.2: Health Warning: M1 TimeO|
+14:52:16.2: Health Warning: M2 TimeO|
+14:52:16.2: Health Warning: Nv WayP|
+14:52:21.8: Health Warning: M1 TimeO|
+14:52:21.8: Health Warning: M2 TimeO|
+14:52:21.9: Health Warning: Nv WayP|
+14:52:27.5: Health Warning: M1 TimeO|
+14:52:27.5: Health Warning: M2 TimeO|
+14:52:27.5: Health Warning: Nv WayP|
+14:52:33.1: Health Warning: M1 TimeO|
+14:52:33.1: Health Warning: M2 TimeO|
+14:52:33.1: Health Warning: Nv WayP|
+14:52:38.7: Health Warning: M1 TimeO|
+14:52:38.7: Health Warning: M2 TimeO|
+14:52:38.7: Health Warning: Nv WayP|
+14:52:44.3: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:52:44.3: Health Warning: M1 TimeO|
+14:52:44.3: Health Warning: M2 TimeO|
+14:52:44.4: Health Warning: Nv WayP|
+14:52:50.0: Health Warning: M1 TimeO|
+14:52:50.0: Health Warning: M2 TimeO|
+14:52:50.0: Health Warning: Nv WayP|
+14:52:55.6: Health Warning: M1 TimeO|
+14:52:55.6: Health Warning: M2 TimeO|
+14:52:55.6: Health Warning: Nv WayP|
+14:53:01.2: Health Warning: M1 TimeO|
+14:53:01.2: Health Warning: M2 TimeO|
+14:53:01.2: Health Warning: Nv WayP|
+14:53:06.8: Health Warning: M1 TimeO|
+14:53:06.8: Health Warning: M2 TimeO|
+14:53:06.9: Health Warning: Nv WayP|
+14:53:12.5: Health Warning: M1 TimeO|
+14:53:12.5: Health Warning: M2 TimeO|
+14:53:12.5: Health Warning: Nv WayP|
+14:53:18.1: Health Warning: M1 TimeO|
+14:53:18.1: Health Warning: M2 TimeO|
+14:53:18.1: Health Warning: Nv WayP|
+14:53:23.7: Health Warning: M1 TimeO|
+14:53:23.7: Health Warning: M2 TimeO|
+14:53:23.7: Health Warning: Nv WayP|
+14:53:29.4: Health Warning: M1 TimeO|
+14:53:29.4: Health Warning: M2 TimeO|
+14:53:29.4: Health Warning: Nv WayP|
+14:53:35.0: Health Warning: M1 TimeO|
+14:53:35.0: Health Warning: M2 TimeO|
+14:53:35.0: Health Warning: Nv WayP|
+14:53:40.6: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:53:40.6: Health Warning: M1 TimeO|
+14:53:40.6: Health Warning: M2 TimeO|
+14:53:40.6: Health Warning: Nv WayP|
+14:53:46.3: Health Warning: M1 TimeO|
+14:53:46.3: Health Warning: M2 TimeO|
+14:53:46.3: Health Warning: Nv WayP|
+14:53:51.9: Health Warning: M1 TimeO|
+14:53:51.9: Health Warning: M2 TimeO|
+14:53:51.9: Health Warning: Nv WayP|
+14:53:57.5: Health Warning: M1 TimeO|
+14:53:57.5: Health Warning: M2 TimeO|
+14:53:57.5: Health Warning: Nv WayP|
+14:54:03.2: Health Warning: M1 TimeO|
+14:54:03.2: Health Warning: M2 TimeO|
+14:54:03.2: Health Warning: Nv WayP|
+14:54:08.8: Health Warning: M1 TimeO|
+14:54:08.8: Health Warning: M2 TimeO|
+14:54:08.8: Health Warning: Nv WayP|
+14:54:14.4: Health Warning: M1 TimeO|
+14:54:14.4: Health Warning: M2 TimeO|
+14:54:14.4: Health Warning: Nv WayP|
+14:54:20.1: Health Warning: M1 TimeO|
+14:54:20.1: Health Warning: M2 TimeO|
+14:54:20.1: Health Warning: Nv WayP|
+14:54:25.7: Health Warning: M1 TimeO|
+14:54:25.7: Health Warning: M2 TimeO|
+14:54:25.7: Health Warning: Nv WayP|
+14:54:27.0: >>COMPDEBUG>>AcquisitionMode is AQ_MODE_RECORD
+14:54:27.0: >>COMPDEBUG>>CompensatorStatus is STATUS_IS_SOLVED
+14:54:27.0: >>COMPDEBUG>>AcquisitionMode is AQ_MODE_RECORD
+14:54:27.0: >>COMPDEBUG>> BUTTION ON AcquisitionMode is !AQ_MODE_CALIBRATE
+14:54:27.1: Navigator:: Screen Compensate selected
+14:54:31.3: Health Warning: M1 TimeO|
+14:54:31.3: Health Warning: M2 TimeO|
+14:54:31.3: Health Warning: M3 TimeO|
+14:54:31.3: Health Warning: Nv WayP|
+14:54:36.9: Tick OK - 0x0000000000000008 - 0x0000000000000000
+14:54:36.9: Health Warning: M1 TimeO|
+14:54:36.9: Health Warning: M2 TimeO|
+14:54:36.9: Health Warning: Nv WayP|

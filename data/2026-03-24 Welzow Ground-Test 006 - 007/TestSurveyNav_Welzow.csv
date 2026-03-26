@@ -1,0 +1,28 @@
+This file is comma delimited and contains 8 types of records. The first comma separated field denotes the record type.,,
+Valid Values for this first field are:,,
+"	!UTMZone - the UTM zone of the coordinates in the file. Examples are 34S,29N,"
+"	!RadarHeight - the radar specification height,,"
+"	!RadarMin - the radar specification minimim height,,"
+"	!RadarMax - the radar specification maximum height,,"
+"	!CrossTrack - the specified distance off line permitted,,"
+"	!GroundSpeedMin - placeholder, not used currently,"
+"	!GroundSpeedMax - placeholder, not used currently,"
+"	!Coord - a point, line, or polyline."
+"		The first field after the name is an attribute 0=unflown,1=flown,2=flying"
+"		The next field is the label for the entity.,,"
+"		The next field is the number of coordinate triples to make up the entity.,,"
+Any line that does not begin with one of these strings is ignored. So these field are excaped above using a !,,
+Examples below.,,
+
+UTMZone,33N,,,,,,,,
+RadarHeight,80,,,,,,,,
+RadarMin,70,,,,,,,,
+RadarMax,90,,,,,,,,
+CrossTrack,10,,,,,,,,
+CrossAngle,22.5,,,,,,,,
+GroundSpeedMin,60,,,,,,,,
+GroundSpeedMax,100,,,,,,,,
+Coord,1,20010,2,440927,5715310,0,439755,5713765,0
+Coord,1,20020,2,439755,5713765,0,440927,5715310,0
+Coord,1,20030,2,440927,5715310,0,439755,5713765,0
+Coord,1,20040,2,439755,5713765,0,440927,5715310,0

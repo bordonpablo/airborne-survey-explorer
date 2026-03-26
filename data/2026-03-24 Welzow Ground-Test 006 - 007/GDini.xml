@@ -1,0 +1,2292 @@
+<?xml version='1.0' ?>
+<GeoDuster Title='Geoduster Instrument Web'>
+ <GeoDusterFiles Title='File System Maintenance'>
+  <SystemFiles Title='System' Type='Reference' />
+  <StorageFiles Title='Storage' Type='Reference' />
+  <BackupFiles Title='Backup' Type='Reference' />
+ </GeoDusterFiles>
+ <GeoDusterVersion Title='Upload Files'>
+  <UploadSystem Title='System Files' Type='Reference' />
+  <UploadNavigation Title='Navigation Files' Type='Reference' />
+ </GeoDusterVersion>
+ <GeoDusterConfig Title='Control Panel' Name='Default'>
+  <System Title='System' Type='Object'>
+    <Object Tag='CLOCKPORT' Title='Port for clock' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='PORTNUM' Title='Send To' Type='Text'>
+     <MinLength>4</MinLength>
+     <MaxLength>5</MaxLength>
+     <Value>COM1</Value>
+    </Object>
+    <Object Tag='PORTSETUP' Title='Setup' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>200</MaxLength>
+     <Value>baud=115200 parity=N data=8 stop=1</Value>
+    </Object>
+   </Object>
+   <Object Tag='INI1STRING' Title='Initialisation String 1' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='INIDEST' Title='Send To' Type='Text'>
+     <MinLength>4</MinLength>
+     <MaxLength>4</MaxLength>
+     <Value>COM1</Value>
+    </Object>
+    <Object Tag='INISETUP' Title='Setup' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>200</MaxLength>
+     <Value>baud=115200 parity=N data=8 stop=1</Value>
+    </Object>
+    <Object Tag='INISTRING' Title='Initialisation' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>1000</MaxLength>
+     <Value>,:F0001,10,,[0a][0d],10,,:40001,10,,[0a][0d],10,,:C0000,10,,[0a][0d],10,,:20000,10,,[0a][0d],10,,:0051A,10,,[0a][0d],10,,:F0000,10,,[0a][0d],10,,</Value>
+    </Object>
+   </Object>
+   <Object Tag='INI2STRING' Title='Initialisation String 2' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='INIDEST' Title='Send To' Type='Text'>
+     <MinLength>4</MinLength>
+     <MaxLength>4</MaxLength>
+     <Value>COM5</Value>
+    </Object>
+    <Object Tag='INISETUP' Title='Setup' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>200</MaxLength>
+     <Value>baud=115200 parity=N data=8 stop=1</Value>
+    </Object>
+    <Object Tag='INISTRING' Title='Initialisation' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>100</MaxLength>
+     <Value>@**[0d]</Value>
+    </Object>
+   </Object>
+   <Object Tag='INI3STRING' Title='Initialisation String 3' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='INIDEST' Title='Send To' Type='Text'>
+     <MinLength>4</MinLength>
+     <MaxLength>4</MaxLength>
+     <Value>COM2</Value>
+    </Object>
+    <Object Tag='INISETUP' Title='Setup' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>200</MaxLength>
+     <Value>baud=19200 parity=N data=8 stop=1</Value>
+    </Object>
+    <Object Tag='INISTRING' Title='Initialisation' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>100</MaxLength>
+     <Value>T1</Value>
+    </Object>
+   </Object>
+  </System>
+  <General Title='General' Type='Object'>
+   <Object Tag='COMPNAME' Title='Comp Name' Type='Text'>
+    <MinLength>0</MinLength>
+    <MaxLength>30</MaxLength>
+    <Value>CMP_0043</Value>
+   </Object>
+   <Object Tag='NAVNAME' Title='Nav Name' Type='Text'>
+    <MinLength>0</MinLength>
+    <MaxLength>30</MaxLength>
+    <Value>TestSurveyNav.csv</Value>
+   </Object>
+   <Object Tag='NAVFBOX' Title='Distance Front Box' Type='Value'>
+    <MinValue>1</MinValue>
+    <MaxValue>200</MaxValue>
+    <Decimals>0</Decimals>
+    <Value>60</Value>
+   </Object>
+   <Object Tag='NAVBBOX' Title='Distance Back Box' Type='Value'>
+    <MinValue>10</MinValue>
+    <MaxValue>1000</MaxValue>
+    <Decimals>0</Decimals>
+    <Value>10</Value>
+   </Object>
+   <Object Tag='NAVBCNT' Title='Number Of Boxes' Type='Value'>
+    <MinValue>2</MinValue>
+    <MaxValue>10</MaxValue>
+    <Decimals>0</Decimals>
+    <Value>5</Value>
+   </Object>
+   <Object Tag='NAVMAPVBAR' Title='Map View Vertical Bar' Type='Option'>
+    <Enum>Off</Enum>
+    <Enum>Laser</Enum>
+    <Enum>Radar</Enum>
+    <Value>Radar</Value>
+   </Object>
+   <Object Tag='LINENUM' Title='Last Line Flown' Type='Value'>
+    <MinValue>0</MinValue>
+    <MaxValue>99999</MaxValue>
+    <Decimals>0</Decimals>
+    <Value>10010</Value>
+   </Object>
+   <Object Tag='TERMINALSTRING' Title='Port Tx String' Type='Text'>
+    <MinLength>0</MinLength>
+    <MaxLength>30</MaxLength>
+    <Value>#010[0d]</Value>
+   </Object>
+   <Object Tag='EVENTSFILE' Title='Log Events to File' Type='Option'>
+    <Enum>On</Enum>
+    <Enum>Off</Enum>
+    <Value>On</Value>
+   </Object>
+   <Object Tag='EVENTSDEV' Title='Events File on Device' Type='Option'>
+    <Enum>System</Enum>
+    <Enum>Storage</Enum>
+    <Value>Storage</Value>
+   </Object>
+   <Object Tag='LOGLEVEL' Title='Event Logging Level' Type='Option'>
+    <Enum>Normal</Enum>
+    <Enum>Debug1</Enum>
+    <Enum>Debug2</Enum>
+    <Value>Normal</Value>
+   </Object>
+   <Object Tag='WEBON' Title='Enable Web Server' Type='Boolean'>
+    <Enum>On</Enum>
+    <Enum>Off</Enum>
+    <Value>On</Value>
+    <Object Tag='WEBHOST' Title='Host Name' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>20</MaxLength>
+     <Value>BTUAirborne01</Value>
+    </Object>
+    <Object Tag='WEBIP' Title='Static IP Address' Type='Text'>
+     <MinLength>0</MinLength>
+     <MaxLength>15</MaxLength>
+     <Value />
+    </Object>
+   </Object>
+   <Object Tag='LEDFLASH' Title='Flash Led' Type='Option'>
+    <Enum>Off</Enum>
+    <Enum>COM1</Enum>
+    <Enum>COM2</Enum>
+    <Enum>COM3</Enum>
+    <Enum>COM4</Enum>
+    <Enum>COM5</Enum>
+    <Enum>COM6</Enum>
+    <Enum>COM7</Enum>
+    <Enum>COM8</Enum>
+    <Enum>COM9</Enum>
+    <Enum>COM10</Enum>
+    <Value>Off</Value>
+   </Object>
+  </General>
+  <SerialPorts Title='Serial Ports' Type='Object'>
+   <Object Tag='COM1STATE' Title='Serial 1' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>115200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GDgps</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM2STATE' Title='Serial 2' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>115200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GDgps</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM3STATE' Title='Serial 3' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>115200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GEMK1</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM4STATE' Title='Serial 4' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>115200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GEMK2</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM5STATE' Title='Serial 5' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>57600</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GDRAlt</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM6STATE' Title='Serial 6' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>57600</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GD485</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM7STATE' Title='Serial 7' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>115200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>XSENS</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM8STATE' Title='Serial 8' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>115200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GDGPS</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM9STATE' Title='Serial 9' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>57600</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GDSpec</Value>
+    </Object>
+   </Object>
+   <Object Tag='COM10STATE' Title='Serial 10' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='BAUD' Title='Baud Rate' Type='Option'>
+     <Enum>1200</Enum>
+     <Enum>2400</Enum>
+     <Enum>4800</Enum>
+     <Enum>9600</Enum>
+     <Enum>19200</Enum>
+     <Enum>38400</Enum>
+     <Enum>57600</Enum>
+     <Enum>115200</Enum>
+     <Value>19200</Value>
+    </Object>
+    <Object Tag='PARITY' Title='Parity' Type='Option'>
+     <Enum>Even</Enum>
+     <Enum>Mark</Enum>
+     <Enum>None</Enum>
+     <Enum>Odd</Enum>
+     <Enum>Space</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='FLOW' Title='Flow Control' Type='Option'>
+     <Enum>None</Enum>
+     <Enum>CTS/RTS</Enum>
+     <Value>None</Value>
+    </Object>
+    <Object Tag='STOPBITS' Title='Stop Bits' Type='Option'>
+     <Enum>One</Enum>
+     <Enum>Two</Enum>
+     <Value>One</Value>
+    </Object>
+    <Object Tag='DATABITS' Title='Data Bits' Type='Option'>
+     <Enum>7</Enum>
+     <Enum>8</Enum>
+     <Value>8</Value>
+    </Object>
+    <Object Tag='MACRO' Title='PortMacro' Type='List' ListName='PortMacro'>
+     <Value>GDLas</Value>
+    </Object>
+   </Object>
+  </SerialPorts>
+  <Compensation Title='Compensation' Type='Object'>
+   <Object Tag='ELEVCORRN' Title='Elev Corrn Order' Type='Option'>
+    <Enum>0</Enum>
+    <Enum>1</Enum>
+    <Enum>2</Enum>
+    <Enum>3</Enum>
+    <Enum>4</Enum>
+    <Enum>5</Enum>
+    <Enum>6</Enum>
+    <Enum>7</Enum>
+    <Enum>8</Enum>
+    <Value>6</Value>
+   </Object>
+   <Object Tag='REGCORRN' Title='Regional Corrn Order' Type='Option'>
+    <Enum>2</Enum>
+    <Enum>3</Enum>
+    <Enum>4</Enum>
+    <Enum>5</Enum>
+    <Enum>6</Enum>
+    <Enum>7</Enum>
+    <Enum>8</Enum>
+    <Enum>9</Enum>
+    <Enum>10</Enum>
+    <Enum>11</Enum>
+    <Enum>12</Enum>
+    <Value>10</Value>
+   </Object>
+   <Object Tag='USECURRENT' Title='Use Current/s' Type='Option'>
+    <Enum>Yes</Enum>
+    <Enum>No</Enum>
+    <Value>No</Value>
+   </Object>
+   <Object Tag='USEMAG' Title='Use Mag to Orient' Type='Option'>
+    <Enum>Yes</Enum>
+    <Enum>No</Enum>
+    <Value>Yes</Value>
+   </Object>
+   <Object Tag='USEDYNAMICS' Title='Use Dynamics' Type='Option'>
+    <Enum>Yes</Enum>
+    <Enum>No</Enum>
+    <Value>No</Value>
+   </Object>
+   <Object Tag='DFILTCUTOFF' Title='LPass Cutoff(samp)' Type='Option'>
+    <Enum>5</Enum>
+    <Enum>7</Enum>
+    <Enum>10</Enum>
+    <Enum>12</Enum>
+    <Enum>15</Enum>
+    <Enum>20</Enum>
+    <Enum>22</Enum>
+    <Enum>25</Enum>
+    <Enum>30</Enum>
+    <Enum>35</Enum>
+    <Enum>40</Enum>
+    <Enum>45</Enum>
+    <Enum>50</Enum>
+    <Enum>55</Enum>
+    <Enum>60</Enum>
+    <Value>12</Value>
+   </Object>
+   <Object Tag='IRFILTHIGH' Title='IR LPass Right(samp)' Type='Option'>
+    <Enum>50</Enum>
+    <Enum>100</Enum>
+    <Enum>150</Enum>
+    <Enum>200</Enum>
+    <Enum>250</Enum>
+    <Enum>300</Enum>
+    <Enum>350</Enum>
+    <Enum>400</Enum>
+    <Value>150</Value>
+   </Object>
+   <Object Tag='DATALAG' Title='Data Lag' Type='Option'>
+    <Enum>0</Enum>
+    <Enum>1</Enum>
+    <Enum>2</Enum>
+    <Enum>3</Enum>
+    <Enum>4</Enum>
+    <Enum>5</Enum>
+    <Enum>6</Enum>
+    <Enum>7</Enum>
+    <Enum>8</Enum>
+    <Enum>8</Enum>
+    <Enum>10</Enum>
+    <Enum>11</Enum>
+    <Enum>12</Enum>
+    <Enum>13</Enum>
+    <Enum>14</Enum>
+    <Enum>15</Enum>
+    <Enum>16</Enum>
+    <Enum>17</Enum>
+    <Enum>18</Enum>
+    <Enum>19</Enum>
+    <Value>2</Value>
+   </Object>
+   <Object Tag='AHRSLAG' Title='AHRS Lag' Type='Option'>
+    <Enum>0</Enum>
+    <Enum>1</Enum>
+    <Enum>2</Enum>
+    <Enum>3</Enum>
+    <Enum>4</Enum>
+    <Enum>5</Enum>
+    <Enum>6</Enum>
+    <Enum>7</Enum>
+    <Enum>8</Enum>
+    <Enum>8</Enum>
+    <Enum>10</Enum>
+    <Enum>11</Enum>
+    <Enum>12</Enum>
+    <Enum>13</Enum>
+    <Enum>14</Enum>
+    <Enum>15</Enum>
+    <Enum>16</Enum>
+    <Enum>17</Enum>
+    <Enum>18</Enum>
+    <Enum>19</Enum>
+    <Value>0</Value>
+   </Object>
+  </Compensation>
+  <Mux Title='Serial Mux' Type='Object'>
+   <Object Tag='MUX1STATE' Title='Collector 1' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='MACRO' Title='MuxMacro' Type='List' ListName='MuxMacro'>
+     <Value>Mux1</Value>
+    </Object>
+    <Object Tag='TIMEOUT' Title='Mux Timeout(ms)' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>10000</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>80</Value>
+    </Object>
+    <Object Tag='MUXSYNCH' Title='Synchronous' Type='Boolean'>
+     <Enum>Off</Enum>
+     <Enum>On</Enum>
+     <Value>On</Value>
+     <Object Tag='MUXIRQTYPE' Title='Trigger Type' Type='Option'>
+      <Enum>Bit</Enum>
+      <Enum>Character</Enum>
+      <Value>Bit</Value>
+     </Object>
+     <Object Tag='MUXIRQSTRING' Title='Trigger Value' Type='Text'>
+      <MinLength>0</MinLength>
+      <MaxLength>1</MaxLength>
+      <Value>1</Value>
+     </Object>
+    </Object>
+   </Object>
+   <Object Tag='MUX2STATE' Title='Collector 2' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='MACRO' Title='MuxMacro' Type='List' ListName='MuxMacro'>
+     <Value>Mux2</Value>
+    </Object>
+    <Object Tag='TIMEOUT' Title='Mux Timeout(ms)' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>10000</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>200</Value>
+    </Object>
+    <Object Tag='MUXSYNCH' Title='Synchronous' Type='Boolean'>
+     <Enum>Off</Enum>
+     <Enum>On</Enum>
+     <Value>On</Value>
+     <Object Tag='MUXIRQTYPE' Title='Trigger Type' Type='Option'>
+      <Enum>Bit</Enum>
+      <Enum>Character</Enum>
+      <Value>Bit</Value>
+     </Object>
+     <Object Tag='MUXIRQSTRING' Title='Trigger Value' Type='Text'>
+      <MinLength>0</MinLength>
+      <MaxLength>7</MaxLength>
+      <Value>7</Value>
+     </Object>
+    </Object>
+   </Object>
+   <Object Tag='MUX3STATE' Title='Collector 3' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='MACRO' Title='MuxMacro' Type='List' ListName='MuxMacro'>
+     <Value>Mux3</Value>
+    </Object>
+    <Object Tag='TIMEOUT' Title='Mux Timeout(ms)' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>10000</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>100</Value>
+    </Object>
+    <Object Tag='MUXSYNCH' Title='Synchronous' Type='Boolean'>
+     <Enum>Off</Enum>
+     <Enum>On</Enum>
+     <Value>On</Value>
+     <Object Tag='MUXIRQTYPE' Title='Trigger Type' Type='Option'>
+      <Enum>Bit</Enum>
+      <Enum>Character</Enum>
+      <Value>Bit</Value>
+     </Object>
+     <Object Tag='MUXIRQSTRING' Title='Trigger Value' Type='Text'>
+      <MinLength>0</MinLength>
+      <MaxLength>1</MaxLength>
+      <Value>1</Value>
+     </Object>
+    </Object>
+   </Object>
+  </Mux>
+  <Analog Title='Analog' Type='Object'>
+   <Object Tag='ANALOGBUF' Title='Minutes to Buffer' Type='Value'>
+    <MinValue>1</MinValue>
+    <MaxValue>10</MaxValue>
+    <Decimals>0</Decimals>
+    <Value>4</Value>
+   </Object>
+   <Object Tag='ANALOGSCALE' Title='Analog Scale' Type='Value'>
+    <MinValue>0.0001</MinValue>
+    <MaxValue>1000.000</MaxValue>
+    <Decimals>4</Decimals>
+    <Value>180</Value>
+   </Object>
+   <Object Tag='ANALOG1' Title='Analog Channel 1' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Mag1</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>37060.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>12.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>60</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG2' Title='Analog Channel 2' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Mag1C</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>37060.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>12.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>60</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG3' Title='Analog Channel 3' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Mag1D</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-0.500</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>4.500</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>15</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG4' Title='Analog Channel 4' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Mag2</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>37060.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>12.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>60</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG5' Title='Analog Channel 5' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Mag2C</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>37060.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>12.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>60</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG6' Title='Analog Channel 6' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Mag2D</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-0.500</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>4.500</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>15</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG7' Title='Analog Channel 7' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Roll</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-7.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>14.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>100</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>100</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>15</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG8' Title='Analog Channel 8' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Pitch</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-7.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>14.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>15</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG9' Title='Analog Channel 9' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Yaw</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-200.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>400.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>15</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG10' Title='Analog Channel 10' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>?</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>0</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG11' Title='Analog Channel 1' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>MagL</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>5.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>2.200</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG12' Title='Analog Channel 2' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>MagLC</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>5.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>2.200</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG13' Title='Analog Channel 3' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Lalt</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>26.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>1.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG14' Title='Analog Channel 4' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Ralt</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>74298.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.100</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG15' Title='Analog Channel 5' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>?</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-1</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>2</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Clip</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG16' Title='Analog Channel 6' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>?</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-0.01</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.02</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Clip</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG17' Title='Analog Channel 7' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>?</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-0.01</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.02</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>100</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>100</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Clip</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG18' Title='Analog Channel 8' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>?</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-0.01</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.02</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Clip</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG19' Title='Analog Channel 9' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Cz</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>-1.0</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>2.0</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Clip</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG20' Title='Analog Channel 10' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Glon</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>10.0</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Clip</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG21' Title='Analog Channel 1' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Su</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>900.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>300.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>70</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG22' Title='Analog Channel 2' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Sth</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>4.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>18.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>70</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG23' Title='Analog Channel 3' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Sk</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.000</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>45.000</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>70</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>95</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG24' Title='Analog Channel 4' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Stemp</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.165</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.025</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG25' Title='Analog Channel 5' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Shumd</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>1.990</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.100</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG26' Title='Analog Channel 6' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Spres</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>4.544</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.014</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG27' Title='Analog Channel 7' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Sreal</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.985</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.030</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>100</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>0</MinValue>
+     <MaxValue>100</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG28' Title='Analog Channel 8' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>On</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Slive</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.972</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.012</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>25</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Normal</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG29' Title='Analog Channel 9' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>Z</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0.0</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>100.0</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Normal</Enum>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+   <Object Tag='ANALOG30' Title='Analog Channel 10' Type='Boolean'>
+    <Enum>Off</Enum>
+    <Enum>On</Enum>
+    <Value>Off</Value>
+    <Object Tag='NAME' Title='Channel Name' Type='Text'>
+     <MinLength>1</MinLength>
+     <MaxLength>8</MaxLength>
+     <Value>T</Value>
+    </Object>
+    <Object Tag='DATABASE' Title='Data Base' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>0</Value>
+    </Object>
+    <Object Tag='DATARANGE' Title='Data Range' Type='Value'>
+     <MinValue>-1000000</MinValue>
+     <MaxValue>1000000</MaxValue>
+     <Decimals>3</Decimals>
+     <Value>60.0</Value>
+    </Object>
+    <Object Tag='SCREENBASE' Title='Screen Base' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>5</Value>
+    </Object>
+    <Object Tag='SCREENTOP' Title='Screen Range' Type='Value'>
+     <MinValue>5</MinValue>
+     <MaxValue>95</MaxValue>
+     <Decimals>0</Decimals>
+     <Value>50</Value>
+    </Object>
+    <Object Tag='SCREENTYPE' Title='Screen Type' Type='Option'>
+     <Enum>Clip</Enum>
+     <Enum>Wrap</Enum>
+     <Value>Wrap</Value>
+    </Object>
+   </Object>
+  </Analog>
+ </GeoDusterConfig>
+ <GeoDusterMonitors Title='Operating System Tests'>
+pMuxParent- &gt; GetName()Mux1  <HealthCheck Title='Status Monitor' Type='Reference' />
+  <ObjectList Title='Active Object List' Type='Reference' />
+  <ProcessorCPU Title='System Metrics' Type='Reference' />
+  <SerialMon Title='Serial Ports Monitor' Type='Reference' />
+  <UsbMon Title='USB Monitor' Type='Reference' />
+  <UsbMon Title='USB Monitor' Type='Reference' />
+ </GeoDusterMonitors>
+ <GeoDusterLists>
+  <PortMacro Name='GEMK1' Whitespace='preserve'>
+// PortMacro::GEMK1
+// The lines below for hemisphere switching
+// Hmag1[7:2] = GetKineticValue(Heading);
+// Rval1[20:0] = RequestDelayedFormatted(20,Hmag1,#M1,%03.0f,0x0d0a,0x234d310d0a)
+// The line below(commented) is for the request based mags
+// Dm1[20:0] = RequestDelayed(10,0x234d310d0a)
+// For parsing data from a GEM mag:
+// $M1,50707.1061,0,1,0, 49,0037,001
+// $M2,49554.8240,0,1,0, 49,0041,299
+// 123456789012345678901234567890123
+// the stream is 33 characters issued after the hardware clock and request with heading.
+// Block the incoming data stream from $M1 for 29(35) characters
+ Dm11[35:0] = ParseCount($M1,29,1)
+// Perform the post of the data to the mux.
+ Dm111[35:0] = Post(Dm11)
+    </PortMacro>
+  <PortMacro Name='GEMK2' Whitespace='preserve'>
+// PortMacro::GEMK2
+// The lines below for hemisphere switching
+// Hmag2[7:2] = GetKineticValue(Heading);
+// Rval2[20:0] = RequestDelayedFormatted(20,Hmag2,#M2,%03.0f,0x0d0a,0x234d320d0a)
+// The line below(commented) is for the request based mags
+// Dm2[20:0] = RequestDelayed(10,0x234d320d0a)
+// For parsing data from a GEM mag:
+// $M1,50707.1061,0,1,0, 49,0037,001
+// $M2,49554.8240,0,1,0, 49,0041,299
+// 123456789012345678901234567890123
+// the stream is 33 characters issued after the hardware clock and request with heading.
+// Block the incoming data stream from $M2 for 29(35) characters
+ Dm22[35:0] = ParseCount($M2,29,1)
+// Perform the post of the data to the mux.
+ Dm222[35:0] = Post(Dm22)
+    </PortMacro>
+  <PortMacro Name='XSENS' Whitespace='preserve'>
+// PortMacro::XSENS
+// Xsens device emits 140 characters after the clock
+
+// Block the incoming data stream from the hex preamble for 140(145) characters
+Dxsns[145:0] = ParseCount(0xFAFF3287,140,1)
+
+// Perform the post of the data to the mux.
+Dxsnsp[144:0] = Post(Dxsns)
+    </PortMacro>
+  <PortMacro Name='GDLas' Whitespace='preserve'>
+// PortMacro::GDLas
+// added 5 for sequence number lengths were 25(30)
+////Dlr[30:0] = Request(0x234c30310d0a)
+////Dld[30:0] = ParseCount($,25,1)
+////Dldp[30:0] = Post(Dld)
+//Dld[10:0] = ParseCount(0x0d0a,9,1)
+Dld[14:0] = ParseFromTo($LAS,0x0d0a,1,0)
+Dldp[14:0] = Post(Dld)
+    </PortMacro>
+  <PortMacro Name='GDGPS' Whitespace='preserve'>
+// PortMacro::GDGPS
+// parses a zda string from the port
+// Dzda1[34:0] = ParseFromTo($GPZDA,0x0d0a,1,0)
+// parses a gga string from the port
+Dgga1[86:0] = ParseFromTo($GPGGA,0x0d0a,1,0)
+// Dgps[120:0] = Concat(Dzda1,Dgga1)
+// Dgpsp[80:0] = Post(Dgps)
+Dgpsp[80:0] = Post(Dgga1)
+    </PortMacro>
+  <PortMacro Name='GD485' Whitespace='preserve'>
+//PortMacro::GD485
+D1r[8:0] = Request(0x2330310d)
+///D1[8:0] = ParseCount(&gt;,8,1)
+D1[38:0] = ParseCount(&gt;,36,1)
+// D2r[8:0] = Request(0x2330320d)
+////D2r[8:0] = RequestDelayed(10,0x2330320d)
+////D2[8:0] = ParseCount(&gt;,8,1)
+// D3r[8:0] = Request(0x2330330d)
+////D3r[8:0] = RequestDelayed(10,0x2330330d)
+// added 5 for sequence number lengths were 24(62)
+////D3[24:0] = ParseCount(&gt;,24,1)
+// added 5 for sequence number lengths were 40(80)
+////D485[40:0] = Concat(D1,D2,D3)
+////D485p[40:0] = Post(D485)
+////D1p represented single channel ADC 7012F now 5ch
+// D1p[10:0] = Post(D1)
+ D1p[38:0] = Post(D1)
+    </PortMacro>
+  <PortMacro Name='GDRAlt' Whitespace='preserve'>
+// PortMacro::GDRalt
+// Block the incoming data stream from 0x10 0xDF 0x03 for 7 bytes
+Dralt[8:0] = ParseCount(0x10DF03,7,1)
+// Perform the post of the data to the mux
+Draltp[8:0] = Post(Dralt)
+    </PortMacro>
+  <PortMacro Name='GDSpec' Whitespace='preserve'>
+//PortMacro::GDSpec
+//Send request of #S01\r\n
+Dspc55[8:0] = Request(0x235330310d0a)
+// 584 bytes in the message but first one is skipped so parse 583
+// doesnt seem to work for 583 - possibly a fault in simulator
+// parse from &apos;SBC&apos; for 582 bytes
+Dspec[584:0] = ParseCount(SBC,583,1)
+// perform the post
+Dspecp[584:0] = Post(Dspec)
+    </PortMacro>
+  <MuxMacro Name='Mux1' Whitespace='preserve'>
+// MuxMacro::Mux1
+// get active waypoint and synch the clock
+ Wayp[7:0] = GetActiveWaypoint(void)
+
+ Dt2[25:0] = SynchClockToXsens(Dxsns,127,0xFAFF3287)
+
+ Date[9:0]  = GetDate(void)
+ Time[11:0] = GetTime(void)
+
+ Xgps[15:8] = ExtractXsens1632(Dxsns,94,0xFAFF3287)
+ Ygps[15:8] = ExtractXsens1632(Dxsns,88,0xFAFF3287)
+ Zgps[7:1]  = ExtractXsens1632(Dxsns,100,0xFAFF3287)
+
+ UTM[12:3] = ConvertToUtm(Xgps,Ygps)
+
+ Quat[10:6] = ExtractXsensArray1632(Dxsns,64,4,0xFAFF3287)
+ Roll[9:2]  = QuatToRoll(Quat)
+ Pitch[9:2] = QuatToPitch(Quat)
+ Yaw[9:2]   = QuatToYaw(Quat)
+
+// Three parameters needed in V1.14 to establish Declination for position
+ Hdg[9:2]   = QuatToHeading(Quat,Xgps,Ygps)
+
+ CalData[12:8] = ExtractXsensArray1632(Dxsns,10,9,0xFAFF3287)
+ VelData[10:6] = ExtractXsensArray1632(Dxsns,106,3,0xFAFF3287)
+
+ Bin[258:0] = ToHex(Dxsns,0,128)
+
+ Xst[4:0] = ExIEEEByteU(Dxsns,124)
+ Xpr[4:0] = ExtractXsensParity(Dxsns,0xFAFF3287);
+
+// Extract the hi byte
+ByteH[4:0] = ExIEEEByteU(Dralt,3)
+// Extract the lo byte
+ByteL[4:0] = ExIEEEByteU(Dralt,4)
+// Extract the status
+ByteS[4:0] = ExIEEEByteU(Dralt,5)
+// Calculate the altimeter
+// Raltr[8:2] = Evaluate({ByteH*256.0}+ByteL)
+Raltr[8:2] = Evaluate({{ByteH*256.0}+ByteL}*0.3048)
+// Filter Steps in Raw Data to improve VLB
+Ralt[8:2] = LowPass(Raltr,0.1,21)
+// Ralt[8:2] = Post(Raltr)  //US
+
+// parse the laser
+//// Lfil[8:1] = Extract(Dld,7,4)
+//// Lspt[8:1] = Extract(Dld,14,4)
+//// Lcnt[8:0] = Extract(Dld,21,4)
+//// Lalt[8:1] = Evaluate({Lfil/10.0})
+// Lalt[6:1]   = ExtractFromArray(Repl,5)
+/// Lavg[8:1] = Evaluate({Lspt/10.0})
+// Lalt[8:2] = Extract(Dld,2,6)
+Lalt[8:2] = Extract(Dld,5,6)
+
+// parse the mags
+// Sensor Signal Amplitude
+ A2[4:0] = Extract(Dm22,25,4)
+ A1[4:0] = Extract(Dm11,25,4)
+// Sensor Temperatures
+ T2[3:0] = Extract(Dm22,21,3)
+ T1[3:0] = Extract(Dm11,21,3)
+// The following four lines line Extracts the Signal, Heater and HS bits:
+ X1[3:0] = Extract(Dm11,15,1)
+ Y1[3:0] = Extract(Dm11,17,1)
+ Z1[3:0] = Extract(Dm11,19,1)
+// The following Line concatenates the three bits into one word (I think?? JH):
+// Mag1S[6:0] = Concat(Mag1x,Mag1y,Mag1z)
+// The following four lines line Extracts the Signal, Heater and HS bits:
+ X2[3:0] = Extract(Dm22,15,1)
+ Y2[3:0] = Extract(Dm22,17,1)
+ Z2[3:0] = Extract(Dm22,19,1)
+// The following Line concatenates the three bits into one word (I think?? JH):
+// Mag2S[6:0] = Concat(Mag2x,Mag2y,Mag2z)
+ 
+ Mag1[12:4] = Extract(Dm11,4,10)
+ Mag2[12:4] = Extract(Dm22,4,10)
+ MagL[11:4] = Evaluate({Mag1-Mag2}/10.56)
+// Tip to Tip on Pipistrel 10.56 Meters 
+ Mag1D[9:4] = FourthDiff(Mag1)
+ Mag2D[9:4] = FourthDiff(Mag2)
+ 
+ // the following two line perform the post of the heading to the mags
+ // they may be commented
+ //Rval1[20:0] = PostVariableToPort_V0(COM5,Hdg,#M1,%03.0f,0x0d0a)
+ //Rval2[20:0] = PostVariableToPort_V0(COM6,Hdg,#M2,%03.0f,0x0d0a)
+ 
+//compensate the mags
+ Cdata[15:8]  = Concat(Xgps,Ygps,Zgps,Quat,CalData,VelData)
+ CmpRet[10:3] = CompensateParam(Cdata,Bin,0,3,Mag1,Mag2,MagL)
+ Mag1C[12:4] = CompensateData(Mag1)
+ Mag2C[12:4] = CompensateData(Mag2)
+ MagLC[11:4] = CompensateData(MagL)
+ 
+ // Extract VLF Values
+ Vlf1[8:3] = Extract(D1,1,7)
+ Vlf2[8:3] = Extract(D1,8,7)
+ Vlf3[8:3] = Extract(D1,15,7)
+ Vlf4[8:3] = Extract(D1,22,7)
+ 
+ M1st[5:0] = GetMuxStatus(void)
+ M1clk[12:0] = GetMuxInitTime(void)
+  // Reminder Lalt has been removed between Zgps,...Lalt...,Ralt
+  // M1txt[80:0] = OutTxt(MAG,3,Xpr,M1st,M1clk,Wayp,Date,Time,Xgps,Ygps,Zgps,Ralt,Mag1,A1,T1,X1,Y1,Z1,Mag2,A2,T2,X2,Y2,Z2,MagL,Mag1C,Mag2C,MagLC,Roll,Pitch,Yaw,Xst,Bin)
+  // Add Ralt and VLF data Ch1,Ch2,Ch3,Ch4
+  M1txt[80:0] = OutTxt(MAG,3,Xpr,M1st,M1clk,Wayp,Date,Time,Xgps,Ygps,Zgps,Lalt,Raltr,Ralt,Mag1,A1,T1,X1,Y1,Z1,Mag1D,Mag2,A2,T2,X2,Y2,Z2,Mag2D,MagL,Mag1C,Mag2C,MagLC,Vlf1,Vlf2,Vlf3,Vlf4,Roll,Pitch,Yaw,Xst,Bin)
+
+    </MuxMacro>
+  <MuxMacro Name='Mux2' Whitespace='preserve'>
+//MuxMacro::Mux2
+ Swayp[7:0]    = GetActiveWaypoint(void)
+ Sdate[9:0]    = GetDate(void)
+ Stime[11:0]   = GetTime(void)
+ Sbin[1168:0]  = ToHex(Dspec,0,583)
+ Spdn[3:0]     = ExIEEEShortU(Dspec,62,256)
+ Sreal[8:3]    = ExIEEEFloat(Dspec,10)
+ Slive[8:3]    = ExIEEEFloat(Dspec,14)
+ BaroV[8:4]    = ExIEEEFloat(Dspec,18)
+ TempV[8:4]    = ExIEEEFloat(Dspec,22)
+ HumdV[8:4]    = ExIEEEFloat(Dspec,26)
+ Srate[10:3]   = ExIEEEFloat(Dspec,58)
+ Sk[10:3]      = ArraySum(Spdn,190,227)
+ Su[10:3]      = ArraySum(Spdn,100,127)
+ Sth[10:3]     = ArraySum(Spdn,160,180)
+ Sa0[10:3]     = ExIEEEFloat(Dspec,30)
+ Sa1[10:3]     = ExIEEEFloat(Dspec,34)
+ Sa2[10:3]     = ExIEEEFloat(Dspec,38)
+
+ Sbaro[9:2]    = Evaluate({BaroV-0.322}/0.0054+200)
+ Stemp[8:2]    = Evaluate({TempV*100.0}-273.15)
+ Shumd[8:2]    = Evaluate({HumdV-0.958}*32.59)
+
+ Sxgps[15:7]   = InterpValueAt(Sbin,Xgps)
+ Sygps[15:7]   = InterpValueAt(Sbin,Ygps)
+ Szgps[9:3]    = InterpValueAt(Sbin,Zgps)
+
+ Sralt[10:3]   = InterpValueAt(Sbin,Raltr)
+ 
+ M2st[5:0] = GetMuxStatus(void)
+ M2clk[12:0] = GetMuxInitTime(void)
+
+  M2txt[2400:0] = OutTxt(SPC,3,M2st,M2clk,Sdate,Stime,Swayp,Sxgps,Sygps,Szgps,Sralt,BaroV,TempV,HumdV,Sbaro,Stemp,Shumd,Sreal,Slive,Srate,Sk,Su,Sth,Sa0,Sa1,Sa2,Sbin)
+
+    </MuxMacro>
+  <MuxMacro Name='Mux3' Whitespace='preserve'>
+//MuxMacro::Mux3
+// PROBLEM with Sync
+// // // Dt3[25:0]  = SynchClockToGPZDA(Dgps)
+ dWayp[9:0]  = GetActiveWaypoint(void)
+// mTime[11:0] = GetTime(void)
+
+// Extract the Diff GPS data Lat Lon
+ Xdgps[16:9] = ExtractDelimGGA(Dgga1,$GPGGA,0x2c,4);
+ Ydgps[16:9] = ExtractDelimGGA(Dgga1,$GPGGA,0x2c,2);
+ Zdgps[9:3]  = ExtractDelim(Dgga1,$GPGGA,0x2c,8);
+ dTime[10:2] = ExtractDelim(Dgga1,$GPGGA,0x2c,0);
+ dSNo[5:0]   = ExtractDelim(Dgga1,$GPGGA,0x2c,6);
+ dHdop[6:1]  = ExtractDelim(Dgga1,$GPGGA,0x2c,7);
+ dDOn[5:0]   = ExtractDelim(Dgga1,$GPGGA,0x2c,5);
+ dAge[5:1]   = ExtractDelim(Dgga1,$GPGGA,0x2c,12);
+ dSID[5:0]   = ExtractDelim(Dgga1,$GPGGA,0x2c,13);
+
+ M3st[5:0] = GetMuxStatus(void)
+ M3clk[12:0] = GetMuxInitTime(void)
+
+ M3txt[80:0] = OutTxt(GGA,3,M3st,M3clk,dWayp,dTime,Xdgps,Ydgps,Zdgps,dSNo,dHdop,dDOn,dAge,dSID)
+
+    </MuxMacro>
+ </GeoDusterLists>
+</GeoDuster>
