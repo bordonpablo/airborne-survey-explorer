@@ -1,34 +1,46 @@
-# Airborne Geophysics – Welzow Ground Test
+# Airborne Survey Explorer
 
-This project processes and analyses airborne geophysical survey data
-collected by a GeoDuster system installed on an aircraft. The data
-includes magnetic field measurements, GPS positioning, radar altimetry,
-gamma-ray spectrometry, and VLF electromagnetic data. This repository
-contains data from a **ground test** conducted at Welzow on 2026-03-24
-(sessions 006 and 007). The aircraft was stationary; the tests verify
-sensor connectivity and data quality before a real survey flight.
+General-purpose pipeline for processing raw GeoDuster airborne geophysics data.
+Works with any dataset (ground tests, calibration flights, survey missions).
+The current dataset is a ground test at Welzow on 2026-03-24 (sessions 006 and 007).
+
+---
+
+## Pipeline stages
+
+| Stage | Script | Status |
+|-------|--------|--------|
+| Step 1 – sensor status & data quality | `src/step1_status.py` | done |
+| Step 2 – session comparison | `src/step2_compare.py` | done |
+| Step 3 – flight line editing | `src/step3_lines.py` | planned |
+| Step 4 – variable maps | `src/step4_maps.py` | planned |
+| Step 5 – geophysical corrections | `src/step5_corrections.py` | planned |
 
 ---
 
 ## Project structure
 
 ```
-airborne-data/
+airborne-survey-explorer/
 ├── data/
-│   └── 2026-03-24 Welzow Ground-Test 006 - 007/
-│       ├── EVT00006.txt / EVT00007.txt   ← system event logs
-│       ├── MAG00006.txt / MAG00007.txt   ← main multi-sensor data
-│       ├── GGA00006.txt / GGA00007.txt   ← differential GPS log
-│       ├── SPC00006.txt / SPC00007.txt   ← spectrometer/env data
-│       ├── Cfg00006.xml / Cfg00007.xml   ← system configuration snapshots
-│       └── CMP_0043.*                    ← magnetic compensation model
+│   └── <date> <location> <sessions>/   ← one subfolder per dataset
+│       ├── EVT000NN.txt    ← system event logs
+│       ├── MAG000NN.txt    ← main multi-sensor data
+│       ├── GGA000NN.txt    ← differential GPS log
+│       ├── SPC000NN.txt    ← spectrometer / environment
+│       ├── Cfg000NN.xml    ← system configuration snapshot
+│       └── CMP_*.*         ← magnetic compensation model
 ├── src/
-│   ├── analyse_session_006.py             ← original single-session script
-│   └── analyse_sessions_006_007.py        ← full dual-session pipeline
+│   ├── geoduster_utils.py          ← shared parsers, constants, analyse_session()
+│   ├── step1_status.py             ← Step 1: sensor health + data quality
+│   ├── step2_compare.py            ← Step 2: session comparison
+│   ├── analyse_session_006.py      ← legacy (session-specific, keep for reference)
+│   └── analyse_sessions_006_007.py ← legacy (session-specific, keep for reference)
 └── outputs/
-    ├── session_006/    ← plots + report_006.txt
-    ├── session_007/    ← plots + report_007.txt
-    └── comparison_006_007.txt
+    ├── session_NNN/
+    │   ├── report_NNN.txt
+    │   └── plot_01_mag_raw.png  … (8 plots)
+    └── comparison_NNN_MMM.txt
 ```
 
 ---
@@ -67,16 +79,16 @@ GeoDuster system configuration snapshot. Key tags:
 
 ## Sensors (full reference)
 
-| Sensor | Port | Label | Full Name | Status 006 | Status 007 | MAG cols | Description |
-|--------|------|-------|-----------|------------|------------|----------|-------------|
-| GEMK1 | COM3 | P3 | Magnetometer #1 (Port side) | CONNECTED | CONNECTED | Mag1, Mag1D, Mag1C, A1, T1, X1, Y1, Z1 | GEM Systems KING-AIR towed fluxgate magnetometer – total field |
-| GEMK2 | COM4 | P4 | Magnetometer #2 (Starboard side) | CONNECTED | CONNECTED | Mag2, Mag2D, Mag2C, A2, T2, X2, Y2, Z2 | GEM Systems KING-AIR towed fluxgate magnetometer – total field |
-| GDRAlt | COM5 | P5 | Radar Altimeter | CONNECTED | CONNECTED | Ralt, Raltr | Measures height above ground (AGL) in metres |
-| GD485 | COM6 | P6 | ADC 4-channel VLF receiver (RS-485 bus) | DISCONNECTED | DISCONNECTED | MagL, MagLC, Vlf1, Vlf2, Vlf3, Vlf4 | Analogue-to-digital converter for VLF EM channels |
-| XSENS | COM7 | P7 | AHRS / GPS attitude sensor | CONNECTED | CONNECTED | Roll, Pitch, Yaw | XSENS MTi inertial measurement unit – Roll, Pitch, Yaw |
-| GDGPS | COM8 | P8 | Septentrio differential GPS | CONNECTED | CONNECTED | Xgps, Ygps, Zgps, Lalt | High-precision GNSS receiver – position and altitude |
-| GDSpec | COM9 | P9 | Medusa Gamma-Ray Spectrometer | DISCONNECTED | DISCONNECTED | Vlf1, Vlf2, Vlf3, Vlf4 | Gamma-ray spectrometer with environmental sensors |
-| GDLas | COM10 | P10 | Laser Altimeter | DISCONNECTED | DISCONNECTED | — | Laser rangefinder for precise terrain clearance |
+| Sensor | Port | Label | Full Name | MAG cols | Description |
+|--------|------|-------|-----------|----------|-------------|
+| GEMK1 | COM3 | P3 | Magnetometer #1 (Port side) | Mag1, Mag1D, Mag1C, A1, T1, X1, Y1, Z1 | GEM Systems KING-AIR towed fluxgate magnetometer – total field |
+| GEMK2 | COM4 | P4 | Magnetometer #2 (Starboard side) | Mag2, Mag2D, Mag2C, A2, T2, X2, Y2, Z2 | GEM Systems KING-AIR towed fluxgate magnetometer – total field |
+| GDRAlt | COM5 | P5 | Radar Altimeter | Ralt, Raltr | Measures height above ground (AGL) in metres |
+| GD485 | COM6 | P6 | ADC 4-channel VLF receiver (RS-485 bus) | MagL, MagLC, Vlf1, Vlf2, Vlf3, Vlf4 | Analogue-to-digital converter for VLF EM channels |
+| XSENS | COM7 | P7 | AHRS / GPS attitude sensor | Roll, Pitch, Yaw | XSENS MTi inertial measurement unit – Roll, Pitch, Yaw |
+| GDGPS | COM8 | P8 | Septentrio differential GPS | Xgps, Ygps, Zgps, Lalt | High-precision GNSS receiver – position and altitude |
+| GDSpec | COM9 | P9 | Medusa Gamma-Ray Spectrometer | Vlf1, Vlf2, Vlf3, Vlf4 | Gamma-ray spectrometer with environmental sensors |
+| GDLas | COM10 | P10 | Laser Altimeter | — | Laser rangefinder for precise terrain clearance |
 
 ---
 
@@ -93,14 +105,17 @@ the synchronisation trigger relies on aircraft motion; this is normal.
 
 ---
 
-## Conventions for future scripts
+## Coding conventions
 
-- **Working directory**: `PROJECT_ROOT = Path(__file__).resolve().parents[1]`
-- **Session IDs**: zero-padded 5-digit, e.g. `"00006"`, `"00007"`
+- **Root path**: `PROJECT_ROOT = Path(__file__).resolve().parents[1]`
+- **Session IDs**: zero-padded 5-digit for filenames (`"00006"`), 3-digit for output dirs (`"006"`)
+- **Data folder**: passed as argument or auto-detected from first subfolder under `data/`
+- **Sessions**: auto-detected by globbing `EVT*.txt` in the data folder
 - **Fixed-width parsing**: use `m.end()` of header tokens as column right boundaries
 - **NaN encoding**: replace `#`-only cells before numeric conversion
 - **Time axis**: convert `HHMMSS.sss` → elapsed seconds from first sample
 - **Plots**: save to `outputs/session_NNN/` at 150 dpi, `matplotlib.use("Agg")`
 - **NaN gaps in plots**: use `plt.plot()` directly – NaN naturally breaks the line
-  (no interpolation, no vertical artefacts)
 - **Excluded from analysis**: `Xst`, `Bin`, `Sbin` columns (hex/binary)
+- **Shared code**: put parsers and constants in `geoduster_utils.py`, not in step scripts
+- **No auto-generation**: CLAUDE.md and README.md are maintained manually

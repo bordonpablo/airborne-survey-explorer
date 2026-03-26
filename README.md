@@ -1,189 +1,141 @@
-# Airborne Geophysics – Welzow Ground Test (2026-03-24)
+# Airborne Survey Explorer
 
-## What this project is about
+A Python pipeline for processing and analysing raw data from **GeoDuster airborne geophysics systems**. Designed to work with any dataset produced by the system — ground tests, calibration flights, or full survey missions.
 
-This repository contains raw instrument data and Python analysis scripts
-for a **ground test of an airborne geophysics sensor suite** (GeoDuster
-system) performed at **Welzow, Germany on 2026-03-24**. The aircraft was
-parked on the ground with the data acquisition system running. The tests
-verify which sensors are active, checks data quality, and flag system
-anomalies before a real airborne survey flight.
+The pipeline starts with an initial status check (sensor health, data quality) and is designed to grow toward a full analysis suite: flight line editing, variable mapping, geophysical corrections, and export.
 
 ---
 
-## Sessions
+## Pipeline overview
 
-| Field | Session 006 | Session 007 |
-|-------|-------------|-------------|
-| Start (UTC) | 2026-03-24 14:34:33.600000 | 2026-03-24 15:01:47 |
-| End (UTC) | 2026-03-24 14:54:36.900000 | 2026-03-24 15:17:01.700000 |
-| Duration | 0:20:03.300000 | 0:15:14.700000 |
-| MAG rows | 11306 | 735 |
-| GGA rows | 11131 | 737 |
-| SPC rows | 1134 | 73 |
-
----
-
-## Sensor status
-
-| Sensor | Port | Full Name | 006 | 007 | Reason if disconnected |
-|--------|------|-----------|-----|-----|------------------------|
-| GEMK1 | COM3 | Magnetometer #1 (Port side) | CONNECTED | CONNECTED | Active |
-| GEMK2 | COM4 | Magnetometer #2 (Starboard side) | CONNECTED | CONNECTED | Active |
-| GDRAlt | COM5 | Radar Altimeter | CONNECTED | CONNECTED | Active |
-| GD485 | COM6 | ADC 4-channel VLF receiver (RS-485 bus) | DISCONNECTED | DISCONNECTED | Not connected / powered off during this test |
-| XSENS | COM7 | AHRS / GPS attitude sensor | CONNECTED | CONNECTED | Active |
-| GDGPS | COM8 | Septentrio differential GPS | CONNECTED | CONNECTED | Active |
-| GDSpec | COM9 | Medusa Gamma-Ray Spectrometer | DISCONNECTED | DISCONNECTED | Not connected / powered off during this test |
-| GDLas | COM10 | Laser Altimeter | DISCONNECTED | DISCONNECTED | Not connected / powered off during this test |
+| Step | Script | Purpose |
+|------|--------|---------|
+| **Step 1** | `src/step1_status.py` | Sensor health check and data-quality monitoring for one or more sessions |
+| **Step 2** | `src/step2_compare.py` | Side-by-side comparison of two sessions |
+| *(planned)* | `src/step3_lines.py` | Flight line definition and editing |
+| *(planned)* | `src/step4_maps.py` | Variable plots over flight lines and map export |
+| *(planned)* | `src/step5_corrections.py` | Diurnal, IGRF, and lag corrections |
 
 ---
 
-## Data files
+## Usage
 
-| File | Written by | Format | Description |
-|------|------------|--------|-------------|
-| EVT*.txt | ICCS system | Plain text | Timestamped event log |
-| MAG*.txt | Mux1 | Fixed-width ASCII | Main multi-sensor data (~10 Hz) |
-| GGA*.txt | Mux3 | Fixed-width ASCII | Differential GPS (~10 Hz) |
-| SPC*.txt | Mux2 | Fixed-width ASCII | Spectrometer/environment (~1 Hz) |
-| Cfg*.xml | ICCS system | XML | System configuration snapshot |
-| CMP_0043.* | Compensation | Binary/text | Magnetic compensation model |
+```bash
+# Step 1 – auto-detects data folder and all sessions
+python src/step1_status.py
 
----
+# Step 1 – specify folder and/or sessions explicitly
+python src/step1_status.py "data/MyFolder"
+python src/step1_status.py "data/MyFolder" 6 7
 
-## MAG column dictionary
+# Step 2 – compare first two sessions found automatically
+python src/step2_compare.py
 
-| Column | Unit | Description |
-|--------|------|-------------|
-| `Xpr` | — | Sample/experiment counter |
-| `M1st` | — | Mux1 status word |
-| `M1clk` | — | Mux1 clock counter (ticks) |
-| `Wayp` | — | Navigation waypoint number |
-| `Date` | — | UTC date (YYYYMMDD) |
-| `Time` | — | UTC time (HHMMSS.sss) |
-| `Xgps` | — | GPS longitude (°) |
-| `Ygps` | — | GPS latitude (°) |
-| `Zgps` | — | GPS ellipsoidal altitude (m) |
-| `Lalt` | — | Barometric/laser altimeter (m) |
-| `Raltr` | — | Radar altimeter – raw channel (m) |
-| `Ralt` | — | Radar altimeter – calibrated (m) |
-| `Mag1` | — | Magnetometer 1 total field (nT) |
-| `Mag2` | — | Magnetometer 2 total field (nT) |
-| `Mag1D` | — | Mag1 first derivative (nT/s) |
-| `Mag2D` | — | Mag2 first derivative (nT/s) |
-| `Mag1C` | — | Mag1 compensated total field (nT) |
-| `Mag2C` | — | Mag2 compensated total field (nT) |
-| `MagL` | — | Mag2 – Mag1 difference field (nT) |
-| `MagLC` | — | Compensated Mag2 – Mag1 difference (nT) |
-| `A1` | — | Mag1 amplitude/gain flag |
-| `T1` | — | Mag1 sensor temperature (°C) |
-| `X1` | — | Mag1 X-axis status flag (1=OK) |
-| `Y1` | — | Mag1 Y-axis status flag (1=OK) |
-| `Z1` | — | Mag1 Z-axis status flag (1=OK) |
-| `A2` | — | Mag2 amplitude/gain flag |
-| `T2` | — | Mag2 sensor temperature (°C) |
-| `X2` | — | Mag2 X-axis status flag (1=OK) |
-| `Y2` | — | Mag2 Y-axis status flag (1=OK) |
-| `Z2` | — | Mag2 Z-axis status flag (1=OK) |
-| `Vlf1` | — | VLF EM channel 1 (ADC count) |
-| `Vlf2` | — | VLF EM channel 2 (ADC count) |
-| `Vlf3` | — | VLF EM channel 3 (ADC count) |
-| `Vlf4` | — | VLF EM channel 4 (ADC count) |
-| `Roll` | — | Roll angle (°, XSENS IMU) |
-| `Pitch` | — | Pitch angle (°, XSENS IMU) |
-| `Yaw` | — | Yaw/heading angle (°, XSENS IMU) |
-| `Xst` | — | System status hex string |
-| `Bin` | — | Raw binary sensor data |
-| `M3st` | — | Mux3 status word |
-| `M3clk` | — | Mux3 clock counter |
-| `dWayp` | — | dGPS waypoint |
-| `dTime` | — | dGPS UTC time (HHMMSS.ss) |
-| `Xdgps` | — | Differential GPS longitude (°) |
-| `Ydgps` | — | Differential GPS latitude (°) |
-| `Zdgps` | — | Differential GPS altitude (m) |
-| `dSNo` | — | Number of GPS satellites |
-| `dHdop` | — | Horizontal dilution of precision (lower=better) |
-| `dDOn` | — | Differential correction on (1=yes) |
-| `dAge` | — | Age of differential correction (s) |
-| `dSID` | — | Differential reference station ID |
-| `M2st` | — | Mux2 status word |
-| `M2clk` | — | Mux2 clock counter |
-| `Sdate` | — | Spectrometer UTC date |
-| `Stime` | — | Spectrometer UTC time |
-| `Swayp` | — | Spectrometer waypoint |
-| `Sxgps` | — | Spectrometer GPS longitude (°) |
-| `Sygps` | — | Spectrometer GPS latitude (°) |
-| `Szgps` | — | Spectrometer GPS altitude (m) |
-| `Sralt` | — | Spectrometer radar altimeter (m) |
-| `BaroV` | — | Barometric pressure voltage (V) |
-| `TempV` | — | Temperature sensor voltage (V) |
-| `HumdV` | — | Humidity sensor voltage (V) |
-| `Sbaro` | — | Barometric pressure raw counts |
-| `Stemp` | — | Temperature raw counts |
-| `Shumd` | — | Humidity raw counts |
-| `Sreal` | — | Spectrometer real-time count rate |
-| `Slive` | — | Spectrometer live-time count rate |
-| `Srate` | — | Spectrometer acquisition rate |
-| `Sk` | — | Spectrometer potassium channel (K) |
-| `Su` | — | Spectrometer uranium channel (U) |
-| `Sth` | — | Spectrometer thorium channel (Th) |
-| `Sa0` | — | Spectrometer background channel 0 |
-| `Sa1` | — | Spectrometer background channel 1 |
-| `Sa2` | — | Spectrometer background channel 2 |
-| `Sbin` | — | Raw spectral binary data |
+# Step 2 – specify folder and sessions
+python src/step2_compare.py "data/MyFolder" 6 7
+```
 
 ---
 
-## Data quality summary
+## Project structure
 
-### Session 006
-- **Mag1**: OK (σ=2.1893) | mean=49353.0623, std=2.1893
-- **Mag2**: OK (σ=3.6975) | mean=49458.6916, std=3.6975
-- **Mag1C**: OK (σ=2.1192) | mean=49354.5136, std=2.1192
-- **Mag2C**: OK (σ=2.0413) | mean=49460.7273, std=2.0413
-- **Roll**: OK (σ=0.1938) | mean=0.2312, std=0.1938
-- **Pitch**: OK (σ=0.0892) | mean=-5.6440, std=0.0892
-- **Yaw**: OK (σ=0.2953) | mean=-14.5088, std=0.2953
-- **Ralt**: HIGH STD >0.5 m | mean=1.1524, std=10.3005
-- **Raltr**: HIGH STD >0.5 m | mean=1.1524, std=25.7762
-- **Xgps**: OK (σ=0.0000) | mean=14.1514, std=0.0000
-- **Ygps**: OK (σ=0.0000) | mean=51.5786, std=0.0000
-- **Xdgps**: OK (σ=0.0000) | mean=14.1514, std=0.0000
-- **Ydgps**: OK (σ=0.0000) | mean=51.5786, std=0.0000
-- **dHdop**: OK (σ=0.0513) | mean=0.8560, std=0.0513
-
-### Session 007
-- **Mag1**: OK (σ=0.3790) | mean=49358.6666, std=0.3790
-- **Mag2**: HIGH STD >10.0 nT | mean=52060.3290, std=9150.5874
-- **Mag1C**: OK (σ=0.2074) | mean=49360.2202, std=0.2074
-- **Mag2C**: OK (σ=0.0125) | mean=49461.7620, std=0.0125
-- **Roll**: OK (σ=0.1267) | mean=-0.0495, std=0.1267
-- **Pitch**: OK (σ=0.0911) | mean=-5.6673, std=0.0911
-- **Yaw**: OK (σ=0.2710) | mean=-13.8410, std=0.2710
-- **Ralt**: HIGH STD >0.5 m | mean=8.3681, std=56.6959
-- **Raltr**: HIGH STD >0.5 m | mean=8.3679, std=142.8722
-- **Xgps**: OK (σ=0.0000) | mean=14.1514, std=0.0000
-- **Ygps**: OK (σ=0.0000) | mean=51.5786, std=0.0000
-- **Xdgps**: OK (σ=0.0000) | mean=14.1514, std=0.0000
-- **Ydgps**: OK (σ=0.0000) | mean=51.5786, std=0.0000
-- **dHdop**: OK (σ=0.0591) | mean=0.6523, std=0.0591
+```
+airborne-survey-explorer/
+├── data/
+│   └── <date> <location> <session range>/   ← one subfolder per dataset
+│       ├── EVT000NN.txt    ← system event logs (ICCS)
+│       ├── MAG000NN.txt    ← main multi-sensor data (~10 Hz)
+│       ├── GGA000NN.txt    ← differential GPS log (~10 Hz)
+│       ├── SPC000NN.txt    ← spectrometer / environment (~1 Hz)
+│       ├── Cfg000NN.xml    ← system configuration snapshot
+│       └── CMP_*.{bin,cff} ← magnetic compensation model
+├── src/
+│   ├── geoduster_utils.py          ← shared parsers, constants, analyse_session()
+│   ├── step1_status.py             ← Step 1: sensor health + data quality
+│   ├── step2_compare.py            ← Step 2: session comparison
+│   ├── analyse_session_006.py      ← legacy single-session script
+│   └── analyse_sessions_006_007.py ← legacy dual-session script
+└── outputs/
+    ├── session_NNN/
+    │   ├── report_NNN.txt
+    │   └── plot_01_mag_raw.png  … (8 plots)
+    └── comparison_NNN_MMM.txt
+```
 
 ---
 
-## Known issues
+## Step 1 outputs
 
-- **Mux M1/M2/M3 TimeO warnings**: Persistent throughout both sessions (~every 5-6 s).
-  This is expected behaviour during ground tests – the multiplexer synchronisation
-  relies on an aircraft motion trigger that is absent when parked. Does NOT indicate
-  data loss in practice (magnetometer NaN rate <0.5%).
-- **`Nv WayP` warnings**: Normal – no survey flight plan (waypoints) was loaded.
-  The aircraft was not following a navigation line.
-- **NaN gaps in MAG**: Small gaps (~0.5% of rows) in magnetometer and GPS columns,
-  caused by the Mux timeout events. Data is otherwise complete.
-- **`Lalt` column always NaN**: The barometric altitude from GPS is not written
-  in these files (GPS provides only ellipsoidal altitude in `Zgps`).
-- **VLF channels (Vlf1–Vlf4) always NaN**: GD485 was disconnected in both sessions.
-- **Session 007 Mag2 anomaly**: Magnetometer #2 shows extreme values in session 007
-  (mean ~55800 nT vs ~49459 nT in 006, with large derivatives). The sensor was
-  likely still settling / initialising during this short ~5-minute session.
+For each session, `step1_status.py` produces:
+
+- **EVT analysis**: sensor-port mapping, connection status (char rates), mux assignments, health warnings, critical errors, session timing, Cfg XML summary
+- **MAG / GGA / SPC**: row counts, NaN classification (fully/partial/clean per column), GPS quality indicators
+- **Plots** (saved as PNG at 150 dpi):
+  1. Magnetometers raw (Mag1, Mag2)
+  2. Magnetometers compensated (Mag1C, Mag2C)
+  3. Magnetometer first derivatives (Mag1D, Mag2D)
+  4. Attitude – Roll, Pitch, Yaw (XSENS)
+  5. Radar altimeter (Ralt)
+  6. Differential GPS position (Xdgps, Ydgps)
+  7. GPS quality indicators (HDOP, satellite count)
+  8. Spectrometer channels (Sk, Su, Sth) if available
+- **Stability table**: mean, std, min, max, and threshold check for all key variables
+- **Cross-check**: EVT connection status vs actual NaN presence in MAG
+
+---
+
+## Data formats
+
+### EVT files (event log)
+Plain-text timestamped log from the ICCS acquisition software.
+Each line: `HH:MM:SS.d: <message>`. Key patterns:
+
+| Pattern | Meaning |
+|---------|---------|
+| `COMx: Macro SENSORNAME OK` | Sensor configured on port |
+| `Character Rate on COMx is X.X chars/second` | Port activity (0 = disconnected) |
+| `Mx latches port COMx runs macro NAME` | Mux routing table |
+| `Health Warning: Mx TimeO\|` | Multiplexer x timed out |
+| `Health Warning: Nv WayP\|` | No navigation waypoint active |
+
+### MAG / GGA / SPC files (fixed-width ASCII)
+Right-aligned fixed-width format. Column boundaries align with the **right edge** of each header token (`m.end()` of regex match, not `m.start()`). Cells containing only `#` = NaN.
+
+- `Time` / `dTime` / `Stime`: UTC encoded as `HHMMSS.sss` float
+- `Bin` / `Sbin` / `Xst`: raw hex/binary – excluded from numeric analysis
+
+### Cfg XML files
+System configuration snapshot. Key tags: `COMPNAME`, `NAVNAME`, `COMxSTATE`, `MACRO`.
+
+---
+
+## Sensor reference (GeoDuster system)
+
+| Sensor | Port | Full Name | MAG columns | Description |
+|--------|------|-----------|-------------|-------------|
+| GEMK1 | COM3 | Magnetometer #1 (Port side) | Mag1, Mag1D, Mag1C, A1, T1, X1, Y1, Z1 | GEM Systems fluxgate – total field |
+| GEMK2 | COM4 | Magnetometer #2 (Starboard side) | Mag2, Mag2D, Mag2C, A2, T2, X2, Y2, Z2 | GEM Systems fluxgate – total field |
+| GDRAlt | COM5 | Radar Altimeter | Ralt, Raltr | Height above ground (AGL) in metres |
+| GD485 | COM6 | ADC 4-channel VLF receiver | MagL, MagLC, Vlf1–Vlf4 | Analogue-to-digital converter for VLF EM |
+| XSENS | COM7 | AHRS / GPS attitude sensor | Roll, Pitch, Yaw | XSENS MTi inertial measurement unit |
+| GDGPS | COM8 | Septentrio differential GPS | Xgps, Ygps, Zgps, Lalt | High-precision GNSS receiver |
+| GDSpec | COM9 | Medusa Gamma-Ray Spectrometer | Vlf1–Vlf4, Sk, Su, Sth | Gamma-ray spectrometer + environmental |
+| GDLas | COM10 | Laser Altimeter | — | Laser rangefinder for terrain clearance |
+
+### Mux → file mapping
+
+| Mux | Writes to | Sensors polled |
+|-----|-----------|----------------|
+| M1 | MAG file | GEMK1, GEMK2, GDRAlt, GD485, XSENS, GDLas |
+| M2 | GGA file | GDSpec (GPS timestamp) |
+| M3 | SPC file | GDGPS (position) |
+
+M1/M2/M3 TimeO warnings are persistent during ground tests (no aircraft motion trigger) — this is normal and does not indicate data loss.
+
+---
+
+## Current dataset
+
+`data/2026-03-24 Welzow Ground-Test 006 - 007/`
+
+Ground test at Welzow, Germany on 2026-03-24. Aircraft parked; sessions 006 and 007 verify sensor connectivity before a real survey flight.

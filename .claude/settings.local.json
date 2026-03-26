@@ -6,7 +6,9 @@
       "Bash(python3:*)",
       "Bash(wc:*)",
       "Bash(ls /mnt/d/Pablo/Repositorios/airborne-data/outputs/*.txt)",
-      "Bash(ls /mnt/d/Pablo/Repositorios/airborne-data/*.md)"
+      "Bash(ls /mnt/d/Pablo/Repositorios/airborne-data/*.md)",
+      "Bash(python src/analyse_sessions_006_007.py)",
+      "Bash(python src/step1_status.py)"
     ]
   }
 }

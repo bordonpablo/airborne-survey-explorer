@@ -1,6 +1,6 @@
 
 ========================================================================
-  SESSION 006  –  Welzow Ground Test  –  2026-03-24
+  SESSION 006  –  2026-03-24 Welzow Ground-Test 006 - 007
 ========================================================================
 
 ────────────────────────────────────────────────────────────────────────
@@ -49,10 +49,10 @@ d) Health warnings:
 +---------------+-------+------------------------------------------------------------------------+
 | Warning            | Count    | Meaning                                                                     |
 +---------------+-------+------------------------------------------------------------------------+
-| M1 TimeO            | 211    | Mux1 timeout – sensor on M1 not responding within 80 ms                                                                     |
-| M2 TimeO            | 211    | Mux2 timeout – sensor on M2 not responding within 200 ms                                                                     |
+| M1 TimeO            | 211    | Mux1 timeout – sensor not responding within 80 ms                                                                     |
+| M2 TimeO            | 211    | Mux2 timeout – sensor not responding within 200 ms                                                                     |
 | Nv WayP            | 211    | Navigation waypoint missing (normal on ground – no flight plan active)                                                                     |
-| M3 TimeO            | 3    | Mux3 timeout – sensor on M3 not responding within 100 ms                                                                     |
+| M3 TimeO            | 3    | Mux3 timeout – sensor not responding within 100 ms                                                                     |
 | M3 TimeO_COM8            | 1    | Unknown                                                                     |
 +---------------+-------+------------------------------------------------------------------------+
 
@@ -112,33 +112,28 @@ STEP 3 — GGA00006.txt
   Clean       : None
 
   GPS quality (mean ± std):
-    Satellites (dSNo): 12.1 ± 0.46
-    HDOP (dHdop)     : 0.86 ± 0.051  [EXCELLENT]
-    Diff age (dAge)  : 13.0 ± 5.07 s
-    Position Xdgps σ : 0.000001°
-    Position Ydgps σ : 0.000002°
+    Satellites        : 12.062 ± 0.4605
+    HDOP              : 0.856 ± 0.0513  [EXCELLENT]
+    Diff age (s)      : 13.025 ± 5.0671
+    Xdgps σ           : 0.000001°
+    Ydgps σ           : 0.000002°
 
 ────────────────────────────────────────────────────────────────────────
 STEP 4 — SPC00006.txt
 ────────────────────────────────────────────────────────────────────────
 
   Rows: 1134   Columns: 26
-  GDSpec (COM9) is DISCONNECTED – spectrometer EM channels are NaN
-  Note: SPC file columns use right-aligned fixed-width boundaries.
-        'Sralt' in SPC = radar alt pass-through (same as MAG Ralt).
-        BaroV/TempV/HumdV = NaN (environmental sensors not active).
-        Sk/Su/Sth = constant default counts (spectrometer powered
-        but no active acquisition since GDSpec is disconnected).
+  GDSpec (COM9): DISCONNECTED
   Sralt   : mean=0.914  std=0.0000  (Spectrometer radar altimeter (m))  [CONSTANT]
   Sk      : mean=341810.000  std=0.0000  (Spectrometer potassium channel (K))  [CONSTANT]
   Su      : mean=251860.000  std=0.0000  (Spectrometer uranium channel (U))  [CONSTANT]
   Sth     : mean=188895.000  std=0.0000  (Spectrometer thorium channel (Th))  [CONSTANT]
-  Fully NaN    : ['Szgps', 'BaroV', 'TempV', 'HumdV', 'Sbaro', 'Stemp', 'Shumd', 'Sreal', 'Slive', 'Srate', 'Sa0', 'Sa1', 'Sa2']
-  Partial NaN  : ['Sxgps', 'Sygps']
-  Clean        : ['Sralt', 'Sk', 'Su', 'Sth']
+  Fully NaN   : ['Szgps', 'BaroV', 'TempV', 'HumdV', 'Sbaro', 'Stemp', 'Shumd', 'Sreal', 'Slive', 'Srate', 'Sa0', 'Sa1', 'Sa2']
+  Partial NaN : ['Sxgps', 'Sygps']
+  Clean       : ['Sralt', 'Sk', 'Su', 'Sth']
 
 ────────────────────────────────────────────────────────────────────────
-STEP 5 — Plots  →  outputs/session_006/
+STEP 5 — Plots  →  outputs\session_006/
 ────────────────────────────────────────────────────────────────────────
 
 ────────────────────────────────────────────────────────────────────────
@@ -197,7 +192,6 @@ STEP 7 — Cross-check EVT vs data files
 
   All sensor statuses consistent between EVT and MAG. ✓
 
-  Mux TimeO vs MAG gaps:
-  Total health warnings: 637 (persistent every ~5-6 s – expected on ground)
-  Mag1: 57/11306 NaN rows (0.5%) – gaps likely from Mux TimeO events
-  Mag2: 56/11306 NaN rows (0.5%) – gaps likely from Mux TimeO events
+  Total health warnings: 637
+  Mag1: 57/11306 NaN rows (0.5%) – gaps may correlate with Mux TimeO events
+  Mag2: 56/11306 NaN rows (0.5%) – gaps may correlate with Mux TimeO events
