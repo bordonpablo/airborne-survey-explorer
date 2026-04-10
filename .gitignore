@@ -1,0 +1,7 @@
+# Generated outputs - not tracked in git
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/

@@ -10,11 +10,11 @@ The current dataset is a ground test at Welzow on 2026-03-24 (sessions 006 and 0
 
 | Stage | Script | Status |
 |-------|--------|--------|
-| Step 1 – sensor status & data quality | `src/step1_status.py` | done |
-| Step 2 – session comparison | `src/step2_compare.py` | done |
-| Step 3 – flight line editing | `src/step3_lines.py` | planned |
+| Step 1 – sensor status, data quality & session comparison | `src/step1_status.py` | done |
+| Step 2 – flight line editing | `src/step2_lines.py` | planned |
+| Step 3 – magnetic corrections | `src/step3_mag.py` | planned |
+| Step 3 – radiometric corrections | `src/step3_rad.py` | future |
 | Step 4 – variable maps | `src/step4_maps.py` | planned |
-| Step 5 – geophysical corrections | `src/step5_corrections.py` | planned |
 
 ---
 
@@ -30,12 +30,11 @@ airborne-survey-explorer/
 │       ├── SPC000NN.txt    ← spectrometer / environment
 │       ├── Cfg000NN.xml    ← system configuration snapshot
 │       └── CMP_*.*         ← magnetic compensation model
+├── docs/
+│   └── pipeline.md                 ← detailed pipeline reference
 ├── src/
 │   ├── geoduster_utils.py          ← shared parsers, constants, analyse_session()
-│   ├── step1_status.py             ← Step 1: sensor health + data quality
-│   ├── step2_compare.py            ← Step 2: session comparison
-│   ├── analyse_session_006.py      ← legacy (session-specific, keep for reference)
-│   └── analyse_sessions_006_007.py ← legacy (session-specific, keep for reference)
+│   └── step1_status.py             ← Step 1: sensor health + data quality + comparison
 └── outputs/
     ├── session_NNN/
     │   ├── report_NNN.txt
