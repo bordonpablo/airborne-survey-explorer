@@ -113,7 +113,7 @@ the synchronisation trigger relies on aircraft motion; this is normal.
 - **Fixed-width parsing**: use `m.end()` of header tokens as column right boundaries
 - **NaN encoding**: replace `#`-only cells before numeric conversion
 - **Time axis**: convert `HHMMSS.sss` → elapsed seconds from first sample
-- **Plots**: save to `outputs/session_NNN/` at 150 dpi, `matplotlib.use("Agg")`
+- **Plots**: 5 per session saved to `outputs/session_NNN/` at 150 dpi, `matplotlib.use("Agg")` — raw mag, attitude, radar alt, GPS quality, spectrometer
 - **NaN gaps in plots**: use `plt.plot()` directly – NaN naturally breaks the line
 - **Excluded from analysis**: `Xst`, `Bin`, `Sbin` columns (hex/binary)
 - **Shared code**: put parsers and constants in `geoduster_utils.py`, not in step scripts

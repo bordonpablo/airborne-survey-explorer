@@ -69,13 +69,10 @@ For each session, `step1_status.py` produces:
 - **MAG / GGA / SPC**: row counts, NaN classification (fully/partial/clean per column), GPS quality indicators
 - **Plots** (saved as PNG at 150 dpi):
   1. Magnetometers raw (Mag1, Mag2)
-  2. Magnetometers compensated (Mag1C, Mag2C)
-  3. Magnetometer first derivatives (Mag1D, Mag2D)
-  4. Attitude – Roll, Pitch, Yaw (XSENS)
-  5. Radar altimeter (Ralt)
-  6. Differential GPS position (Xdgps, Ydgps)
-  7. GPS quality indicators (HDOP, satellite count)
-  8. Spectrometer channels (Sk, Su, Sth) if available
+  2. Attitude – Roll, Pitch, Yaw (XSENS)
+  3. Radar altimeter (Ralt)
+  4. GPS quality indicators (HDOP, satellite count)
+  5. Spectrometer channels (Sk, Su, Sth) if available
 - **Stability table**: mean, std, min, max, and threshold check for all key variables
 - **Cross-check**: EVT connection status vs actual NaN presence in MAG
 

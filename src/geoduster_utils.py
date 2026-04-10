@@ -531,21 +531,38 @@ def analyse_session(data_dir, session_num, out_root, plots=True):
         msg = " ".join(str(a) for a in args)
         report_lines.append(msg)
 
-    rprint()
-    rprint("=" * 72)
-    rprint(f"  SESSION {snum}  –  {data_dir.name}")
-    rprint("=" * 72)
-
-    # ── STEP 1: EVT ───────────────────────────────────────────────────────────
-    rprint(f"\n{'─'*72}")
-    rprint(f"STEP 1 — EVT{sid}.txt")
-    rprint(f"{'─'*72}")
-
+    # Parse EVT first so the sensor summary can go at the top of the report
     evt = parse_evt(data_dir / f"EVT{sid}.txt")
     sm  = evt["sensor_map"]
     cr  = evt["char_rates"]
     mux = evt["mux_assignments"]
     wrn = evt["warning_counts"]
+
+    rprint()
+    rprint("=" * 72)
+    rprint(f"  SESSION {snum}  –  {data_dir.name}")
+    rprint("=" * 72)
+
+    # ── SENSOR STATUS SUMMARY (top of report) ─────────────────────────────────
+    rprint(f"\n{'─'*72}")
+    rprint("SENSOR STATUS")
+    rprint(f"{'─'*72}")
+    _rep_sensor_rows = []
+    for _sensor, _info in SENSOR_REFERENCE.items():
+        _port = _info["port"]
+        _full = _info["full_name"]
+        _rate = cr.get(_port, 0.0)
+        if _rate == 0.0:
+            _st = "DISCONNECTED"
+        else:
+            _st = "CONNECTED"
+        _rep_sensor_rows.append((_sensor, _port, _full, _st))
+    rprint(ascii_table(["Sensor", "Port", "Full Name", "Status"], _rep_sensor_rows))
+
+    # ── STEP 1: EVT ───────────────────────────────────────────────────────────
+    rprint(f"\n{'─'*72}")
+    rprint(f"STEP 1 — EVT{sid}.txt")
+    rprint(f"{'─'*72}")
 
     rprint("\na) Sensor-port mapping:")
     for port, name in sorted(sm.items(), key=lambda x: int(x[0][3:])):
@@ -691,30 +708,21 @@ def analyse_session(data_dir, session_num, out_root, plots=True):
         make_plot(mag, ["Mag1", "Mag2"],
                   "Magnetometers (raw)", "plot_01_mag_raw.png",
                   out, "nT", snum)
-        make_plot(mag, ["Mag1C", "Mag2C"],
-                  "Magnetometers (compensated)", "plot_02_mag_compensated.png",
-                  out, "nT", snum)
-        make_plot(mag, ["Mag1D", "Mag2D"],
-                  "Magnetometer first derivatives", "plot_03_mag_derivatives.png",
-                  out, "nT/s", snum)
         make_plot(mag, ["Roll", "Pitch", "Yaw"],
-                  "Attitude – XSENS AHRS", "plot_04_attitude.png",
+                  "Attitude – XSENS AHRS", "plot_02_attitude.png",
                   out, "degrees", snum)
         make_plot(mag, ["Ralt"],
-                  "Radar Altimeter", "plot_05_radar_alt.png",
+                  "Radar Altimeter", "plot_03_radar_alt.png",
                   out, "m AGL", snum)
-        make_plot(gga, ["Xdgps", "Ydgps"],
-                  "Differential GPS position", "plot_06_dgps_position.png",
-                  out, "degrees", snum)
         make_plot(gga, ["dHdop", "dSNo"],
-                  "GPS quality indicators", "plot_07_gps_quality.png",
+                  "GPS quality indicators", "plot_04_gps_quality.png",
                   out, "HDOP / #sat", snum)
 
         spc_cols = [c for c in ["Sk", "Su", "Sth", "BaroV", "Sbaro"]
                     if c in spc.columns and not spc[c].isna().all()]
         if spc_cols:
             make_plot(spc, spc_cols,
-                      "Spectrometer channels", "plot_08_spc_channels.png",
+                      "Spectrometer channels", "plot_05_spc_channels.png",
                       out, "counts", snum)
         else:
             rprint(f"  SKIP [{snum}] Spectrometer – all NaN")
@@ -815,55 +823,8 @@ def analyse_session(data_dir, session_num, out_root, plots=True):
     _dur_str  = str(evt["duration"]).split(".")[0] if evt["duration"] else "-"
     print(f"  SESSION {snum}  |  {_date_str}  |  Duration: {_dur_str}")
     print(f"  MAG: {len(mag)} rows   GGA: {len(gga)} rows   SPC: {len(spc)} rows")
-
-    # a) Sensor status table
-    _sensor_rows = []
-    for _sensor, _info in SENSOR_REFERENCE.items():
-        _port = _info["port"]
-        _full = _info["full_name"]
-        _rate = evt["char_rates"].get(_port, 0.0)
-        if _rate == 0.0:
-            _st = "DISCONNECTED"
-        else:
-            _cols = SENSOR_MAG_COLS.get(_sensor, [])
-            _has  = any(c in mag.columns and not mag[c].isna().all() for c in _cols)
-            if not _has and _sensor == "GDSpec":
-                _has = any(c in spc.columns and not spc[c].isna().all()
-                           for c in ["Sk", "Su", "Sth"])
-            if not _cols and _sensor != "GDSpec":
-                _has = True  # GDLas: no data columns to verify - trust EVT rate
-            _st = "OK  connected" if _has else "NO DATA"
-        _sensor_rows.append((_sensor, _full, _st))
-    print()
-    print(ascii_table(["Sensor", "Full Name", "Status"], _sensor_rows))
-
-    # b) Data quality table
-    _TERM_VARS = [
-        ("Mag1",  mag), ("Mag2",  mag), ("Mag1C", mag), ("Mag2C", mag),
-        ("Roll",  mag), ("Pitch", mag), ("Yaw",   mag), ("Ralt",  mag),
-        ("dHdop", gga), ("dSNo",  gga),
-        ("Sk",    spc), ("Su",    spc), ("Sth",   spc),
-    ]
-    _qual_rows = []
-    for _col, _df in _TERM_VARS:
-        if _col not in _df.columns or _df[_col].isna().all():
-            continue
-        _s = _df[_col].dropna()
-        _mn, _sd = f"{_s.mean():.3f}", f"{_s.std():.4f}"
-        if _col in STABILITY_THRESHOLDS:
-            _, _thresh = STABILITY_THRESHOLDS[_col]
-            _qst = "! HIGH STD" if _s.std() > _thresh else "OK"
-        else:
-            _qst = "OK"
-        _qual_rows.append((_col, _mn, _sd, _qst))
-    if _qual_rows:
-        print()
-        print(ascii_table(["Variable", "Mean", "Std", "Status"], _qual_rows))
-
-    # c) Warning summary
     _n_crit   = len(evt["critical_lines"])
     _n_mux_to = sum(wrn.get(k, 0) for k in ["M1 TimeO", "M2 TimeO", "M3 TimeO"])
-    print()
     print(f"  {_n_crit} critical errors   {_n_mux_to} Mux TimeO warnings (normal on ground)")
     print(f"  Full report: outputs/session_{snum}/report_{snum}.txt")
     print("-" * 72)
