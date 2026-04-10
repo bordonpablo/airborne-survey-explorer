@@ -816,19 +816,6 @@ def analyse_session(data_dir, session_num, out_root, plots=True):
     report_path = out / f"report_{snum}.txt"
     report_path.write_text("\n".join(report_lines), encoding="utf-8")
 
-    # ── COMPACT TERMINAL SUMMARY ──────────────────────────────────────────────
-    print()
-    print("-" * 72)
-    _date_str = evt["session_start"].strftime("%Y-%m-%d") if evt["session_start"] else "-"
-    _dur_str  = str(evt["duration"]).split(".")[0] if evt["duration"] else "-"
-    print(f"  SESSION {snum}  |  {_date_str}  |  Duration: {_dur_str}")
-    print(f"  MAG: {len(mag)} rows   GGA: {len(gga)} rows   SPC: {len(spc)} rows")
-    _n_crit   = len(evt["critical_lines"])
-    _n_mux_to = sum(wrn.get(k, 0) for k in ["M1 TimeO", "M2 TimeO", "M3 TimeO"])
-    print(f"  {_n_crit} critical errors   {_n_mux_to} Mux TimeO warnings (normal on ground)")
-    print(f"  Full report: outputs/session_{snum}/report_{snum}.txt")
-    print("-" * 72)
-
     return {
         "session"         : snum,
         "data_dir"        : data_dir,
