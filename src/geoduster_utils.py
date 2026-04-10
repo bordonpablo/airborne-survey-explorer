@@ -532,7 +532,6 @@ def analyse_session(data_dir, session_num, out_root, plots=True):
     report_lines = []
     def rprint(*args, **kwargs):
         msg = " ".join(str(a) for a in args)
-        print(msg, **kwargs)
         report_lines.append(msg)
 
     rprint()
@@ -811,7 +810,66 @@ def analyse_session(data_dir, session_num, out_root, plots=True):
     # Save text report
     report_path = out / f"report_{snum}.txt"
     report_path.write_text("\n".join(report_lines), encoding="utf-8")
-    print(f"\n  Report saved: {report_path.relative_to(PROJECT_ROOT)}")
+
+    # ── COMPACT TERMINAL SUMMARY ──────────────────────────────────────────────
+    print()
+    print("-" * 72)
+    _date_str = evt["session_start"].strftime("%Y-%m-%d") if evt["session_start"] else "-"
+    _dur_str  = str(evt["duration"]).split(".")[0] if evt["duration"] else "-"
+    print(f"  SESSION {snum}  |  {_date_str}  |  Duration: {_dur_str}")
+    print(f"  MAG: {len(mag)} rows   GGA: {len(gga)} rows   SPC: {len(spc)} rows")
+
+    # a) Sensor status table
+    _sensor_rows = []
+    for _sensor, _info in SENSOR_REFERENCE.items():
+        _port = _info["port"]
+        _full = _info["full_name"]
+        _rate = evt["char_rates"].get(_port, 0.0)
+        if _rate == 0.0:
+            _st = "DISCONNECTED"
+        else:
+            _cols = SENSOR_MAG_COLS.get(_sensor, [])
+            _has  = any(c in mag.columns and not mag[c].isna().all() for c in _cols)
+            if not _has and _sensor == "GDSpec":
+                _has = any(c in spc.columns and not spc[c].isna().all()
+                           for c in ["Sk", "Su", "Sth"])
+            if not _cols and _sensor != "GDSpec":
+                _has = True  # GDLas: no data columns to verify - trust EVT rate
+            _st = "OK  connected" if _has else "NO DATA"
+        _sensor_rows.append((_sensor, _full, _st))
+    print()
+    print(ascii_table(["Sensor", "Full Name", "Status"], _sensor_rows))
+
+    # b) Data quality table
+    _TERM_VARS = [
+        ("Mag1",  mag), ("Mag2",  mag), ("Mag1C", mag), ("Mag2C", mag),
+        ("Roll",  mag), ("Pitch", mag), ("Yaw",   mag), ("Ralt",  mag),
+        ("dHdop", gga), ("dSNo",  gga),
+        ("Sk",    spc), ("Su",    spc), ("Sth",   spc),
+    ]
+    _qual_rows = []
+    for _col, _df in _TERM_VARS:
+        if _col not in _df.columns or _df[_col].isna().all():
+            continue
+        _s = _df[_col].dropna()
+        _mn, _sd = f"{_s.mean():.3f}", f"{_s.std():.4f}"
+        if _col in STABILITY_THRESHOLDS:
+            _, _thresh = STABILITY_THRESHOLDS[_col]
+            _qst = "! HIGH STD" if _s.std() > _thresh else "OK"
+        else:
+            _qst = "OK"
+        _qual_rows.append((_col, _mn, _sd, _qst))
+    if _qual_rows:
+        print()
+        print(ascii_table(["Variable", "Mean", "Std", "Status"], _qual_rows))
+
+    # c) Warning summary
+    _n_crit   = len(evt["critical_lines"])
+    _n_mux_to = sum(wrn.get(k, 0) for k in ["M1 TimeO", "M2 TimeO", "M3 TimeO"])
+    print()
+    print(f"  {_n_crit} critical errors   {_n_mux_to} Mux TimeO warnings (normal on ground)")
+    print(f"  Full report: outputs/session_{snum}/report_{snum}.txt")
+    print("-" * 72)
 
     return {
         "session"         : snum,

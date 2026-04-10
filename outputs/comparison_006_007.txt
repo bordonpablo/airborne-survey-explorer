@@ -1,0 +1,32 @@
+SESSION COMPARISON: 006 vs 007
+
++--------+-----------------------------------------+---------------+---------------+
+| Sensor     | Full Name                                      | Session 006            | Session 007            |
++--------+-----------------------------------------+---------------+---------------+
+| GEMK1     | Magnetometer #1 (Port side)                                      | OK  connected            | OK  connected            |
+| GEMK2     | Magnetometer #2 (Starboard side)                                      | OK  connected            | OK  connected            |
+| GDRAlt     | Radar Altimeter                                      | OK  connected            | OK  connected            |
+| GD485     | ADC 4-channel VLF receiver (RS-485 bus)                                      | DISCONNECTED            | DISCONNECTED            |
+| XSENS     | AHRS / GPS attitude sensor                                      | OK  connected            | OK  connected            |
+| GDGPS     | Septentrio differential GPS                                      | OK  connected            | OK  connected            |
+| GDSpec     | Medusa Gamma-Ray Spectrometer                                      | DISCONNECTED            | DISCONNECTED            |
+| GDLas     | Laser Altimeter                                      | DISCONNECTED            | DISCONNECTED            |
++--------+-----------------------------------------+---------------+---------------+
+
++----------+----------------------------+----------------------------+
+| Variable       | Session 006 (mean +/- std)                         | Session 007 (mean +/- std)                         |
++----------+----------------------------+----------------------------+
+| Mag1       | 49353.062 +/- 2.1893                         | 49358.667 +/- 0.3790                         |
+| Mag2       | 49458.692 +/- 3.6975                         | 52060.329 +/- 9150.5874                         |
+| Mag1C       | 49354.514 +/- 2.1192                         | 49360.220 +/- 0.2074                         |
+| Mag2C       | 49460.727 +/- 2.0413                         | 49461.762 +/- 0.0125                         |
+| Roll       | 0.231 +/- 0.1938                         | -0.050 +/- 0.1267                         |
+| Pitch       | -5.644 +/- 0.0892                         | -5.667 +/- 0.0911                         |
+| Yaw       | -14.509 +/- 0.2953                         | -13.841 +/- 0.2710                         |
+| Ralt       | 1.152 +/- 10.3005                         | 8.368 +/- 56.6959                         |
+| dHdop       | 0.856 +/- 0.0513                         | 0.652 +/- 0.0591                         |
+| dSNo       | 12.062 +/- 0.4605                         | 15.657 +/- 1.5305                         |
+| Sk       | 341810.000 +/- 0.0000                         | 341810.000 +/- 0.0000                         |
+| Su       | 251860.000 +/- 0.0000                         | 251860.000 +/- 0.0000                         |
+| Sth       | 188895.000 +/- 0.0000                         | 188895.000 +/- 0.0000                         |
++----------+----------------------------+----------------------------+

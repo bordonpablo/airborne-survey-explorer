@@ -10,29 +10,27 @@ The pipeline starts with an initial status check (sensor health, data quality) a
 
 | Step | Script | Purpose |
 |------|--------|---------|
-| **Step 1** | `src/step1_status.py` | Sensor health check and data-quality monitoring for one or more sessions |
-| **Step 2** | `src/step2_compare.py` | Side-by-side comparison of two sessions |
-| *(planned)* | `src/step3_lines.py` | Flight line definition and editing |
-| *(planned)* | `src/step4_maps.py` | Variable plots over flight lines and map export |
-| *(planned)* | `src/step5_corrections.py` | Diurnal, IGRF, and lag corrections |
+| **Step 1** | `src/step1_status.py` | Sensor health check and data-quality check for one or more sessions; prints side-by-side comparison when 2+ sessions are given |
+| *(planned)* | `src/step2_lines.py` | Flight line definition, editing, and session merging |
+| *(planned)* | `src/step3_mag.py` | Magnetic corrections (diurnal, IGRF, lag, compensation) |
+| *(future)* | `src/step3_rad.py` | Radiometric corrections (Medusa spectrometer) |
+| *(planned)* | `src/step4_maps.py` | Gridding, colour maps, and export |
+
+See [`docs/pipeline.md`](docs/pipeline.md) for detailed explanations of each step.
 
 ---
 
 ## Usage
 
 ```bash
-# Step 1 – auto-detects data folder and all sessions
+# Auto-detects data folder and all sessions
 python src/step1_status.py
 
-# Step 1 – specify folder and/or sessions explicitly
+# Specify folder (sessions auto-detected)
 python src/step1_status.py "data/MyFolder"
+
+# Specify folder and sessions explicitly; prints comparison table when 2+ given
 python src/step1_status.py "data/MyFolder" 6 7
-
-# Step 2 – compare first two sessions found automatically
-python src/step2_compare.py
-
-# Step 2 – specify folder and sessions
-python src/step2_compare.py "data/MyFolder" 6 7
 ```
 
 ---
@@ -49,12 +47,11 @@ airborne-survey-explorer/
 │       ├── SPC000NN.txt    ← spectrometer / environment (~1 Hz)
 │       ├── Cfg000NN.xml    ← system configuration snapshot
 │       └── CMP_*.{bin,cff} ← magnetic compensation model
+├── docs/
+│   └── pipeline.md                 ← detailed step-by-step pipeline reference
 ├── src/
 │   ├── geoduster_utils.py          ← shared parsers, constants, analyse_session()
-│   ├── step1_status.py             ← Step 1: sensor health + data quality
-│   ├── step2_compare.py            ← Step 2: session comparison
-│   ├── analyse_session_006.py      ← legacy single-session script
-│   └── analyse_sessions_006_007.py ← legacy dual-session script
+│   └── step1_status.py             ← Step 1: sensor health + data quality + comparison
 └── outputs/
     ├── session_NNN/
     │   ├── report_NNN.txt
