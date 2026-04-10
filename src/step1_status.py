@@ -117,25 +117,6 @@ def _print_comparison(results, out_root):
             rows.append((col, *vals))
     print(ascii_table(hdr, rows))
 
-    # Save compact comparison file
-    comp_path = out_root / f"comparison_{'_'.join(snums)}.txt"
-    comp_path.parent.mkdir(parents=True, exist_ok=True)
-    lines = [
-        f"SESSION COMPARISON: {' vs '.join(snums)}",
-        "",
-        ascii_table(
-            ["Sensor", "Full Name"] + [f"Session {s}" for s in snums],
-            [
-                (sensor, SENSOR_REFERENCE[sensor]["full_name"],
-                 *[_sensor_status(r, sensor) for r in results])
-                for sensor in SENSOR_REFERENCE
-            ]
-        ),
-        "",
-        ascii_table(hdr, rows),
-    ]
-    comp_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"\n  Comparison saved: {comp_path.relative_to(PROJECT_ROOT)}")
     print()
 
 
@@ -171,10 +152,6 @@ def main():
     print(f"\n  Data folder : {data_dir.relative_to(PROJECT_ROOT)}")
     print(f"  Sessions    : {sessions}")
     print(f"  Outputs     : {out_root.relative_to(PROJECT_ROOT)}/")
-
-    print(f"\nFiles in data folder:")
-    for f in sorted(data_dir.iterdir()):
-        print(f"  {f.name}")
 
     # ── Run analysis for each session ──────────────────────────────────────────
     results = []

@@ -307,8 +307,6 @@ def make_plot(df, columns, title, filename, out_dir, y_label="Value", label=""):
     """
     valid_cols = [c for c in columns if c in df.columns and not df[c].isna().all()]
     if not valid_cols:
-        tag = f"[{label}] " if label else ""
-        print(f"  SKIP {tag}'{title}' – all columns absent/disconnected: {columns}")
         return None
 
     x = df["time_sec"]
@@ -361,7 +359,6 @@ def make_plot(df, columns, title, filename, out_dir, y_label="Value", label=""):
     fpath = out_dir / filename
     fig.savefig(fpath, dpi=150)
     plt.close(fig)
-    print(f"  Saved: {fpath.relative_to(PROJECT_ROOT)}")
     return fpath
 
 

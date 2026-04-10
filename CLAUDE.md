@@ -117,4 +117,5 @@ the synchronisation trigger relies on aircraft motion; this is normal.
 - **NaN gaps in plots**: use `plt.plot()` directly – NaN naturally breaks the line
 - **Excluded from analysis**: `Xst`, `Bin`, `Sbin` columns (hex/binary)
 - **Shared code**: put parsers and constants in `geoduster_utils.py`, not in step scripts
+- **Terminal output**: only compact summary (sensor status + quality table + warning count); no file lists, no "Saved:" lines, no comparison file written to disk
 - **No auto-generation**: CLAUDE.md and README.md are maintained manually

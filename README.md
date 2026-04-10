@@ -79,6 +79,8 @@ For each session, `step1_status.py` produces:
 - **Stability table**: mean, std, min, max, and threshold check for all key variables
 - **Cross-check**: EVT connection status vs actual NaN presence in MAG
 
+The terminal prints only a compact summary per session (sensor status + key variable quality table + warning count). Detailed output goes to the report file only.
+
 ---
 
 ## Data formats
