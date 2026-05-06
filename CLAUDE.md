@@ -1,121 +1,235 @@
-# Airborne Survey Explorer
+# CLAUDE.md — Project: airborne-survey-explorer
 
-General-purpose pipeline for processing raw GeoDuster airborne geophysics data.
-Works with any dataset (ground tests, calibration flights, survey missions).
-The current dataset is a ground test at Welzow on 2026-03-24 (sessions 006 and 007).
-
----
-
-## Pipeline stages
-
-| Stage | Script | Status |
-|-------|--------|--------|
-| Step 1 – sensor status, data quality & session comparison | `src/step1_status.py` | done |
-| Step 2 – flight line editing | `src/step2_lines.py` | planned |
-| Step 3 – magnetic corrections | `src/step3_mag.py` | planned |
-| Step 3 – radiometric corrections | `src/step3_rad.py` | future |
-| Step 4 – variable maps | `src/step4_maps.py` | planned |
+This file gives Claude Code the context, structure, and conventions of this project.
+Read it in full before generating any code or modifying any file.
 
 ---
 
-## Project structure
+## What this project does
+
+Python tool for processing airborne geophysical data (magnetics and radiometry) acquired
+by light aircraft. The goal is to replicate the workflow of commercial software (Oasis Montaj)
+with custom, modular, and reusable code.
+
+The reference campaign is **Mongolia 2022**. The design is reusable for future campaigns
+by parameterising everything through `config/project.yaml`.
+
+---
+
+## Data structure
+
+### Raw data — inside the repository but ignored by git
+
+Raw flight data lives in `data/raw/Mongolia_2022/Daten_Nisleg_2022/` organised by flight day.
+These folders are listed in `.gitignore` and **are never committed to git**.
+Only `TestSurveyNav.csv` is versioned because it is small and is survey configuration.
+
+```
+data/raw/Mongolia_2022/
+└── Daten_Nisleg_2022/
+    ├── TestSurveyNav.csv       ← in git (survey plan, treated as configuration)
+    ├── 22.04.2022/             ← not in git (raw flight data)
+    │   ├── GGA00447            # GPS navigation, flight 447
+    │   ├── MAG00447            # Magnetometer, flight 447
+    │   ├── SPC00447            # Spectrometer, flight 447
+    │   ├── EVT00447            # Event log, flight 447
+    │   ├── Cfg00447            # System configuration, flight 447
+    │   ├── GGA00451            # (same for flight 451)
+    │   ├── MAG00451
+    │   ├── SPC00451
+    │   ├── EVT00451
+    │   ├── Cfg00451
+    │   ├── Tagesgang00447_00451   # Magnetic base station (covers the full day)
+    │   └── Flugbuch               # Flight log with operator notes
+    ├── 24.04.2022/
+    └── ... (one directory per flight day)
+```
+
+One day may contain multiple flights. The number in the file name identifies the flight.
+One flight may contain multiple survey lines.
+
+### File types and key columns
+
+| File       | Timestamp      | Rate    | Main columns |
+|------------|----------------|---------|--------------|
+| GGA        | M3clk (ms)     | ~10 Hz  | Xdgps, Ydgps, Zdgps, dWayp |
+| MAG        | M1clk (ms)     | ~10 Hz  | Xgps, Ygps, Ralt, Lalt, Mag1, Mag2, Roll, Pitch, Yaw |
+| SPC        | M2clk (ms)     | ~1 Hz   | Sxgps, Sygps, Sralt, Sk, Su, Sth, Sa0, Sa1, Sa2, Srate |
+| Tagesgang  | time (HHMMSS)  | ~0.3 Hz | nT |
+| SurveyNav  | —              | —       | line_id, x_start, y_start, x_end, y_end |
+
+**Synchronisation**: M1clk / M2clk / M3clk are milliseconds since acquisition system start-up.
+They are the synchronisation axis between sensors.
+**Never synchronise sensors by GPS coordinates — always by timestamp.**
+
+---
+
+## Repository structure
 
 ```
 airborne-survey-explorer/
+├── CLAUDE.md                       ← this file
+├── README.md
+├── .gitignore
+├── requirements.txt
+├── config/
+│   └── project.yaml                # Active survey parameters
 ├── data/
-│   └── <date> <location> <sessions>/   ← one subfolder per dataset
-│       ├── EVT000NN.txt    ← system event logs
-│       ├── MAG000NN.txt    ← main multi-sensor data
-│       ├── GGA000NN.txt    ← differential GPS log
-│       ├── SPC000NN.txt    ← spectrometer / environment
-│       ├── Cfg000NN.xml    ← system configuration snapshot
-│       └── CMP_*.*         ← magnetic compensation model
+│   ├── raw/
+│   │   └── Mongolia_2022/
+│   │       └── Daten_Nisleg_2022/
+│   │           ├── TestSurveyNav.csv   ← in git
+│   │           ├── 22.04.2022/         ← ignored by git
+│   │           └── ...
+│   ├── interim/                    ← ignored by git
+│   └── processed/                  ← ignored by git
 ├── docs/
-│   └── pipeline.md                 ← detailed pipeline reference
+├── img/
+├── outputs/
+│   ├── maps/
+│   ├── profiles/
+│   └── reports/
 ├── src/
-│   ├── geoduster_utils.py          ← shared parsers, constants, analyse_session()
-│   └── step1_status.py             ← Step 1: sensor health + data quality + comparison
-└── outputs/
-    ├── session_NNN/
-    │   ├── report_NNN.txt
-    │   └── plot_01_mag_raw.png  … (8 plots)
-    └── comparison_NNN_MMM.txt
+│   ├── m00_preparation/
+│   ├── m01_qc/
+│   ├── m02_magnetics/
+│   ├── m03_radiometry/
+│   ├── m04_gridding/
+│   ├── m05_export/
+│   └── utils/
+└── requirements.txt
 ```
 
 ---
 
-## Data formats
+## Processing pipeline
 
-### EVT files (event log)
-Plain-text timestamped event log produced by ICCS (GeoDuster acquisition
-software). Each line: `HH:MM:SS.d: <message>`. Key patterns:
+The order is strict. Each module receives the output of the previous one.
+QC (M1) always comes after line editing (M0) because its metrics only make sense
+over valid line segments, not over the full flight.
 
-| Pattern | Meaning |
-|---------|---------|
-| `COMx: Macro SENSORNAME OK` | Sensor configured on port |
-| `Character Rate on COMx is X.X chars/second` | Port activity (0=disconnected) |
-| `Mx latches port COMx runs macro NAME` | Mux routing table |
-| `Health Warning: Mx TimeO\|` | Multiplexer x timed out |
-| `Health Warning: Nv WayP\|` | No navigation waypoint active |
+### Module 0 — Data preparation
+**Input**: raw files for one flight (GGA, MAG, SPC, Tagesgang).
+**Steps**:
+- 0.1 Read and parse each file type with type-specific functions
+- 0.2 Synchronise sensors by timestamp using `merge_asof()` (GGA as the primary axis)
+- 0.3 Identify flight lines by proximity to the plan (cross-track distance < 300 m + correct heading)
+- 0.4 Trim turns and invalid segments (stable airspeed + consistent heading)
 
-### MAG / GGA / SPC files (fixed-width ASCII)
-**Right-aligned fixed-width format.** Column boundaries align with the
-RIGHT edge of each header token. Parse with `pd.read_fwf` using
-colspecs derived from `m.end()` positions of regex matches on the
-header line (NOT `m.start()`). Cells containing only `#` = NaN.
+**Output**: `data/interim/Mongolia_2022/<date>/flight_<N>_prepared.parquet`
+DataFrame where every valid row has a `line_id` assigned and all sensors synchronised.
 
-Key column rules:
-- `Time` / `dTime` / `Stime` encode UTC as `HHMMSS.sss` float
-- `Bin` / `Sbin` are raw hex – exclude from numeric analysis
-- `Xst` is a long hex status word – exclude from numeric analysis
+### Module 1 — Quality control (QC)
+**Input**: prepared DataFrame from M0 (valid line data only).
+**Steps**:
+- Altitude deviation from the 100 m drape target
+- Cross-track deviation from planned lines
+- Sample spacing and gap detection
+- Magnetic noise assessment per line
+- Diurnal drift test against base station
 
-### Cfg XML files
-GeoDuster system configuration snapshot. Key tags:
-`COMPNAME` (compensation model), `NAVNAME` (navigation file),
-`COMxSTATE` (On/Off per port), `MACRO` (sensor assigned per port).
+**Output**: same DataFrame + flag columns (`flag_altitude`, `flag_spacing`, `flag_noise`)
++ report in `outputs/reports/`.
+
+### Module 2 — Magnetic processing
+**Input**: DataFrame with `line_id` and QC flags.
+**Sequence**:
+1. GNSS lag correction
+2. Diurnal correction (Tagesgang)
+3. Heading correction
+4. Average of the two magnetometers
+5. IGRF removal (IGRF-13 model)
+6. Levelling with tie lines
+7. Micro-levelling (decorrugation)
+
+**Output**: column `Mag_Final` (Residual Magnetic Anomaly) added to the DataFrame.
+
+### Module 3 — Radiometric processing
+**Input**: same DataFrame.
+**Sequence** (Medusa spectrometer FSA):
+1. Dead-time correction
+2. Aircraft background subtraction
+3. Radon correction
+4. Altitude correction (normalisation to STP)
+5. Conversion to concentrations: K (%), eU (ppm), eTh (ppm)
+6. Levelling and micro-levelling
+
+**Output**: columns `K_corr`, `eU_corr`, `eTh_corr` added to the DataFrame.
+
+### Module 4 — Gridding and derived products
+**Input**: processed DataFrame from M2 and M3.
+**Steps**:
+- Interpolation to a regular grid (minimum curvature or kriging), cell ~50-60 m
+- Magnetic products: RTP, analytic signal, vertical derivative, tilt derivative
+- Radiometric products: ternary map K-eTh-eU, ratios, Dose Rate
+
+**Output**: GeoTIFF grids in `outputs/maps/`.
+
+### Module 5 — Visualisation and export
+**Output**: maps, profiles, GeoTIFF, Shapefile, processed CSV, final report.
 
 ---
 
-## Sensors (full reference)
+## config/project.yaml
 
-| Sensor | Port | Label | Full Name | MAG cols | Description |
-|--------|------|-------|-----------|----------|-------------|
-| GEMK1 | COM3 | P3 | Magnetometer #1 (Port side) | Mag1, Mag1D, Mag1C, A1, T1, X1, Y1, Z1 | GEM Systems KING-AIR towed fluxgate magnetometer – total field |
-| GEMK2 | COM4 | P4 | Magnetometer #2 (Starboard side) | Mag2, Mag2D, Mag2C, A2, T2, X2, Y2, Z2 | GEM Systems KING-AIR towed fluxgate magnetometer – total field |
-| GDRAlt | COM5 | P5 | Radar Altimeter | Ralt, Raltr | Measures height above ground (AGL) in metres |
-| GD485 | COM6 | P6 | ADC 4-channel VLF receiver (RS-485 bus) | MagL, MagLC, Vlf1, Vlf2, Vlf3, Vlf4 | Analogue-to-digital converter for VLF EM channels |
-| XSENS | COM7 | P7 | AHRS / GPS attitude sensor | Roll, Pitch, Yaw | XSENS MTi inertial measurement unit – Roll, Pitch, Yaw |
-| GDGPS | COM8 | P8 | Septentrio differential GPS | Xgps, Ygps, Zgps, Lalt | High-precision GNSS receiver – position and altitude |
-| GDSpec | COM9 | P9 | Medusa Gamma-Ray Spectrometer | Vlf1, Vlf2, Vlf3, Vlf4 | Gamma-ray spectrometer with environmental sensors |
-| GDLas | COM10 | P10 | Laser Altimeter | — | Laser rangefinder for precise terrain clearance |
+```yaml
+campaign:
+  name: "Mongolia_2022"
+  raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
+  survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
+  start_date: "2022-04-22"
+  center_area: [107.57, 47.81]       # lon, lat
+  projection: "EPSG:32648"           # WGS84 / UTM zone 48N
 
----
+flight:
+  nominal_altitude_m: 100
+  line_spacing_m: 250
+  tieline_spacing_m: 1500
+  line_direction_deg: 90             # E-W
+  line_tolerance_m: 300              # For line identification
 
-## Mux → file mapping (M1/M2/M3 system)
+magnetics:
+  igrf_base_field_nT: 59150
+  igrf_model: "IGRF-13"
 
-| Mux | Label | Writes to | Sensors it polls |
-|-----|-------|-----------|-----------------|
-| M1  | Mux1  | MAG file  | GEMK1, GEMK2, GDRAlt, GD485, XSENS, GDLas |
-| M2  | Mux2  | GGA file  | GDSpec (provides GPS timestamp to GGA) |
-| M3  | Mux3  | SPC file  | GDGPS (provides position to SPC) |
+gridding:
+  cell_size_m: 60
+  method: "minimum_curvature"
+```
 
-Note: M1/M2/M3 TimeO warnings are persistent during ground tests because
-the synchronisation trigger relies on aircraft motion; this is normal.
+Never hardcode paths or parameters in the code. Always read them from this file using pyyaml.
 
 ---
 
 ## Coding conventions
 
-- **Root path**: `PROJECT_ROOT = Path(__file__).resolve().parents[1]`
-- **Session IDs**: zero-padded 5-digit for filenames (`"00006"`), 3-digit for output dirs (`"006"`)
-- **Data folder**: passed as argument or auto-detected from first subfolder under `data/`
-- **Sessions**: auto-detected by globbing `EVT*.txt` in the data folder
-- **Fixed-width parsing**: use `m.end()` of header tokens as column right boundaries
-- **NaN encoding**: replace `#`-only cells before numeric conversion
-- **Time axis**: convert `HHMMSS.sss` → elapsed seconds from first sample
-- **Plots**: 5 per session saved to `outputs/session_NNN/` at 150 dpi, `matplotlib.use("Agg")` — raw mag, attitude, radar alt, GPS quality, spectrometer
-- **NaN gaps in plots**: use `plt.plot()` directly – NaN naturally breaks the line
-- **Excluded from analysis**: `Xst`, `Bin`, `Sbin` columns (hex/binary)
-- **Shared code**: put parsers and constants in `geoduster_utils.py`, not in step scripts
-- **Terminal output**: nothing (silent run); only error messages if data folder or EVT files are not found
-- **No auto-generation**: CLAUDE.md and README.md are maintained manually
+- `snake_case` for all variables and functions
+- One file per sub-task: `read_gga.py`, `diurnal_correction.py`, `igrf_removal.py`
+- Docstrings explaining what the function does AND the geophysical concept behind it
+- `print()` with progress messages at each important step
+- Save intermediates to `data/interim/` after each module
+- Preferred formats: `.parquet` for large DataFrames, `.csv` for small tables
+
+---
+
+## Instructions for Claude Code
+
+- Before generating code, briefly explain the geophysical concept involved
+- If there is a formula, show it and explain each term
+- Always include an example of how to run the script from the terminal
+- Clearly indicate which parameters come from `project.yaml`
+- Prefer solutions the user can run step by step
+- When relevant, mention how the same step would be done in Oasis Montaj
+
+---
+
+## Reference campaign: Mongolia 2022
+
+- Area: central Mongolia (~107.57°E, 47.81°N)
+- Flight days: 22/04/2022 to 14/05/2022 (with gaps)
+- Delivery projection: WGS84/UTM-48N (EPSG:32648)
+- Production lines: E-W direction, 250 m spacing
+- Tie lines: N-S direction, 1500 m spacing
+- Nominal flight altitude: 100 m above terrain (drape)
+- Kilometres flown: ~2263 km of production (of 2368 planned)
+- IGRF reference field: 59150 nT

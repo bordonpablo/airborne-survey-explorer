@@ -1,0 +1,22 @@
+campaign:
+  name: "Mongolia_2022"
+  raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
+  survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
+  start_date: "2022-04-22"
+  center_area: [107.57, 47.81]       # lon, lat
+  projection: "EPSG:32648"           # WGS84 / UTM zone 48N
+
+flight:
+  nominal_altitude_m: 100
+  line_spacing_m: 250
+  tieline_spacing_m: 1500
+  line_direction_deg: 90             # E-W
+  line_tolerance_m: 300              # For line identification
+
+magnetics:
+  igrf_base_field_nT: 59150
+  igrf_model: "IGRF-13"
+
+gridding:
+  cell_size_m: 60
+  method: "minimum_curvature"
