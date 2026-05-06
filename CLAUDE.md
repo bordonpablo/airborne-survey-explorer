@@ -8,8 +8,8 @@ Read it in full before generating any code or modifying any file.
 ## What this project does
 
 Python tool for processing airborne geophysical data (magnetics and radiometry) acquired
-by light aircraft. The goal is to replicate the workflow of commercial software (Oasis Montaj)
-with custom, modular, and reusable code.
+by light aircraft. Implements the full geophysical processing chain — from raw sensor files
+to corrected grids and maps — in custom, modular, and reusable code.
 
 The reference campaign is **Mongolia 2022**. The design is reusable for future campaigns
 by parameterising everything through `config/project.yaml`.

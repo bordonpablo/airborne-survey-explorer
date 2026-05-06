@@ -1,7 +1,9 @@
 # Airborne Survey Explorer
 
 Python pipeline for processing airborne geophysical data (magnetics and radiometry) acquired
-by light aircraft. Replicates the Oasis Montaj workflow with custom, modular, reusable code.
+by light aircraft. Covers the full processing chain from raw sensor files to corrected,
+gridded products — implemented in modular, reusable code. Results can be cross-checked
+against commercial software (Oasis Montaj) at each processing stage.
 
 The reference campaign is **Mongolia 2022**. The pipeline is fully parametrised via
 `config/project.yaml` and designed for reuse across future campaigns.
