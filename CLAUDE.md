@@ -27,7 +27,7 @@ Only `TestSurveyNav.csv` is versioned because it is small and is survey configur
 ```
 data/raw/Mongolia_2022/
 └── Daten_Nisleg_2022/
-    ├── TestSurveyNav.csv       ← in git (survey plan, treated as configuration)
+    ├── TestSurveyNav.csv       ← not in git (ignored under data/)
     ├── 22.04.2022/             ← not in git (raw flight data)
     │   ├── GGA00447            # GPS navigation, flight 447
     │   ├── MAG00447            # Magnetometer, flight 447
@@ -78,11 +78,11 @@ airborne-survey-explorer/
 │   ├── raw/
 │   │   └── Mongolia_2022/
 │   │       └── Daten_Nisleg_2022/
-│   │           ├── TestSurveyNav.csv   ← in git
-│   │           ├── 22.04.2022/         ← ignored by git
+│   │           ├── TestSurveyNav.csv   ← not in git
+│   │           ├── 22.04.2022/         ← not in git
 │   │           └── ...
-│   ├── interim/                    ← ignored by git
-│   └── processed/                  ← ignored by git
+│   ├── interim/                    ← not in git
+│   └── processed/                  ← not in git
 ├── docs/
 ├── img/
 ├── outputs/

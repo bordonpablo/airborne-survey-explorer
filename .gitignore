@@ -6,9 +6,5 @@ __pycache__/
 *.py[cod]
 .venv/
 
-# Raw data - large files, never versioned
-data/raw/Mongolia_2022/Daten_Nisleg_2022/*/
-
-# Intermediate and processed data
-data/interim/
-data/processed/
+# All data — never versioned
+data/
