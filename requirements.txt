@@ -1,0 +1,6 @@
+pandas>=2.0
+pyarrow>=14.0
+pyyaml>=6.0
+pyproj>=3.6
+geopandas>=1.0
+shapely>=2.0

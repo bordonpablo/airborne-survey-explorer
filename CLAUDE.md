@@ -86,9 +86,7 @@ airborne-survey-explorer/
 ├── docs/
 ├── img/
 ├── outputs/
-│   ├── maps/
-│   ├── profiles/
-│   └── reports/
+│   └── <campaign>/             ← subcarpeta por campaña, archivos con timestamp
 ├── src/
 │   ├── m00_preparation/
 │   ├── m01_qc/
@@ -113,11 +111,17 @@ over valid line segments, not over the full flight.
 **Steps**:
 - 0.1 Read and parse each file type with type-specific functions
 - 0.2 Synchronise sensors by timestamp using `merge_asof()` (GGA as the primary axis)
-- 0.3 Identify flight lines by proximity to the plan (cross-track distance < 300 m + correct heading)
-- 0.4 Trim turns and invalid segments (stable airspeed + consistent heading)
+- 0.3 Assign line ID from the `Wayp` field in MAG (populated in real-time by the onboard navigation
+  system; blank = not on a survey line). Add `flight_id` from the filename (e.g. `"00427"` from
+  `MAG00427.txt`). The unique segment key is `(flight_id, line_id)`. Repeated lines across days
+  share the same `line_id` but have different `flight_id` values; the better segment is chosen
+  during M1 QC.
+- 0.4 Trim the first and last N seconds of each `(flight_id, line_id)` segment to remove
+  alignment and pull-out transients.
 
 **Output**: `data/interim/Mongolia_2022/<date>/flight_<N>_prepared.parquet`
-DataFrame where every valid row has a `line_id` assigned and all sensors synchronised.
+DataFrame where every valid row has `flight_id` and `line_id` assigned and all sensors synchronised.
+Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id = NaN`.
 
 ### Module 1 — Quality control (QC)
 **Input**: prepared DataFrame from M0 (valid line data only).

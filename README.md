@@ -14,7 +14,7 @@ The reference campaign is **Mongolia 2022**. The pipeline is fully parametrised 
 
 | Module | Folder | Description | Status |
 |--------|--------|-------------|--------|
-| M0 — Preparation | `src/m00_preparation/` | File parsing, sensor synchronisation, line identification and trimming | planned |
+| M0 — Preparation | `src/m00_preparation/` | File parsing, sensor synchronisation, line identification and trimming | [complete](src/m00_preparation/README.md) |
 | M1 — QC | `src/m01_qc/` | Quality control: altitude, spacing, magnetic noise, diurnal drift | planned |
 | M2 — Magnetics | `src/m02_magnetics/` | Lag, diurnal, heading, IGRF corrections; levelling | planned |
 | M3 — Radiometry | `src/m03_radiometry/` | FSA corrections: dead-time, background, radon, altitude; concentrations | planned |
@@ -37,9 +37,7 @@ airborne-survey-explorer/
 │   ├── interim/                    ← intermediate outputs (ignored by git)
 │   └── processed/                  ← final processed data (ignored by git)
 ├── outputs/
-│   ├── maps/
-│   ├── profiles/
-│   └── reports/
+│   └── <campaign>/             ← subcarpeta por campaña, archivos con timestamp
 └── src/
     ├── m00_preparation/
     ├── m01_qc/
@@ -85,3 +83,14 @@ One day may contain multiple flights; one flight may contain multiple survey lin
 | `Cfg*.xml` | — | Acquisition system configuration snapshot |
 
 Sensors are **always synchronised by timestamp** (M1clk/M2clk/M3clk), never by GPS coordinates.
+
+---
+
+## Ejecución
+
+Cada módulo implementado tiene su propio `README.md` con instrucciones detalladas
+de ejecución, descripción de cada script y ejemplos de uso.
+
+| Módulo | README |
+|---|---|
+| M0 — Data Preparation | [src/m00_preparation/README.md](src/m00_preparation/README.md) |
