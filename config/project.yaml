@@ -1,5 +1,6 @@
 campaign:
   name: "Mongolia_2022"
+  run_name: "full_campaign"          # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-22"

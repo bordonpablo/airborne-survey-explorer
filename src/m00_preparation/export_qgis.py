@@ -106,7 +106,7 @@ def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
 def export_gpkg(output_path: Path) -> None:
     cfg = load_config()
     nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
-    interim_root = PROJECT_ROOT / 'data' / 'interim' / cfg['campaign']['name']
+    interim_root = PROJECT_ROOT / 'data' / 'interim' / cfg['campaign']['name'] / cfg['campaign']['run_name']
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -143,5 +143,5 @@ if __name__ == '__main__':
     else:
         cfg = load_config()
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        out = PROJECT_ROOT / 'outputs' / cfg['campaign']['name'] / f'verification_{ts}.gpkg'
+        out = PROJECT_ROOT / 'outputs' / cfg['campaign']['name'] / cfg['campaign']['run_name'] / f'verification_{ts}.gpkg'
     export_gpkg(out)

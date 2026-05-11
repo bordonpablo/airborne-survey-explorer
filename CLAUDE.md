@@ -119,7 +119,7 @@ over valid line segments, not over the full flight.
 - 0.4 Trim the first and last N seconds of each `(flight_id, line_id)` segment to remove
   alignment and pull-out transients.
 
-**Output**: `data/interim/Mongolia_2022/<date>/flight_<N>_prepared.parquet`
+**Output**: `data/interim/Mongolia_2022/<run_name>/<date>/flight_<N>_prepared.parquet`
 DataFrame where every valid row has `flight_id` and `line_id` assigned and all sensors synchronised.
 Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id = NaN`.
 
@@ -179,6 +179,7 @@ Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id 
 ```yaml
 campaign:
   name: "Mongolia_2022"
+  run_name: "full_campaign"          # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-22"

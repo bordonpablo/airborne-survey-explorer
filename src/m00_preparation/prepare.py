@@ -76,7 +76,10 @@ def main(target_date: str | None = None, target_flight: str | None = None) -> No
     cfg = load_config()
     raw_root = PROJECT_ROOT / cfg['campaign']['raw_data_path']
     campaign = cfg['campaign']['name']
-    interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign
+    run_name = cfg['campaign']['run_name']
+    interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
+    print(f"Campaign : {campaign}")
+    print(f"Run      : {run_name}")
 
     if target_date:
         day_dirs = [raw_root / target_date]
