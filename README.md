@@ -2,8 +2,7 @@
 
 Python pipeline for processing airborne geophysical data (magnetics and radiometry) acquired
 by light aircraft. Covers the full processing chain from raw sensor files to corrected,
-gridded products — implemented in modular, reusable code. Results can be cross-checked
-against commercial software (Oasis Montaj) at each processing stage.
+gridded products — implemented in modular, reusable code.
 
 The reference campaign is **Mongolia 2022**. The pipeline is fully parametrised via
 `config/project.yaml` and designed for reuse across future campaigns.
@@ -37,7 +36,7 @@ airborne-survey-explorer/
 │   ├── interim/                    ← intermediate outputs (ignored by git)
 │   └── processed/                  ← final processed data (ignored by git)
 ├── outputs/
-│   └── <campaign>/             ← subcarpeta por campaña, archivos con timestamp
+│   └── <campaign>/             ← one subfolder per campaign, files with timestamp
 └── src/
     ├── m00_preparation/
     ├── m01_qc/
@@ -86,11 +85,11 @@ Sensors are **always synchronised by timestamp** (M1clk/M2clk/M3clk), never by G
 
 ---
 
-## Ejecución
+## Usage
 
-Cada módulo implementado tiene su propio `README.md` con instrucciones detalladas
-de ejecución, descripción de cada script y ejemplos de uso.
+Each implemented module has its own `README.md` with detailed execution instructions,
+script descriptions, and usage examples.
 
-| Módulo | README |
+| Module | README |
 |---|---|
 | M0 — Data Preparation | [src/m00_preparation/README.md](src/m00_preparation/README.md) |
