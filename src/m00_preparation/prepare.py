@@ -14,6 +14,7 @@ config/project.yaml. For each flight found in a day folder, it:
   4. Saves to data/interim/<campaign>/<date>/flight_<N>_prepared.parquet
 """
 
+import shutil
 import sys
 from pathlib import Path
 
@@ -31,6 +32,14 @@ from src.m00_preparation.sync_sensors import sync_sensors, trim_line_ends, save_
 def load_config() -> dict:
     with open(PROJECT_ROOT / 'config' / 'project.yaml') as f:
         return yaml.safe_load(f)
+
+
+def snapshot_config(run_root: Path) -> None:
+    """Copy project.yaml into the run folder for reproducibility."""
+    run_root.mkdir(parents=True, exist_ok=True)
+    dest = run_root / 'config.yaml'
+    shutil.copy2(PROJECT_ROOT / 'config' / 'project.yaml', dest)
+    print(f"Config snapshot  : {dest}")
 
 
 def find_flights(day_dir: Path) -> list[str]:
@@ -80,6 +89,7 @@ def main(target_date: str | None = None, target_flight: str | None = None) -> No
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
     print(f"Campaign : {campaign}")
     print(f"Run      : {run_name}")
+    snapshot_config(interim_root)
 
     if target_date:
         day_dirs = [raw_root / target_date]

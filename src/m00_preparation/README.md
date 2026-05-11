@@ -79,5 +79,6 @@ against the same dataset.
 
 | Path | Contents |
 |---|---|
+| `data/interim/<campaign>/<run_name>/config.yaml` | Snapshot of the config used — kept for reproducibility |
 | `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, input for M01 |
 | `outputs/<campaign>/<run_name>/verification_YYYYMMDD_HHMMSS.gpkg` | GeoPackage for QGIS verification |
