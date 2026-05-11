@@ -1,24 +1,24 @@
-# Módulo 0 — Data Preparation
+# Module 0 — Data Preparation
 
-Lee los archivos crudos de cada vuelo (MAG, GGA, SPC), sincroniza los sensores
-por timestamp y guarda el resultado como Parquet listo para M01.
+Reads raw files for each flight (MAG, GGA, SPC), synchronises sensors by timestamp,
+and saves the result as a Parquet file ready for M01.
 
 ## Scripts
 
-| Script | Rol |
+| Script | Role |
 |---|---|
-| `prepare.py` | **Punto de entrada principal.** Procesa uno o todos los vuelos. |
-| `export_qgis.py` | **Verificación visual.** Genera un GeoPackage para QGIS. |
-| `read_mag.py` | Función interna — parsea archivos MAG (~10 Hz, magnetómetro + actitud) |
-| `read_gga.py` | Función interna — parsea archivos GGA (~10 Hz, GPS diferencial) |
-| `read_spc.py` | Función interna — parsea archivos SPC (~1 Hz, espectrómetro) |
-| `read_tagesgang.py` | Función interna — parsea archivos de estación base magnética |
-| `read_survey_nav.py` | Función interna — lee `TestSurveyNav.csv` (líneas planificadas) |
-| `sync_sensors.py` | Función interna — sincroniza sensores con `merge_asof`, recorta transitorios |
+| `prepare.py` | **Main entry point.** Processes one or all flights. |
+| `export_qgis.py` | **Visual verification.** Generates a GeoPackage for QGIS. |
+| `read_mag.py` | Internal — parses MAG files (~10 Hz, magnetometer + attitude) |
+| `read_gga.py` | Internal — parses GGA files (~10 Hz, differential GPS) |
+| `read_spc.py` | Internal — parses SPC files (~1 Hz, spectrometer) |
+| `read_tagesgang.py` | Internal — parses magnetic base station files |
+| `read_survey_nav.py` | Internal — reads `TestSurveyNav.csv` (planned lines) |
+| `sync_sensors.py` | Internal — synchronises sensors with `merge_asof`, trims transients |
 
-## Selección de campaña
+## Campaign selection
 
-La campaña activa se define en `config/project.yaml`:
+The active campaign is defined in `config/project.yaml`:
 
 ```yaml
 campaign:
@@ -26,60 +26,58 @@ campaign:
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
 ```
 
-Para procesar otra campaña, se edita ese archivo. No es necesario pasar
-ningún argumento al script.
+To process a different campaign, edit that file. No script arguments are needed.
 
-## Flujo de ejecución
+## Execution flow
 
-### Paso 1 — Preparar los vuelos
+### Step 1 — Prepare flights
 
-Procesar toda la campaña activa (todos los días y todos los vuelos):
+Process the entire active campaign (all days and all flights):
 
 ```bash
 python -m src.m00_preparation.prepare
 ```
 
-Procesar solo un día:
+Process a single day:
 
 ```bash
 python -m src.m00_preparation.prepare 22.04.2022
 ```
 
-Procesar un único vuelo de un día concreto:
+Process a single flight from a specific day:
 
 ```bash
 python -m src.m00_preparation.prepare 22.04.2022 00427
 ```
 
-El argumento de fecha debe coincidir exactamente con el nombre de la carpeta
-en el directorio de datos crudos (formato `DD.MM.YYYY`).
-El ID de vuelo es el número de 5 dígitos del archivo MAG correspondiente
-(p. ej. `MAG00427.txt` → `00427`).
+The date argument must match the folder name exactly (format `DD.MM.YYYY`).
+The flight ID is the 5-digit number from the corresponding MAG file
+(e.g. `MAG00427.txt` → `00427`).
 
-Por cada vuelo procesado el script:
-1. Lee MAG, GGA y SPC
-2. Sincroniza los tres sensores sobre el eje temporal de GGA (`merge_asof`)
-3. Recorta los primeros y últimos 5 s de cada línea de vuelo (transitorios)
-4. Guarda en `data/interim/<campaña>/<fecha>/flight_XXXXX_prepared.parquet`
+For each processed flight the script:
+1. Reads MAG, GGA and SPC files
+2. Synchronises the three sensors onto the GGA time axis (`merge_asof`)
+3. Trims the first and last 5 s of each survey line (transients)
+4. Saves to `data/interim/<campaign>/<date>/flight_XXXXX_prepared.parquet`
 
-### Paso 2 — Verificar en QGIS (opcional)
+### Step 2 — Verify in QGIS (optional)
 
 ```bash
 python -m src.m00_preparation.export_qgis
 ```
 
-Genera `outputs/<campaña>/verification_YYYYMMDD_HHMMSS.gpkg` con tres capas:
+Generates `outputs/<campaign>/verification_YYYYMMDD_HHMMSS.gpkg` with three layers:
 
-- `survey_plan` — líneas planificadas (UTM 48N)
-- `flight_tracks` — trazas GPS reales punto a punto
-- `flight_lines` — cada segmento `(flight_id, line_id)` como LineString
+- `survey_plan` — planned lines (UTM 48N)
+- `flight_tracks` — actual GPS positions point by point
+- `flight_lines` — each `(flight_id, line_id)` segment as a LineString
 
-Cada ejecución produce un archivo nuevo con timestamp para poder comparar
-distintas corridas sobre el mismo set de datos.
+Each run produces a new timestamped file so multiple runs can be compared
+against the same dataset.
 
-## Salidas
+## Outputs
 
-| Ruta | Contenido |
+| Path | Contents |
 |---|---|
-| `data/interim/<campaña>/<fecha>/flight_XXXXX_prepared.parquet` | DataFrame sincronizado, input para M01 |
-| `outputs/<campaña>/verification_YYYYMMDD_HHMMSS.gpkg` | GeoPackage para verificación en QGIS |
+| `data/interim/<campaign>/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, input for M01 |
+| `outputs/<campaign>/verification_YYYYMMDD_HHMMSS.gpkg` | GeoPackage for QGIS verification |

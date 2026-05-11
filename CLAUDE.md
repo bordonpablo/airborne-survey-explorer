@@ -86,7 +86,7 @@ airborne-survey-explorer/
 ├── docs/
 ├── img/
 ├── outputs/
-│   └── <campaign>/             ← subcarpeta por campaña, archivos con timestamp
+│   └── <campaign>/             ← one subfolder per campaign, files with timestamp
 ├── src/
 │   ├── m00_preparation/
 │   ├── m01_qc/
