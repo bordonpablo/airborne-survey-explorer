@@ -8,12 +8,13 @@ Builds a single GeoPackage with three layers for visual verification in QGIS:
                   flight_id and line_id; includes Mag1, Ralt, Roll, Pitch, Yaw
   flight_lines  — each (flight_id, line_id) segment as a LineString (lighter layer)
 
-Output path: outputs/<campaign>/verification_YYYYMMDD_HHMMSS.gpkg
+Output path: outputs/<campaign>/<run_name>/verification_YYYYMMDD_HHMMSS.gpkg
 Each run produces a new timestamped file, so multiple processing runs can be compared.
 
 Usage:
     python -m src.m00_preparation.export_qgis
-    python -m src.m00_preparation.export_qgis outputs/Mongolia_2022/my_run.gpkg
+    python -m src.m00_preparation.export_qgis 22.04.2022
+    python -m src.m00_preparation.export_qgis 22.04.2022 00447
 """
 
 import sys
@@ -22,7 +23,7 @@ from pathlib import Path
 
 import pandas as pd
 import geopandas as gpd
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -33,7 +34,6 @@ from src.m00_preparation.read_survey_nav import read_survey_nav
 CRS_WGS84 = 'EPSG:4326'
 CRS_UTM48N = 'EPSG:32648'
 
-# Columns to include in the flight_tracks layer (keeps file size manageable)
 TRACK_COLS = ['flight_id', 'line_id', 'M3clk', 'time_s',
               'Xgps', 'Ygps', 'Ralt', 'Mag1', 'Mag2',
               'Roll', 'Pitch', 'Yaw', 'Sk', 'Su', 'Sth']
@@ -51,24 +51,36 @@ def build_survey_plan(nav_path: Path) -> gpd.GeoDataFrame:
         LineString([(row.E_start, row.N_start), (row.E_end, row.N_end)])
         for _, row in nav.iterrows()
     ]
-    gdf = gpd.GeoDataFrame(nav, geometry=geometries, crs=CRS_UTM48N)
-    return gdf
+    return gpd.GeoDataFrame(nav, geometry=geometries, crs=CRS_UTM48N)
 
 
-def load_all_parquets(interim_root: Path) -> pd.DataFrame:
-    """Load all prepared parquet files into a single DataFrame."""
+def load_parquets(
+    interim_root: Path,
+    target_date: str | None = None,
+    target_flight: str | None = None,
+) -> pd.DataFrame:
+    """Load prepared parquet files, optionally filtered by date and flight."""
+    if target_date and target_flight:
+        candidates = [interim_root / target_date / f'flight_{target_flight}_prepared.parquet']
+    elif target_date:
+        candidates = sorted((interim_root / target_date).glob('flight_*_prepared.parquet'))
+    else:
+        candidates = sorted(interim_root.rglob('flight_*_prepared.parquet'))
+
     parts = []
-    for pq in sorted(interim_root.rglob('flight_*_prepared.parquet')):
-        df = pd.read_parquet(pq, columns=[c for c in TRACK_COLS
-                                           if c in pd.read_parquet(pq, columns=[]).columns
-                                           or True])
-        # read only available columns
+    for pq in candidates:
+        if not pq.exists():
+            print(f"  Not found: {pq}")
+            continue
         available = pd.read_parquet(pq).columns.tolist()
         cols = [c for c in TRACK_COLS if c in available]
         df = pd.read_parquet(pq, columns=cols)
         df['date'] = pq.parent.name
         parts.append(df)
         print(f"  Loaded {pq.parent.name}/{pq.name}  ({len(df):,} rows)")
+
+    if not parts:
+        raise FileNotFoundError(f"No parquet files found under {interim_root}")
     return pd.concat(parts, ignore_index=True)
 
 
@@ -77,7 +89,6 @@ def build_flight_tracks(df: pd.DataFrame) -> gpd.GeoDataFrame:
     valid = df.dropna(subset=['Xgps', 'Ygps'])
     geometry = gpd.points_from_xy(valid['Xgps'], valid['Ygps'])
     gdf = gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
-    # line_id as string for QGIS styling (nullable int causes issues in some QGIS versions)
     gdf['line_id'] = gdf['line_id'].astype(str).replace('<NA>', '')
     return gdf
 
@@ -96,17 +107,22 @@ def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
             'line_id': int(lid),
             'date': date,
             'n_points': len(seg_sorted),
-            'mag1_mean': seg_sorted['Mag1'].mean() if 'Mag1' in seg_sorted else None,
-            'ralt_mean': seg_sorted['Ralt'].mean() if 'Ralt' in seg_sorted else None,
+            'mag1_mean': seg_sorted['Mag1'].mean() if 'Mag1' in seg_sorted.columns else None,
+            'ralt_mean': seg_sorted['Ralt'].mean() if 'Ralt' in seg_sorted.columns else None,
             'geometry': LineString(coords),
         })
     return gpd.GeoDataFrame(rows, crs=CRS_WGS84)
 
 
-def export_gpkg(output_path: Path) -> None:
+def export_gpkg(
+    output_path: Path,
+    target_date: str | None = None,
+    target_flight: str | None = None,
+) -> None:
     cfg = load_config()
     nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
-    interim_root = PROJECT_ROOT / 'data' / 'interim' / cfg['campaign']['name'] / cfg['campaign']['run_name']
+    interim_root = (PROJECT_ROOT / 'data' / 'interim'
+                    / cfg['campaign']['name'] / cfg['campaign']['run_name'])
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -115,8 +131,8 @@ def export_gpkg(output_path: Path) -> None:
     print(f"  {len(survey_plan)} planned lines")
 
     print("Loading parquet files...")
-    df = load_all_parquets(interim_root)
-    print(f"  {len(df):,} total rows across all flights")
+    df = load_parquets(interim_root, target_date, target_flight)
+    print(f"  {len(df):,} total rows")
 
     print("Building flight tracks...")
     tracks = build_flight_tracks(df)
@@ -131,17 +147,18 @@ def export_gpkg(output_path: Path) -> None:
     lines.to_file(output_path, layer='flight_lines', driver='GPKG')
 
     print(f"\nDone. Load in QGIS: {output_path}")
-    print("\nLayers:")
     print(f"  survey_plan   — {len(survey_plan)} planned lines  (UTM 48N)")
     print(f"  flight_tracks — {len(tracks):,} GPS points      (WGS84)")
     print(f"  flight_lines  — {len(lines)} flown segments  (WGS84)")
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        out = Path(sys.argv[1])
-    else:
-        cfg = load_config()
-        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        out = PROJECT_ROOT / 'outputs' / cfg['campaign']['name'] / cfg['campaign']['run_name'] / f'verification_{ts}.gpkg'
-    export_gpkg(out)
+    date_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
+
+    cfg = load_config()
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    out = (PROJECT_ROOT / 'outputs' / cfg['campaign']['name']
+           / cfg['campaign']['run_name'] / f'verification_{ts}.gpkg')
+
+    export_gpkg(out, date_arg, flight_arg)

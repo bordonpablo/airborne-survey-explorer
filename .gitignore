@@ -4,7 +4,7 @@ outputs/
 # Python
 __pycache__/
 *.py[cod]
-.venv/
+airborne-env/
 
 # All data — never versioned
 data/

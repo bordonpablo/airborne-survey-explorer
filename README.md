@@ -27,16 +27,23 @@ The reference campaign is **Mongolia 2022**. The pipeline is fully parametrised 
 ```
 airborne-survey-explorer/
 ├── config/
-│   └── project.yaml                ← active survey parameters
-├── data/
+│   └── project.yaml                    ← active survey parameters (campaign, run_name, etc.)
+├── data/                               ← never committed to git
 │   ├── raw/Mongolia_2022/
 │   │   └── Daten_Nisleg_2022/
-│   │       ├── TestSurveyNav.csv   ← survey plan (in git)
-│   │       └── <date>/             ← raw flight data (ignored by git)
-│   ├── interim/                    ← intermediate outputs (ignored by git)
-│   └── processed/                  ← final processed data (ignored by git)
+│   │       ├── TestSurveyNav.csv       ← survey plan
+│   │       └── <date>/                 ← raw flight files (GGA, MAG, SPC, Tagesgang)
+│   ├── interim/
+│   │   └── <campaign>/
+│   │       └── <run_name>/             ← one folder per processing run
+│   │           ├── config.yaml         ← config snapshot for reproducibility
+│   │           └── <date>/
+│   │               └── flight_XXXXX_prepared.parquet
+│   └── processed/
 ├── outputs/
-│   └── <campaign>/             ← one subfolder per campaign, files with timestamp
+│   └── <campaign>/
+│       └── <run_name>/                 ← one folder per processing run
+│           └── verification_YYYYMMDD_HHMMSS.gpkg
 └── src/
     ├── m00_preparation/
     ├── m01_qc/
@@ -49,6 +56,19 @@ airborne-survey-explorer/
 
 ---
 
+## Setup
+
+```powershell
+python -m venv airborne-env
+airborne-env\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+The virtual environment only needs to be created and dependencies installed once.
+Activate it each time you open a new terminal before running any script.
+
+---
+
 ## Configuration
 
 All survey parameters are read from `config/project.yaml`. No paths or constants are
@@ -57,6 +77,7 @@ hardcoded in the scripts.
 ```yaml
 campaign:
   name: "Mongolia_2022"
+  run_name: "full_campaign"    # identifies the processing variant
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   projection: "EPSG:32648"    # WGS84 / UTM zone 48N
 
@@ -65,6 +86,10 @@ flight:
   line_spacing_m: 250
   line_direction_deg: 90      # E-W
 ```
+
+`run_name` controls which subfolder under `data/interim/` and `outputs/` is used.
+Change it to keep results from different processing variants isolated from each other.
+A copy of the config is saved automatically into each run folder for reproducibility.
 
 ---
 
