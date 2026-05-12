@@ -10,8 +10,9 @@ Processes one or all flight days under the raw data folder defined in
 config/project.yaml. For each flight found in a day folder, it:
   1. Reads MAG, GGA, SPC files
   2. Synchronises sensors onto the GGA time axis
-  3. Trims line-end transients
-  4. Saves to data/interim/<campaign>/<date>/flight_<N>_prepared.parquet
+  3. Trims line-end transients (first/last N seconds of each segment)
+  4. Filters out turns by cross-track distance from the planned survey lines
+  5. Saves to data/interim/<campaign>/<run_name>/<date>/flight_<N>_prepared.parquet
 """
 
 import shutil
@@ -26,7 +27,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.m00_preparation.read_mag import read_mag
 from src.m00_preparation.read_gga import read_gga
 from src.m00_preparation.read_spc import read_spc
-from src.m00_preparation.sync_sensors import sync_sensors, trim_line_ends, save_prepared
+from src.m00_preparation.read_survey_nav import read_survey_nav
+from src.m00_preparation.sync_sensors import (
+    sync_sensors, trim_line_ends, filter_by_cross_track, save_prepared
+)
 
 
 def load_config() -> dict:
@@ -50,7 +54,14 @@ def find_flights(day_dir: Path) -> list[str]:
     )
 
 
-def prepare_flight(day_dir: Path, flight_id: str, interim_dir: Path) -> None:
+def prepare_flight(
+    day_dir: Path,
+    flight_id: str,
+    interim_dir: Path,
+    flight_cfg: dict,
+    survey_nav,
+    projection: str,
+) -> None:
     date_str = day_dir.name
 
     mag_path = day_dir / f'MAG{flight_id}.txt'
@@ -71,25 +82,44 @@ def prepare_flight(day_dir: Path, flight_id: str, interim_dir: Path) -> None:
 
     print(f"  Synchronising sensors...")
     merged = sync_sensors(mag, gga, spc)
-    trimmed = trim_line_ends(merged)
 
-    n_lines = trimmed['line_id'].nunique()
-    n_on_line = trimmed['line_id'].notna().sum()
-    print(f"  {n_lines} survey lines, {n_on_line:,} on-line rows after trim")
+    print(f"  Trimming line ends ({flight_cfg.get('trim_seconds', 5)} s)...")
+    trimmed = trim_line_ends(merged, seconds=flight_cfg.get('trim_seconds', 5))
+
+    turn_filter_m = flight_cfg.get('turn_filter_m', 120)
+    print(f"  Filtering turns (corridor: ±{turn_filter_m} m from planned line)...")
+    filtered = filter_by_cross_track(
+        trimmed,
+        survey_nav=survey_nav,
+        tolerance_m=turn_filter_m,
+        projection=projection,
+    )
+
+    n_lines = filtered.loc[filtered['line_valid'], 'line_id'].nunique()
+    n_valid = filtered['line_valid'].sum()
+    n_total = len(filtered)
+    print(f"  {n_lines} survey lines, {n_valid:,} valid rows of {n_total:,} total")
 
     out_path = interim_dir / date_str / f'flight_{flight_id}_prepared.parquet'
-    save_prepared(trimmed, out_path)
+    save_prepared(filtered, out_path)
 
 
 def main(target_date: str | None = None, target_flight: str | None = None) -> None:
     cfg = load_config()
     raw_root = PROJECT_ROOT / cfg['campaign']['raw_data_path']
+    nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
     campaign = cfg['campaign']['name']
     run_name = cfg['campaign']['run_name']
+    projection = cfg['campaign']['projection']
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
+
     print(f"Campaign : {campaign}")
     print(f"Run      : {run_name}")
     snapshot_config(interim_root)
+
+    print(f"Loading survey plan...")
+    survey_nav = read_survey_nav(nav_path)
+    print(f"  {len(survey_nav)} planned lines")
 
     if target_date:
         day_dirs = [raw_root / target_date]
@@ -109,7 +139,11 @@ def main(target_date: str | None = None, target_flight: str | None = None) -> No
             continue
 
         for fid in flights:
-            prepare_flight(day_dir, fid, interim_root)
+            prepare_flight(
+                day_dir, fid, interim_root,
+                cfg.get('flight', {}),
+                survey_nav, projection,
+            )
 
 
 if __name__ == '__main__':

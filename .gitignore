@@ -1,6 +1,9 @@
 # Generated outputs - not tracked in git
 outputs/
 
+# QGIS project files
+QGIS/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -1,15 +1,15 @@
 """
 Module 0 — QGIS export.
 
-Builds a single GeoPackage with three layers for visual verification in QGIS:
+Builds a GeoPackage with three layers for visual verification in QGIS, plus a
+.qgs project file that loads them as a named group in the Layers panel.
 
   survey_plan   — planned survey lines from TestSurveyNav.csv (UTM 48N)
-  flight_tracks — actual GPS positions for every processed flight, coloured by
-                  flight_id and line_id; includes Mag1, Ralt, Roll, Pitch, Yaw
-  flight_lines  — each (flight_id, line_id) segment as a LineString (lighter layer)
+  flight_tracks — actual GPS positions point by point (WGS84)
+  flight_lines  — each (flight_id, line_id) segment as a LineString (WGS84)
 
-Output path: outputs/<campaign>/<run_name>/verification_YYYYMMDD_HHMMSS.gpkg
-Each run produces a new timestamped file, so multiple processing runs can be compared.
+Output: outputs/<campaign>/<run_name>/verification[_date][_flight].gpkg + .qgs
+Re-running with the same scope overwrites the previous file.
 
 Usage:
     python -m src.m00_preparation.export_qgis
@@ -17,9 +17,11 @@ Usage:
     python -m src.m00_preparation.export_qgis 22.04.2022 00447
 """
 
+import io
 import sys
-from datetime import datetime
+import uuid
 from pathlib import Path
+from xml.etree.ElementTree import Element, SubElement, ElementTree, indent
 
 import pandas as pd
 import geopandas as gpd
@@ -37,6 +39,13 @@ CRS_UTM48N = 'EPSG:32648'
 TRACK_COLS = ['flight_id', 'line_id', 'M3clk', 'time_s',
               'Xgps', 'Ygps', 'Ralt', 'Mag1', 'Mag2',
               'Roll', 'Pitch', 'Yaw', 'Sk', 'Su', 'Sth']
+
+# (layer_name, geometry_type_str, geometry_type_int, crs)
+_LAYERS = [
+    ('survey_plan',   'Line',  1, CRS_UTM48N),
+    ('flight_lines',  'Line',  1, CRS_WGS84),
+    ('flight_tracks', 'Point', 0, CRS_WGS84),
+]
 
 
 def load_config() -> dict:
@@ -94,8 +103,8 @@ def build_flight_tracks(df: pd.DataFrame) -> gpd.GeoDataFrame:
 
 
 def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
-    """Each (flight_id, line_id) segment as a LineString in WGS84."""
-    on_line = df[df['line_id'].notna()].copy()
+    """Each (flight_id, line_id) segment as a LineString in WGS84 — valid rows only."""
+    on_line = df[df['line_id'].notna() & df['line_valid']].copy()
     rows = []
     for (fid, lid, date), seg in on_line.groupby(['flight_id', 'line_id', 'date'], sort=False):
         seg_sorted = seg.dropna(subset=['Xgps', 'Ygps']).sort_values('M3clk')
@@ -112,6 +121,57 @@ def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
             'geometry': LineString(coords),
         })
     return gpd.GeoDataFrame(rows, crs=CRS_WGS84)
+
+
+def generate_qgis_project(gpkg_path: Path, group_name: str) -> Path:
+    """
+    Write a minimal QGIS project (.qgs) that loads the GeoPackage layers
+    inside a named group in the Layers panel.
+
+    The datasource paths are relative to the .qgs file, so the pair
+    (.gpkg + .qgs) can be moved together without breaking links.
+    """
+    layer_ids = {name: str(uuid.uuid4()) for name, *_ in _LAYERS}
+    gpkg_rel = f'./{gpkg_path.name}'
+
+    root = Element('qgis', version='3.0.0')
+
+    # --- Layer tree ---------------------------------------------------------
+    tree_root = SubElement(root, 'layer-tree-group')
+    SubElement(tree_root, 'custom-order', enabled='0')
+
+    group = SubElement(tree_root, 'layer-tree-group',
+                       name=group_name, checked='Qt::Checked', expanded='1')
+    SubElement(group, 'custom-order', enabled='0')
+    for name, *_ in _LAYERS:
+        SubElement(group, 'layer-tree-layer',
+                   id=layer_ids[name],
+                   name=name,
+                   checked='Qt::Checked',
+                   expanded='1')
+
+    # --- Project layers -----------------------------------------------------
+    projectlayers = SubElement(root, 'projectlayers')
+    for name, geom_str, geom_int, crs in _LAYERS:
+        ml = SubElement(projectlayers, 'maplayer', type='vector', geometry=geom_str)
+        SubElement(ml, 'id').text = layer_ids[name]
+        SubElement(ml, 'datasource').text = f'{gpkg_rel}|layername={name}'
+        SubElement(ml, 'layername').text = name
+        SubElement(ml, 'provider', encoding='UTF-8').text = 'ogr'
+        srs = SubElement(ml, 'srs')
+        sr = SubElement(srs, 'spatialrefsys')
+        SubElement(sr, 'authid').text = crs
+        SubElement(ml, 'layerGeometryType').text = str(geom_int)
+
+    # --- Write --------------------------------------------------------------
+    project_path = gpkg_path.with_suffix('.qgs')
+    et = ElementTree(root)
+    indent(et, space='  ')
+    buf = io.StringIO()
+    et.write(buf, encoding='unicode', xml_declaration=False)
+    content = "<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>\n" + buf.getvalue()
+    project_path.write_text(content, encoding='utf-8')
+    return project_path
 
 
 def export_gpkg(
@@ -146,7 +206,13 @@ def export_gpkg(
     tracks.to_file(output_path, layer='flight_tracks', driver='GPKG')
     lines.to_file(output_path, layer='flight_lines', driver='GPKG')
 
-    print(f"\nDone. Load in QGIS: {output_path}")
+    scope = '_'.join(filter(None, [target_date, target_flight]))
+    group_name = f"{cfg['campaign']['run_name']} — {scope}" if scope else cfg['campaign']['run_name']
+    project_path = generate_qgis_project(output_path, group_name)
+
+    print(f"\nDone.")
+    print(f"  GeoPackage : {output_path}")
+    print(f"  QGIS project: {project_path}  ← open this in QGIS")
     print(f"  survey_plan   — {len(survey_plan)} planned lines  (UTM 48N)")
     print(f"  flight_tracks — {len(tracks):,} GPS points      (WGS84)")
     print(f"  flight_lines  — {len(lines)} flown segments  (WGS84)")
@@ -157,8 +223,8 @@ if __name__ == '__main__':
     flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
 
     cfg = load_config()
-    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    out = (PROJECT_ROOT / 'outputs' / cfg['campaign']['name']
-           / cfg['campaign']['run_name'] / f'verification_{ts}.gpkg')
+    scope = '_'.join(filter(None, [date_arg, flight_arg]))
+    filename = f'verification{"_" + scope if scope else ""}.gpkg'
+    out = PROJECT_ROOT / 'outputs' / cfg['campaign']['name'] / cfg['campaign']['run_name'] / filename
 
     export_gpkg(out, date_arg, flight_arg)
