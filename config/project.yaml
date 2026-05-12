@@ -1,6 +1,6 @@
 campaign:
   name: "Mongolia_2022"
-  run_name: "test_filter120m_v3"          # identifies the processing variant; used for interim/ and outputs/ subfolders
+  run_name: "test_filter120m_trim_10"          # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-22"
@@ -14,7 +14,7 @@ flight:
   line_direction_deg: 90             # E-W
   line_tolerance_m: 300              # M1 QC: max allowed cross-track deviation on a survey line
   turn_filter_m: 120                 # M0: corridor half-width used to reject turns from line segments
-  trim_seconds: 5                    # M0: seconds trimmed from each end of a survey line segment
+  trim_seconds: 10                    # M0: seconds trimmed from each end of a survey line segment
 
 magnetics:
   igrf_base_field_nT: 59150

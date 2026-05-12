@@ -1,12 +1,13 @@
 """
 Module 0 — QGIS export.
 
-Builds a GeoPackage with three layers for visual verification in QGIS, plus a
+Builds a GeoPackage with four layers for visual verification in QGIS, plus a
 .qgs project file that loads them as a named group in the Layers panel.
 
   survey_plan   — planned survey lines from TestSurveyNav.csv (UTM 48N)
-  flight_tracks — actual GPS positions point by point (WGS84)
-  flight_lines  — each (flight_id, line_id) segment as a LineString (WGS84)
+  flight_tracks — all GPS positions point by point, complete flight (WGS84)
+  line_points   — valid on-line points only (line_valid=True), point by point (WGS84)
+  flight_lines  — valid on-line segments as LineStrings (WGS84)
 
 Output: outputs/<campaign>/<run_name>/verification[_date][_flight].gpkg + .qgs
 Re-running with the same scope overwrites the previous file.
@@ -44,6 +45,7 @@ TRACK_COLS = ['flight_id', 'line_id', 'line_valid', 'M3clk', 'time_s',
 _LAYERS = [
     ('survey_plan',   'Line',  1, CRS_UTM48N),
     ('flight_lines',  'Line',  1, CRS_WGS84),
+    ('line_points',   'Point', 0, CRS_WGS84),
     ('flight_tracks', 'Point', 0, CRS_WGS84),
 ]
 
@@ -94,8 +96,20 @@ def load_parquets(
 
 
 def build_flight_tracks(df: pd.DataFrame) -> gpd.GeoDataFrame:
-    """All GPS points as a Point GeoDataFrame in WGS84."""
+    """All GPS points as a Point GeoDataFrame in WGS84 — complete flight."""
     valid = df.dropna(subset=['Xgps', 'Ygps'])
+    geometry = gpd.points_from_xy(valid['Xgps'], valid['Ygps'])
+    gdf = gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
+    gdf['line_id'] = gdf['line_id'].astype(str).replace('<NA>', '')
+    return gdf
+
+
+def build_line_points(df: pd.DataFrame) -> gpd.GeoDataFrame:
+    """Valid on-line GPS points (line_valid=True) as a Point GeoDataFrame in WGS84."""
+    mask = df['line_id'].notna()
+    if 'line_valid' in df.columns:
+        mask &= df['line_valid']
+    valid = df[mask].dropna(subset=['Xgps', 'Ygps'])
     geometry = gpd.points_from_xy(valid['Xgps'], valid['Ygps'])
     gdf = gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
     gdf['line_id'] = gdf['line_id'].astype(str).replace('<NA>', '')
@@ -198,25 +212,31 @@ def export_gpkg(
     print("Building flight tracks...")
     tracks = build_flight_tracks(df)
 
+    print("Building line points...")
+    points = build_line_points(df)
+    print(f"  {len(points):,} valid on-line points")
+
     print("Building flight lines...")
     lines = build_flight_lines(df)
     print(f"  {len(lines)} segments (flight × line_id)")
 
     print(f"Writing {output_path}...")
     survey_plan.to_file(output_path, layer='survey_plan', driver='GPKG')
-    tracks.to_file(output_path, layer='flight_tracks', driver='GPKG')
     lines.to_file(output_path, layer='flight_lines', driver='GPKG')
+    points.to_file(output_path, layer='line_points', driver='GPKG')
+    tracks.to_file(output_path, layer='flight_tracks', driver='GPKG')
 
     scope = '_'.join(filter(None, [target_date, target_flight]))
     group_name = f"{cfg['campaign']['run_name']} — {scope}" if scope else cfg['campaign']['run_name']
     project_path = generate_qgis_project(output_path, group_name)
 
     print(f"\nDone.")
-    print(f"  GeoPackage : {output_path}")
-    print(f"  QGIS project: {project_path}  ← open this in QGIS")
-    print(f"  survey_plan   — {len(survey_plan)} planned lines  (UTM 48N)")
-    print(f"  flight_tracks — {len(tracks):,} GPS points      (WGS84)")
-    print(f"  flight_lines  — {len(lines)} flown segments  (WGS84)")
+    print(f"  GeoPackage   : {output_path}")
+    print(f"  QGIS project : {project_path}  ← open this in QGIS")
+    print(f"  survey_plan  — {len(survey_plan)} planned lines  (UTM 48N)")
+    print(f"  flight_tracks — {len(tracks):,} GPS points (complete flight)")
+    print(f"  line_points  — {len(points):,} valid on-line points")
+    print(f"  flight_lines — {len(lines)} flown segments")
 
 
 if __name__ == '__main__':
