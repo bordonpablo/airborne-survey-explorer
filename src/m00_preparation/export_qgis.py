@@ -36,7 +36,7 @@ from src.m00_preparation.read_survey_nav import read_survey_nav
 CRS_WGS84 = 'EPSG:4326'
 CRS_UTM48N = 'EPSG:32648'
 
-TRACK_COLS = ['flight_id', 'line_id', 'M3clk', 'time_s',
+TRACK_COLS = ['flight_id', 'line_id', 'line_valid', 'M3clk', 'time_s',
               'Xgps', 'Ygps', 'Ralt', 'Mag1', 'Mag2',
               'Roll', 'Pitch', 'Yaw', 'Sk', 'Su', 'Sth']
 
@@ -104,7 +104,8 @@ def build_flight_tracks(df: pd.DataFrame) -> gpd.GeoDataFrame:
 
 def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """Each (flight_id, line_id) segment as a LineString in WGS84 — valid rows only."""
-    on_line = df[df['line_id'].notna() & df['line_valid']].copy()
+    valid = df['line_valid'] if 'line_valid' in df.columns else True
+    on_line = df[df['line_id'].notna() & valid].copy()
     rows = []
     for (fid, lid, date), seg in on_line.groupby(['flight_id', 'line_id', 'date'], sort=False):
         seg_sorted = seg.dropna(subset=['Xgps', 'Ygps']).sort_values('M3clk')
@@ -223,8 +224,12 @@ if __name__ == '__main__':
     flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
 
     cfg = load_config()
-    scope = '_'.join(filter(None, [date_arg, flight_arg]))
-    filename = f'verification{"_" + scope if scope else ""}.gpkg'
-    out = PROJECT_ROOT / 'outputs' / cfg['campaign']['name'] / cfg['campaign']['run_name'] / filename
+    base = PROJECT_ROOT / 'outputs' / cfg['campaign']['name']
+    if date_arg and flight_arg:
+        out = base / date_arg / flight_arg / cfg['campaign']['run_name'] / 'verification.gpkg'
+    elif date_arg:
+        out = base / date_arg / cfg['campaign']['run_name'] / 'verification.gpkg'
+    else:
+        out = base / cfg['campaign']['run_name'] / 'verification.gpkg'
 
     export_gpkg(out, date_arg, flight_arg)
