@@ -11,3 +11,6 @@ airborne-env/
 
 # All data — never versioned
 data/
+
+# Personal notes — not committed
+NOTES.md

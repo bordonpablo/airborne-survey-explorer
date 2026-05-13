@@ -14,6 +14,46 @@ where flown: 0=unflown, 1=flown, 2=currently flying.
 import pandas as pd
 from pathlib import Path
 
+_FT_TO_M = 0.3048
+
+
+def read_survey_thresholds(path: Path | str) -> dict:
+    """
+    Read global QC thresholds from the header records of TestSurveyNav.csv.
+
+    Radar heights are stored in feet in the file; this function converts them
+    to metres. CrossTrack is in metres. GroundSpeed is in km/h.
+
+    Returns a dict with keys:
+        radar_height_m  — nominal flight altitude
+        radar_min_m     — lower altitude limit
+        radar_max_m     — upper altitude limit
+        cross_track_m   — maximum lateral deviation from the planned line
+        speed_min_kmh   — minimum ground speed
+        speed_max_kmh   — maximum ground speed
+    """
+    raw = {}
+    keys = ('RadarHeight', 'RadarMin', 'RadarMax',
+            'CrossTrack', 'GroundSpeedMin', 'GroundSpeedMax')
+    with open(Path(path), 'r') as f:
+        for line in f:
+            line = line.strip()
+            for key in keys:
+                if line.startswith(key + ','):
+                    parts = line.split(',')
+                    try:
+                        raw[key] = float(parts[1])
+                    except (ValueError, IndexError):
+                        pass
+    return {
+        'radar_height_m': raw.get('RadarHeight', 100) * _FT_TO_M,
+        'radar_min_m':    raw.get('RadarMin',     90) * _FT_TO_M,
+        'radar_max_m':    raw.get('RadarMax',    110) * _FT_TO_M,
+        'cross_track_m':  raw.get('CrossTrack',   50),
+        'speed_min_kmh':  raw.get('GroundSpeedMin', 90),
+        'speed_max_kmh':  raw.get('GroundSpeedMax', 150),
+    }
+
 
 def read_survey_nav(path: Path | str) -> pd.DataFrame:
     """
