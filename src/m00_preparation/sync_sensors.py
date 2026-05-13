@@ -15,20 +15,21 @@ Synchronisation strategy:
 Line editing adds a boolean column 'line_valid' — data is never deleted:
   - line_id = NaN  → off-line row (transit or turn with blank Wayp): line_valid = False
   - line_id = int, line_valid = True  → on-line, passed all editing steps
-  - line_id = int, line_valid = False → on-line but flagged (transient or outside corridor)
+  - line_id = int, line_valid = False → on-line but flagged (outside planned extent or corridor)
 
-Editing steps:
-  1. trim_line_ends — flags the first/last N seconds of each segment.
-  2. filter_by_cross_track — flags points farther than tolerance_m from the
-     planned line (turns where the navigation system did not blank Wayp).
+Editing steps applied in order:
+  1. clip_to_line_extent — flags points that fall outside the planned start/end of the line.
+     Uses along-track projection onto the planned line axis (geometric, not time-based).
+  2. filter_by_cross_track — flags points farther than turn_filter_m from the planned line.
+     Removes turns where the navigation system did not blank Wayp.
 """
 
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from pyproj import Transformer
 from shapely.geometry import Point, LineString
 
-TRIM_SECONDS = 5.0
 MAG_GGA_TOLERANCE_MS = 200
 SPC_TOLERANCE_MS = 1500
 
@@ -75,22 +76,71 @@ def sync_sensors(
     return merged.sort_values('M3clk').reset_index(drop=True)
 
 
-def trim_line_ends(df: pd.DataFrame, seconds: float = TRIM_SECONDS) -> pd.DataFrame:
+def clip_to_line_extent(
+    df: pd.DataFrame,
+    survey_nav: pd.DataFrame,
+    projection: str,
+) -> pd.DataFrame:
     """
-    Flag the first and last N seconds of each (flight_id, line_id) segment.
+    Flag on-line points that fall outside the planned start/end of their survey line.
 
-    Initialises 'line_valid' to True for all on-line rows and False for all
-    off-line rows, then sets it to False for the transient rows at each end.
+    For each (flight_id, line_id) segment, each GPS point is projected onto the
+    axis of the planned line (A → B). The along-track coordinate t is:
+
+        t = dot(P - A, unit(B - A))
+
+    where P is the GPS point in UTM, A and B are the planned line endpoints.
+    Points with t < 0 are before the start; t > |AB| are past the end.
+    Both are flagged line_valid = False.
+
+    This replaces time-based trimming with a geometric clip that respects the
+    actual planned survey extent regardless of when Wayp was activated.
+
+    Initialises 'line_valid': True for on-line rows, False for off-line rows.
+    Rows with no valid GPS are left as-is.
+
+    Parameters
+    ----------
+    df         : merged DataFrame from sync_sensors
+    survey_nav : DataFrame from read_survey_nav
+    projection : UTM CRS string (e.g. 'EPSG:32648')
     """
+    transformer = Transformer.from_crs("EPSG:4326", projection, always_xy=True)
+
+    planned = {}
+    for _, row in survey_nav.iterrows():
+        lid = int(row['line_id'])
+        A = np.array([row['E_start'], row['N_start']])
+        B = np.array([row['E_end'],   row['N_end']])
+        AB = B - A
+        length = np.linalg.norm(AB)
+        unit = AB / length if length > 0 else AB
+        planned[lid] = (A, unit, length)
+
     df = df.copy()
     on_line = df['line_id'].notna()
-    df['line_valid'] = False                   # off-line rows start as False
-    df.loc[on_line, 'line_valid'] = True       # on-line rows start as True
+    df['line_valid'] = False
+    df.loc[on_line, 'line_valid'] = True
 
     for (fid, lid), seg in df[on_line].groupby(['flight_id', 'line_id'], sort=False):
-        t = seg['time_s']
-        transient = (t < t.iloc[0] + seconds) | (t > t.iloc[-1] - seconds)
-        df.loc[seg.index[transient], 'line_valid'] = False
+        lid_int = int(lid)
+        if lid_int not in planned:
+            continue
+
+        A, unit, length = planned[lid_int]
+        valid_gps = seg.dropna(subset=['Xgps', 'Ygps'])
+        if valid_gps.empty:
+            continue
+
+        x_utm, y_utm = transformer.transform(
+            valid_gps['Xgps'].values,
+            valid_gps['Ygps'].values,
+        )
+        P = np.column_stack([x_utm, y_utm])
+        t = (P - A) @ unit                          # along-track coordinate
+
+        outside = (t < 0) | (t > length)
+        df.loc[valid_gps.index[outside], 'line_valid'] = False
 
     return df
 
@@ -102,21 +152,20 @@ def filter_by_cross_track(
     projection: str,
 ) -> pd.DataFrame:
     """
-    Flag on-line rows that are farther than tolerance_m from the planned survey line.
+    Flag on-line rows farther than tolerance_m from the planned survey line.
 
-    For each (flight_id, line_id) segment, finds the corresponding planned line
-    in survey_nav and sets line_valid = False for GPS points whose perpendicular
-    distance to that line exceeds tolerance_m. This flags turns where the
-    navigation system did not blank Wayp before/after the manoeuvre.
+    Applied after clip_to_line_extent. Catches turns where the navigation
+    system kept Wayp active but the aircraft was laterally far from the line
+    (e.g. the approach arc projects within the line extent but is off to the side).
 
-    Rows with no valid GPS, or whose line_id is not found in survey_nav, are
-    left unchanged.
+    Only rows currently marked line_valid = True are re-evaluated; rows already
+    flagged False are left unchanged.
 
     Parameters
     ----------
-    df         : DataFrame from trim_line_ends (must have 'line_valid' column)
+    df         : DataFrame from clip_to_line_extent (must have 'line_valid')
     survey_nav : DataFrame from read_survey_nav
-    tolerance_m: corridor half-width in metres
+    tolerance_m: max allowed perpendicular distance in metres
     projection : CRS of survey_nav coordinates (e.g. 'EPSG:32648')
     """
     transformer = Transformer.from_crs("EPSG:4326", projection, always_xy=True)
@@ -130,9 +179,9 @@ def filter_by_cross_track(
     }
 
     df = df.copy()
-    on_line = df['line_id'].notna()
+    currently_valid = df['line_id'].notna() & df['line_valid']
 
-    for (fid, lid), seg in df[on_line].groupby(['flight_id', 'line_id'], sort=False):
+    for (fid, lid), seg in df[currently_valid].groupby(['flight_id', 'line_id'], sort=False):
         lid_int = int(lid)
         if lid_int not in planned:
             continue

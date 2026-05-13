@@ -246,10 +246,10 @@ if __name__ == '__main__':
     cfg = load_config()
     base = PROJECT_ROOT / 'outputs' / cfg['campaign']['name']
     if date_arg and flight_arg:
-        out = base / date_arg / flight_arg / cfg['campaign']['run_name'] / 'verification.gpkg'
+        out = base / date_arg / flight_arg / cfg['campaign']['run_name'] / f'{flight_arg}.gpkg'
     elif date_arg:
-        out = base / date_arg / cfg['campaign']['run_name'] / 'verification.gpkg'
+        out = base / date_arg / cfg['campaign']['run_name'] / f'{date_arg}.gpkg'
     else:
-        out = base / cfg['campaign']['run_name'] / 'verification.gpkg'
+        out = base / cfg['campaign']['run_name'] / f'{cfg["campaign"]["name"]}.gpkg'
 
     export_gpkg(out, date_arg, flight_arg)

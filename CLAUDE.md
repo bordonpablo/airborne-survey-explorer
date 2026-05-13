@@ -116,8 +116,9 @@ over valid line segments, not over the full flight.
   `MAG00427.txt`). The unique segment key is `(flight_id, line_id)`. Repeated lines across days
   share the same `line_id` but have different `flight_id` values; the better segment is chosen
   during M1 QC.
-- 0.4 Trim the first and last N seconds of each `(flight_id, line_id)` segment to remove
-  alignment and pull-out transients.
+- 0.4 Clip each `(flight_id, line_id)` segment to the planned start/end of the line using
+  geometric along-track projection onto the planned A→B axis. Points outside [0, L] are
+  flagged `line_valid = False`. Data is never deleted.
 
 **Output**: `data/interim/Mongolia_2022/<run_name>/<date>/flight_<N>_prepared.parquet`
 DataFrame where every valid row has `flight_id` and `line_id` assigned and all sensors synchronised.
@@ -179,19 +180,21 @@ Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id 
 ```yaml
 campaign:
   name: "Mongolia_2022"
-  run_name: "full_campaign"          # identifies the processing variant; used for interim/ and outputs/ subfolders
+  run_name: "clip_extent_01"         # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-22"
   center_area: [107.57, 47.81]       # lon, lat
   projection: "EPSG:32648"           # WGS84 / UTM zone 48N
 
-flight:
+survey_design:                       # parameters from the flight plan (survey geometry)
   nominal_altitude_m: 100
   line_spacing_m: 250
   tieline_spacing_m: 1500
   line_direction_deg: 90             # E-W
-  line_tolerance_m: 300              # For line identification
+
+m1:                                  # Module 1 — QC parameters
+  line_tolerance_m: 300              # max allowed cross-track deviation for a line to be considered acceptable
 
 magnetics:
   igrf_base_field_nT: 59150

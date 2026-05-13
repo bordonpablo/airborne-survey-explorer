@@ -14,7 +14,7 @@ and saves the result as a Parquet file ready for M01.
 | `read_spc.py` | Internal — parses SPC files (~1 Hz, spectrometer) |
 | `read_tagesgang.py` | Internal — parses magnetic base station files |
 | `read_survey_nav.py` | Internal — reads `TestSurveyNav.csv` (planned lines) |
-| `sync_sensors.py` | Internal — synchronises sensors with `merge_asof`, trims transients |
+| `sync_sensors.py` | Internal — synchronises sensors with `merge_asof`, clips to planned line extents |
 
 ---
 
@@ -25,7 +25,7 @@ The active campaign and processing run are defined in `config/project.yaml`:
 ```yaml
 campaign:
   name: "Mongolia_2022"
-  run_name: "full_campaign"          # controls which subfolder results are saved to
+  run_name: "clip_extent_01"         # controls which subfolder results are saved to
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
 ```
 
@@ -64,7 +64,8 @@ The flight ID is the 5-digit number from the corresponding MAG file
 For each processed flight the script:
 1. Reads MAG, GGA and SPC files
 2. Synchronises the three sensors onto the GGA time axis (`merge_asof`)
-3. Trims the first and last 5 s of each survey line (transients)
+3. Clips each survey line to its planned A→B extent using along-track projection
+   (points outside the planned start/end are flagged `line_valid = False`)
 4. Saves to `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet`
 
 A snapshot of the active `project.yaml` is saved to `data/interim/<campaign>/<run_name>/config.yaml`
@@ -79,20 +80,26 @@ python -m src.m00_preparation.export_qgis 22.04.2022 00447   # one flight
 ```
 
 The campaign and run are read from `project.yaml` — no extra arguments needed.
-Generates `outputs/<campaign>/<run_name>/verification_YYYYMMDD_HHMMSS.gpkg` with three layers:
+Output paths depend on the scope:
+- All days: `outputs/<campaign>/<run_name>/<campaign>.gpkg`
+- Single day: `outputs/<campaign>/<date>/<run_name>/<date>.gpkg`
+- Single flight: `outputs/<campaign>/<date>/<flight_id>/<run_name>/<flight_id>.gpkg`
 
-- `survey_plan` — planned lines (UTM 48N)
-- `flight_tracks` — actual GPS positions point by point, with Mag1, Ralt, Roll, Pitch, Yaw
-- `flight_lines` — each `(flight_id, line_id)` segment as a LineString
+Each file contains four layers:
+- `survey_plan` — planned lines from TestSurveyNav.csv (UTM 48N)
+- `flight_tracks` — all GPS positions point by point, complete flight (WGS84)
+- `line_points` — valid on-line points only (`line_valid = True`), point by point (WGS84)
+- `flight_lines` — each `(flight_id, line_id)` segment as a LineString, valid rows only (WGS84)
 
-Each run produces a new timestamped file so multiple exports can be compared.
+A `.qgs` project file is written alongside the `.gpkg` — open it in QGIS to load all layers
+already grouped and named.
 
 ### Viewing the parquet output
 
 To quickly inspect a prepared file without QGIS:
 
 ```powershell
-python -c "import pandas as pd; df = pd.read_parquet('data/interim/Mongolia_2022/full_campaign/22.04.2022/flight_00447_prepared.parquet'); print(df.shape); print(df.head(10))"
+python -c "import pandas as pd; df = pd.read_parquet('data/interim/Mongolia_2022/clip_extent_01/22.04.2022/flight_00447_prepared.parquet'); print(df.shape); print(df.head(10))"
 ```
 
 Alternatively, install the **Parquet Explorer** extension in VS Code to browse files directly.
@@ -105,4 +112,5 @@ Alternatively, install the **Parquet Explorer** extension in VS Code to browse f
 |---|---|
 | `data/interim/<campaign>/<run_name>/config.yaml` | Config snapshot — kept for reproducibility |
 | `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, input for M01 |
-| `outputs/<campaign>/<run_name>/verification_YYYYMMDD_HHMMSS.gpkg` | GeoPackage for QGIS verification |
+| `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.gpkg` | GeoPackage for QGIS verification |
+| `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.qgs` | QGIS project file (open this in QGIS) |

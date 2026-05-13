@@ -10,8 +10,8 @@ Processes one or all flight days under the raw data folder defined in
 config/project.yaml. For each flight found in a day folder, it:
   1. Reads MAG, GGA, SPC files
   2. Synchronises sensors onto the GGA time axis
-  3. Trims line-end transients (first/last N seconds of each segment)
-  4. Filters out turns by cross-track distance from the planned survey lines
+  3. Clips each line segment to the planned start/end coordinates (geometric)
+  4. Flags turns using cross-track distance from the planned line
   5. Saves to data/interim/<campaign>/<run_name>/<date>/flight_<N>_prepared.parquet
 """
 
@@ -29,7 +29,7 @@ from src.m00_preparation.read_gga import read_gga
 from src.m00_preparation.read_spc import read_spc
 from src.m00_preparation.read_survey_nav import read_survey_nav
 from src.m00_preparation.sync_sensors import (
-    sync_sensors, trim_line_ends, filter_by_cross_track, save_prepared
+    sync_sensors, clip_to_line_extent, save_prepared
 )
 
 
@@ -58,7 +58,6 @@ def prepare_flight(
     day_dir: Path,
     flight_id: str,
     interim_dir: Path,
-    flight_cfg: dict,
     survey_nav,
     projection: str,
 ) -> None:
@@ -83,17 +82,8 @@ def prepare_flight(
     print(f"  Synchronising sensors...")
     merged = sync_sensors(mag, gga, spc)
 
-    print(f"  Trimming line ends ({flight_cfg.get('trim_seconds', 5)} s)...")
-    trimmed = trim_line_ends(merged, seconds=flight_cfg.get('trim_seconds', 5))
-
-    turn_filter_m = flight_cfg.get('turn_filter_m', 120)
-    print(f"  Filtering turns (corridor: ±{turn_filter_m} m from planned line)...")
-    filtered = filter_by_cross_track(
-        trimmed,
-        survey_nav=survey_nav,
-        tolerance_m=turn_filter_m,
-        projection=projection,
-    )
+    print(f"  Clipping to planned line extents...")
+    filtered = clip_to_line_extent(merged, survey_nav, projection)
 
     n_lines = filtered.loc[filtered['line_valid'], 'line_id'].nunique()
     n_valid = filtered['line_valid'].sum()
@@ -141,7 +131,6 @@ def main(target_date: str | None = None, target_flight: str | None = None) -> No
         for fid in flights:
             prepare_flight(
                 day_dir, fid, interim_root,
-                cfg.get('flight', {}),
                 survey_nav, projection,
             )
 
