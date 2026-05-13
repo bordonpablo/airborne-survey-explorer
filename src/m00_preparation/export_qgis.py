@@ -226,13 +226,8 @@ def export_gpkg(
     points.to_file(output_path, layer='line_points', driver='GPKG')
     tracks.to_file(output_path, layer='flight_tracks', driver='GPKG')
 
-    scope = '_'.join(filter(None, [target_date, target_flight]))
-    group_name = f"{cfg['campaign']['run_name']} — {scope}" if scope else cfg['campaign']['run_name']
-    project_path = generate_qgis_project(output_path, group_name)
-
     print(f"\nDone.")
     print(f"  GeoPackage   : {output_path}")
-    print(f"  QGIS project : {project_path}  ← open this in QGIS")
     print(f"  survey_plan  — {len(survey_plan)} planned lines  (UTM 48N)")
     print(f"  flight_tracks — {len(tracks):,} GPS points (complete flight)")
     print(f"  line_points  — {len(points):,} valid on-line points")

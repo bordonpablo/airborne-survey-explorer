@@ -64,32 +64,39 @@ airborne-env\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-The virtual environment only needs to be created and dependencies installed once.
-Activate it each time you open a new terminal before running any script.
-
 ---
 
 ## Configuration
 
-All survey parameters are read from `config/project.yaml`. No paths or constants are
-hardcoded in the scripts.
+Edit `config/project.yaml` before running any module:
 
 ```yaml
 campaign:
-  name: "Mongolia_2022"
-  run_name: "full_campaign"    # identifies the processing variant
+  name: "Mongolia_2022"              # campaign identifier, used in output paths
+  run_name: "full_campaign"          # processing variant label
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
-  projection: "EPSG:32648"    # WGS84 / UTM zone 48N
+  survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
+  start_date: "2022-04-24"
+  center_area: [107.57, 47.81]       # lon, lat — for IGRF and map centering
+  projection: "EPSG:32648"           # delivery CRS (WGS84 / UTM zone 48N)
 
-flight:
-  nominal_altitude_m: 100
+survey_design:                       # flight plan geometry
+  nominal_altitude_m: 100            # drape target in metres
   line_spacing_m: 250
-  line_direction_deg: 90      # E-W
-```
+  tieline_spacing_m: 1500
+  line_direction_deg: 90             # 90 = E-W production lines
 
-`run_name` controls which subfolder under `data/interim/` and `outputs/` is used.
-Change it to keep results from different processing variants isolated from each other.
-A copy of the config is saved automatically into each run folder for reproducibility.
+m1:                                  # QC thresholds
+  line_tolerance_m: 300              # max cross-track deviation to accept a line
+
+magnetics:
+  igrf_base_field_nT: 59150          # regional IGRF field at the survey area
+  igrf_model: "IGRF-13"
+
+gridding:
+  cell_size_m: 60
+  method: "minimum_curvature"
+```
 
 ---
 
