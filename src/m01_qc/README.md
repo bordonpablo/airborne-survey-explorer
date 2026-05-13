@@ -3,6 +3,17 @@
 Reads all selected (flight_id, line_id) segments from `line_selection.csv`,
 computes QC metrics per segment, saves a report CSV, and opens a visualisation.
 
+## Scripts
+
+| Script | Role |
+|---|---|
+| `run.py` | **Main entry point.** Batch QC: summary map + metric heatmap, or detail view for one line. |
+| `viewer.py` | **Interactive viewer.** Click a flight line on the map to inspect live profile panels (altitude, Roll/Pitch, Yaw, magnetics). |
+| `metrics.py` | Internal — computes all QC metrics per segment. |
+| `viz.py` | Internal — summary figure (map + heatmap) and detail figure (multi-panel profiles). |
+
+---
+
 ## Metrics computed
 
 | Metric | Variable | What it measures |
@@ -74,6 +85,36 @@ Opens a multi-panel figure with all QC variables at once:
 - Mag1 + Mag2
 
 All profile panels share the along-track x-axis.
+
+### Interactive viewer — one flight, click to inspect
+
+```powershell
+python -m src.m01_qc.viewer 24.04.2022 00428
+```
+
+Opens a window with two columns:
+
+**Left — satellite map** (requires `contextily`):
+- All survey lines for the flight are drawn on top of an Esri WorldImagery basemap.
+- Lines are coloured **green** (pass) / **red** (fail) if a QC report exists for that
+  flight, or **blue** when no report is available.
+  Run `python -m src.m01_qc.run <date> <flight>` first to generate the report.
+- The currently selected line is highlighted in **orange**.
+- Click any line to select it and update the profiles.
+
+**Right — four stacked profile panels** (all share the along-track x-axis):
+1. Radar altitude (Ralt/Lalt) with RadarMin/RadarMax reference lines and
+   mean altitude + fraction-outside annotation.
+2. Roll + Pitch with ±threshold lines; fraction-outside annotation per channel.
+3. Yaw with heading standard-deviation annotation.
+4. Mag1 + Mag2 with spike markers (orange dots) and noise / spike-count
+   annotations. Cross-track deviation, speed and gap count are shown at
+   the right edge of this panel.
+
+All annotations show the metric value and a ✓/✗ symbol matched to the
+thresholds in `config/project.yaml` (`m1:` section) and `TestSurveyNav.csv`.
+
+---
 
 ## Outputs
 

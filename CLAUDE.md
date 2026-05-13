@@ -180,7 +180,7 @@ Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id 
 ```yaml
 campaign:
   name: "Mongolia_2022"
-  run_name: "clip_extent_01"         # identifies the processing variant; used for interim/ and outputs/ subfolders
+  run_name: "2022-04-24"             # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-22"

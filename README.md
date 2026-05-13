@@ -73,7 +73,7 @@ Edit `config/project.yaml` before running any module:
 ```yaml
 campaign:
   name: "Mongolia_2022"              # campaign identifier, used in output paths
-  run_name: "full_campaign"          # processing variant label
+  run_name: "2022-04-24"             # processing variant label
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-24"
@@ -125,3 +125,4 @@ script descriptions, and usage examples.
 | Module | README |
 |---|---|
 | M0 — Data Preparation | [src/m00_preparation/README.md](src/m00_preparation/README.md) |
+| M1 — Quality Control | [src/m01_qc/README.md](src/m01_qc/README.md) |
