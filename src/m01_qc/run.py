@@ -30,7 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.m00_preparation.read_survey_nav import read_survey_nav, read_survey_thresholds
 from src.m01_qc.metrics import run_qc
-from src.m01_qc.viz import summary_figure, detail_figure, DETAIL_VARS
+from src.m01_qc.viz import summary_figure, detail_figure
 
 
 def load_config() -> dict:
@@ -81,7 +81,6 @@ def main(
     target_date: str | None = None,
     target_flight: str | None = None,
     target_line: int | None = None,
-    variable: str = 'Ralt',
 ) -> None:
     cfg      = load_config()
     campaign = cfg['campaign']['name']
@@ -109,7 +108,7 @@ def main(
     print(f"Selected segments : {len(selected)}")
 
     # -------------------------------------------------------------------------
-    # Detail mode (single line + interactive slider)
+    # Detail mode (single line, all variables at once)
     # -------------------------------------------------------------------------
     if target_line is not None:
         row = selected.iloc[0]
@@ -119,12 +118,8 @@ def main(
         if seg.empty:
             print(f"No valid data for line {target_line}.")
             return
-        if variable not in seg.columns:
-            available = [v for v in DETAIL_VARS if v in seg.columns]
-            print(f"Variable '{variable}' not found. Available: {available}")
-            return
-        out_path = out_root / row['date'] / f"flight_{row['flight_id']}_line_{target_line}_{variable}.png"
-        detail_figure(seg, variable, thresholds, survey_thresholds, out_path)
+        out_path = out_root / row['date'] / f"flight_{row['flight_id']}_line_{target_line}_detail.png"
+        detail_figure(seg, thresholds, survey_thresholds, out_path)
         return
 
     # -------------------------------------------------------------------------
@@ -162,8 +157,7 @@ def main(
 
 
 if __name__ == '__main__':
-    date_arg     = sys.argv[1] if len(sys.argv) > 1 else None
-    flight_arg   = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
-    line_arg     = int(sys.argv[3]) if len(sys.argv) > 3 else None
-    variable_arg = sys.argv[4] if len(sys.argv) > 4 else 'Ralt'
-    main(date_arg, flight_arg, line_arg, variable_arg)
+    date_arg   = sys.argv[1] if len(sys.argv) > 1 else None
+    flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
+    line_arg   = int(sys.argv[3]) if len(sys.argv) > 3 else None
+    main(date_arg, flight_arg, line_arg)

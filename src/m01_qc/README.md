@@ -60,18 +60,20 @@ Produces:
 - `outputs/<campaign>/<run_name>/qc/<scope>_qc_report.csv`
 - Interactive figure: GPS map (green = pass, red = fail) + metric heatmap
 
-### Detail mode — one line with interactive slider
+### Detail mode — one line, all variables simultaneously
 
 ```powershell
-python -m src.m01_qc.run 22.04.2022 00427 10010           # Ralt (default)
-python -m src.m01_qc.run 22.04.2022 00427 10010 Roll      # Roll
-python -m src.m01_qc.run 22.04.2022 00427 10010 Mag1      # Mag1
+python -m src.m01_qc.run 22.04.2022 00427 10010
 ```
 
-Opens a two-panel figure: GPS track (left) and variable profile (right).
-A slider controls the threshold; points exceeding it turn red in both panels.
+Opens a multi-panel figure with all QC variables at once:
+- GPS track map
+- Radar altitude (with RadarMin/RadarMax reference lines)
+- Roll + Pitch (with ±threshold lines)
+- Yaw (heading consistency)
+- Mag1 + Mag2
 
-Available variables: `Ralt`, `Lalt`, `Roll`, `Pitch`, `Yaw`, `Mag1`, `Mag2`
+All profile panels share the along-track x-axis.
 
 ## Outputs
 

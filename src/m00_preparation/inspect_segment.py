@@ -1,11 +1,11 @@
 """
 Module 0 — Static segment inspection.
 
-Loads a prepared parquet and prints a summary table plus one 3-panel figure per
-survey line (radar altitude, magnetometers, attitude). Use this for a quick
-overview before editing line_selection.csv.
+Loads a prepared parquet and prints a summary table plus one figure per survey
+line with four panels: radar altitude, magnetometers, Roll/Pitch, and Yaw.
+Figures are saved as PNG — no interactive window opens.
 
-For interactive threshold exploration, use Module 1: src.m01_qc.run.
+For interactive QC exploration use Module 1: src.m01_qc.run.
 
 Usage:
     python -m src.m00_preparation.inspect_segment 22.04.2022 00427
@@ -55,15 +55,23 @@ def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
 
 
 def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
+    """
+    Four-panel figure for one survey line:
+      1. Radar altitude vs along-track distance
+      2. Mag1 and Mag2 vs along-track distance
+      3. Roll and Pitch (lateral and longitudinal tilt of the aircraft)
+      4. Yaw (heading — rotation around the vertical axis)
+    """
     seg  = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps'])
     dist = along_track_km(seg)
 
-    fig, axes = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
+    fig, axes = plt.subplots(4, 1, figsize=(14, 10), sharex=True)
     fig.suptitle(
         f"Flight {seg['flight_id'].iloc[0]}  —  Line {int(seg['line_id'].iloc[0])}",
         fontsize=13,
     )
 
+    # Radar altitude
     ax = axes[0]
     if 'Ralt' in seg.columns:
         ax.plot(dist, seg['Ralt'].values, color='steelblue', linewidth=0.8, label='Ralt')
@@ -73,6 +81,7 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
+    # Magnetometers
     ax = axes[1]
     for col, color in [('Mag1', 'navy'), ('Mag2', 'darkorange')]:
         if col in seg.columns:
@@ -81,12 +90,21 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
+    # Roll and Pitch (aircraft tilt)
     ax = axes[2]
     for col, color in [('Roll', 'seagreen'), ('Pitch', 'mediumpurple')]:
         if col in seg.columns:
             ax.plot(dist, seg[col].values, color=color, linewidth=0.8, label=col)
     ax.axhline(0, color='gray', linewidth=0.5)
-    ax.set_ylabel('Attitude (°)')
+    ax.set_ylabel('Roll / Pitch (°)')
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+
+    # Yaw (heading)
+    ax = axes[3]
+    if 'Yaw' in seg.columns:
+        ax.plot(dist, seg['Yaw'].values, color='darkorange', linewidth=0.8, label='Yaw')
+    ax.set_ylabel('Yaw / heading (°)')
     ax.set_xlabel('Along-track distance (km)')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
@@ -94,9 +112,8 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     plt.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150)
-    print(f"  Saved: {out_path}")
-    plt.show()
     plt.close(fig)
+    print(f"  Saved: {out_path}")
 
 
 def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
