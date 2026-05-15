@@ -1,6 +1,6 @@
 campaign:
   name: "Mongolia_2022"
-  run_name: "2022-04-24"            # identifies the processing variant; used for interim/ and outputs/ subfolders
+  run_name: "campaña completa"            # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-24"
@@ -12,17 +12,6 @@ survey_design:                       # parameters from the flight plan (survey g
   line_spacing_m: 250
   tieline_spacing_m: 1500
   line_direction_deg: 90             # E-W
-
-m1:                                  # Module 1 — QC parameters
-  line_tolerance_m: 300              # max allowed cross-track deviation (m)
-  roll_max_deg: 5.0                  # max |Roll| per point
-  pitch_max_deg: 5.0                 # max |Pitch| per point
-  yaw_std_max_deg: 10.0              # max heading std dev per line
-  gap_max_m: 200.0                   # max gap between consecutive GPS points
-  pct_outside_max: 0.20             # max fraction of out-of-spec points to still pass a line
-  mag_noise_max_nT: 5.0             # max noise level (std of 2nd differences / sqrt(6))
-  mag_spike_max_nT: 100.0           # spike detection threshold
-  diurnal_max_nT: 50.0              # max base-station variation during a line
 
 magnetics:
   igrf_base_field_nT: 59150

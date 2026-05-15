@@ -16,30 +16,18 @@ from matplotlib.lines import Line2D
 from pathlib import Path
 
 
+# Only the three metrics with thresholds from TestSurveyNav get pass/fail columns.
+# All other metrics are informative values shown in the report CSV but not here.
 HEATMAP_COLS = [
-    ('pass_altitude',    'Altitude'),
-    ('pass_roll',        'Roll'),
-    ('pass_pitch',       'Pitch'),
-    ('pass_yaw',         'Yaw'),
-    ('pass_cross_track', 'Cross-track'),
-    ('pass_speed',       'Speed'),
-    ('pass_spacing',     'Spacing'),
-    ('pass_mag_noise',   'Mag noise'),
-    ('pass_mag_spike',   'Mag spikes'),
-    ('pass_diurnal',     'Diurnal'),
+    ('pass_altitude',    'Altitud'),
+    ('pass_cross_track', 'Desvío transv.'),
+    ('pass_speed',       'Velocidad'),
 ]
 
 VALUE_COLS = {
-    'pass_altitude':    ('ralt_pct_outside',   '{:.0%}'),
-    'pass_roll':        ('roll_pct_outside',    '{:.0%}'),
-    'pass_pitch':       ('pitch_pct_outside',   '{:.0%}'),
-    'pass_yaw':         ('yaw_std_deg',         '{:.1f}°'),
-    'pass_cross_track': ('cross_track_max_m',   '{:.0f}m'),
-    'pass_speed':       ('speed_pct_outside',   '{:.0%}'),
-    'pass_spacing':     ('n_gaps',              '{:.0f}'),
-    'pass_mag_noise':   ('mag_noise_nT',        '{:.2f}nT'),
-    'pass_mag_spike':   ('mag_spike_count',     '{:.0f}'),
-    'pass_diurnal':     ('diurnal_range_nT',    '{:.0f}nT'),
+    'pass_altitude':    ('ralt_mean_m',        '{:.0f}m'),
+    'pass_cross_track': ('cross_track_max_m',  '{:.0f}m'),
+    'pass_speed':       ('speed_mean_kmh',     '{:.0f}km/h'),
 }
 
 _CMAP = mcolors.ListedColormap(['#2ecc71', '#e74c3c', '#bdc3c7'])
@@ -144,14 +132,12 @@ def summary_figure(
 
 def detail_figure(
     seg: pd.DataFrame,
-    thresholds: dict,
     survey_thresholds: dict,
     out_path: Path,
 ) -> None:
     """
     Four-panel profile figure for one segment: altitude, attitude, heading,
-    magnetics. All share the along-track x-axis. Threshold reference lines
-    are drawn from project.yaml and TestSurveyNav values.
+    magnetics. Reference lines come exclusively from TestSurveyNav thresholds.
     """
     seg    = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps'])
     dist   = _along_track_km(seg)
@@ -212,19 +198,11 @@ def detail_figure(
     ax_ralt.grid(True, alpha=0.3)
     ax_ralt.tick_params(labelsize=7)
 
-    # ---- Roll + Pitch ------------------------------------------------------
-    roll_lim  = thresholds.get('roll_max_deg',  5.0)
-    pitch_lim = thresholds.get('pitch_max_deg', 5.0)
-    for col, color, lim in [
-        ('Roll',  'seagreen',     roll_lim),
-        ('Pitch', 'mediumpurple', pitch_lim),
-    ]:
+    # ---- Roll + Pitch (no threshold lines — informative only) -------------
+    for col, color in [('Roll', 'seagreen'), ('Pitch', 'mediumpurple')]:
         if col in seg.columns:
             ax_att.plot(dist, seg[col].values, color=color,
                         linewidth=0.8, label=col)
-    ax_att.axhline( roll_lim, color='red', linestyle='--',
-                    linewidth=0.8, label=f'±{roll_lim}°')
-    ax_att.axhline(-roll_lim, color='red', linestyle='--', linewidth=0.8)
     ax_att.axhline(0, color='gray', linewidth=0.5)
     ax_att.set_ylabel('Roll / Pitch (°)', fontsize=8)
     ax_att.legend(fontsize=7, loc='upper right', ncol=3)

@@ -1,36 +1,30 @@
 """
 Module 1 — QC metric computations.
 
-For each selected (flight_id, line_id) segment computes:
+All pass/fail thresholds come exclusively from TestSurveyNav.csv (read via
+read_survey_thresholds).  No thresholds are defined in project.yaml.
 
-  Aircraft / navigation
+Computed values (informative — no hard threshold, geophysicist decides):
     ralt_mean_m         mean radar altitude
     ralt_pct_outside    fraction of points outside [RadarMin, RadarMax]
     lalt_mean_m         mean laser altitude (if available)
     roll_max_deg        max |Roll| on the line
-    roll_pct_outside    fraction with |Roll| > threshold
     pitch_max_deg       max |Pitch| on the line
-    pitch_pct_outside   fraction with |Pitch| > threshold
-    yaw_std_deg         heading standard deviation (consistency)
+    yaw_std_deg         heading standard deviation
     cross_track_max_m   max perpendicular distance from planned line
     cross_track_mean_m  mean perpendicular distance
-    speed_mean_kmh      mean ground speed (from GPS positions + timestamps)
+    speed_mean_kmh      mean ground speed
     speed_pct_outside   fraction outside [SpeedMin, SpeedMax]
     gap_max_m           largest gap between consecutive GPS points
-    n_gaps              number of gaps exceeding gap_max_m threshold
-
-  Sensor health (magnetics)
-    mag_noise_nT        noise level: std(diff²(Mag1)) / sqrt(6)
-    mag_spike_count     number of isolated spikes > threshold
-
-  Diurnal
+    mag_noise_nT        noise level: std(Δ²Mag1) / √6
+    mag_spike_count     isolated spikes detected (detection sensitivity: 100 nT)
     diurnal_range_nT    Tagesgang variation during the line
 
-  Summary flags (True = passes QC)
-    pass_altitude, pass_roll, pass_pitch, pass_yaw,
-    pass_cross_track, pass_speed, pass_spacing,
-    pass_mag_noise, pass_mag_spike, pass_diurnal,
-    pass_all
+Pass/fail flags (threshold source: TestSurveyNav only):
+    pass_altitude       mean Ralt within [RadarMin, RadarMax]
+    pass_cross_track    cross_track_max_m <= CrossTrack
+    pass_speed          mean speed within [GroundSpeedMin, GroundSpeedMax]
+    pass_all            all three above
 """
 
 import numpy as np
@@ -107,47 +101,56 @@ def _diurnal_range_nT(seg: pd.DataFrame, tagesgang: pd.DataFrame | None) -> floa
     return float(window.max() - window.min())
 
 
+_SPIKE_DETECTION_NT = 100.0   # sensitivity of the spike finder (rolling-median deviation)
+_GAP_DETECTION_M    = 200.0   # gap size used only for reporting, not for pass/fail
+
+
 def compute_segment_metrics(
     seg: pd.DataFrame,
     A: np.ndarray,
     unit: np.ndarray,
-    thresholds: dict,
     survey_thresholds: dict,
-    tagesgang: pd.DataFrame | None,
+    tagesgang: 'pd.DataFrame | None',
     transformer: Transformer,
 ) -> dict:
     """
     Compute all QC metrics for one (flight_id, line_id) segment.
 
+    Pass/fail flags are derived exclusively from TestSurveyNav thresholds:
+        pass_altitude    : mean Ralt within [RadarMin, RadarMax]
+        pass_cross_track : cross_track_max_m <= CrossTrack
+        pass_speed       : mean speed within [GroundSpeedMin, GroundSpeedMax]
+        pass_all         : all three above
+
+    All other columns are informative values — no arbitrary threshold is applied.
+
     Parameters
     ----------
     seg               : DataFrame rows for this segment (line_valid=True)
-    A, unit           : planned line start point and unit direction vector (UTM)
-    thresholds        : m1 section from project.yaml
-    survey_thresholds : output of read_survey_thresholds() (radar heights, speed, etc.)
+    A, unit           : planned line origin and unit direction vector (UTM)
+    survey_thresholds : output of read_survey_thresholds() from TestSurveyNav
     tagesgang         : base station DataFrame or None
     transformer       : pyproj Transformer WGS84→UTM
     """
     seg = seg.dropna(subset=['Xgps', 'Ygps']).sort_values('M3clk')
-    n   = len(seg)
-    if n < 2:
+    if len(seg) < 2:
         return {}
 
-    pct_max    = thresholds.get('pct_outside_max', 0.20)
-    ralt_min   = survey_thresholds.get('radar_min_m', 80.0)
-    ralt_max   = survey_thresholds.get('radar_max_m', 110.0)
-    spd_min    = survey_thresholds.get('speed_min_kmh', 90.0)
-    spd_max    = survey_thresholds.get('speed_max_kmh', 150.0)
+    ralt_min  = survey_thresholds.get('radar_min_m',    80.0)
+    ralt_max  = survey_thresholds.get('radar_max_m',   110.0)
+    spd_min   = survey_thresholds.get('speed_min_kmh',  90.0)
+    spd_max   = survey_thresholds.get('speed_max_kmh', 150.0)
+    ct_limit  = survey_thresholds.get('cross_track_m',  50.0)
 
     m = {}
 
-    # ---- Altitude ----------------------------------------------------------
+    # ---- Altitude (pass/fail: mean within TestSurveyNav band) --------------
     if 'Ralt' in seg.columns:
         ralt = seg['Ralt'].dropna().values
-        m['ralt_mean_m']     = round(float(np.mean(ralt)), 1)
-        outside = ((ralt < ralt_min) | (ralt > ralt_max)).sum()
+        m['ralt_mean_m']    = round(float(np.mean(ralt)), 1)
+        outside             = ((ralt < ralt_min) | (ralt > ralt_max)).sum()
         m['ralt_pct_outside'] = round(outside / len(ralt), 3)
-        m['pass_altitude']    = m['ralt_pct_outside'] <= pct_max
+        m['pass_altitude']  = ralt_min <= m['ralt_mean_m'] <= ralt_max
     else:
         m.update(ralt_mean_m=np.nan, ralt_pct_outside=np.nan, pass_altitude=None)
 
@@ -156,78 +159,57 @@ def compute_segment_metrics(
     else:
         m['lalt_mean_m'] = np.nan
 
-    # ---- Attitude ----------------------------------------------------------
-    for col, key, thresh_key in [
-        ('Roll',  'roll',  'roll_max_deg'),
-        ('Pitch', 'pitch', 'pitch_max_deg'),
-    ]:
+    # ---- Attitude (informative only) ---------------------------------------
+    for col, key in [('Roll', 'roll'), ('Pitch', 'pitch')]:
         if col in seg.columns:
-            vals    = seg[col].dropna().abs().values
-            lim     = thresholds.get(thresh_key, 5.0)
-            outside = (vals > lim).sum()
-            m[f'{key}_max_deg']      = round(float(vals.max()), 2)
-            m[f'{key}_pct_outside']  = round(outside / len(vals), 3)
-            m[f'pass_{key}']         = m[f'{key}_pct_outside'] <= pct_max
+            vals = seg[col].dropna().abs().values
+            m[f'{key}_max_deg'] = round(float(vals.max()), 2)
         else:
-            m.update(**{f'{key}_max_deg': np.nan, f'{key}_pct_outside': np.nan, f'pass_{key}': None})
+            m[f'{key}_max_deg'] = np.nan
 
-    # ---- Heading (Yaw) -----------------------------------------------------
     if 'Yaw' in seg.columns:
-        yaw_vals = seg['Yaw'].dropna().values
-        m['yaw_std_deg'] = round(float(np.std(yaw_vals)), 2)
-        m['pass_yaw']    = m['yaw_std_deg'] <= thresholds.get('yaw_std_max_deg', 10.0)
+        m['yaw_std_deg'] = round(float(np.std(seg['Yaw'].dropna().values)), 2)
     else:
-        m.update(yaw_std_deg=np.nan, pass_yaw=None)
+        m['yaw_std_deg'] = np.nan
 
-    # ---- Cross-track deviation ---------------------------------------------
+    # ---- Cross-track (pass/fail: max <= CrossTrack from TestSurveyNav) -----
     ct = _cross_track_m(seg, A, unit, transformer)
-    m['cross_track_max_m']  = round(float(ct.max()), 1)
+    m['cross_track_max_m']  = round(float(ct.max()),  1)
     m['cross_track_mean_m'] = round(float(ct.mean()), 1)
-    m['pass_cross_track']   = m['cross_track_max_m'] <= thresholds.get('line_tolerance_m', 300.0)
+    m['pass_cross_track']   = m['cross_track_max_m'] <= ct_limit
 
-    # ---- Ground speed ------------------------------------------------------
-    speed = _ground_speed_kmh(seg)
+    # ---- Ground speed (pass/fail: mean within TestSurveyNav band) ----------
+    speed       = _ground_speed_kmh(seg)
     valid_speed = speed[~np.isnan(speed)]
     if len(valid_speed) > 0:
         outside = ((valid_speed < spd_min) | (valid_speed > spd_max)).sum()
         m['speed_mean_kmh']    = round(float(np.nanmean(valid_speed)), 1)
         m['speed_pct_outside'] = round(outside / len(valid_speed), 3)
-        m['pass_speed']        = m['speed_pct_outside'] <= pct_max
+        m['pass_speed']        = spd_min <= m['speed_mean_kmh'] <= spd_max
     else:
         m.update(speed_mean_kmh=np.nan, speed_pct_outside=np.nan, pass_speed=None)
 
-    # ---- Sample spacing / gaps ---------------------------------------------
-    dist = _along_track_dist_m(seg, transformer)
-    gaps_m     = np.diff(dist)
-    gap_thresh = thresholds.get('gap_max_m', 200.0)
+    # ---- Sample spacing (informative only) ---------------------------------
+    dist   = _along_track_dist_m(seg, transformer)
+    gaps_m = np.diff(dist)
     m['gap_max_m'] = round(float(gaps_m.max()), 1)
-    m['n_gaps']    = int((gaps_m > gap_thresh).sum())
-    m['pass_spacing'] = m['n_gaps'] == 0
+    m['n_gaps']    = int((gaps_m > _GAP_DETECTION_M).sum())
 
-    # ---- Magnetic noise and spikes -----------------------------------------
+    # ---- Magnetic noise and spikes (informative only) ----------------------
     if 'Mag1' in seg.columns:
         mag = seg['Mag1'].dropna().values
-        noise_thresh = thresholds.get('mag_noise_max_nT', 5.0)
-        spike_thresh = thresholds.get('mag_spike_max_nT', 100.0)
         m['mag_noise_nT']    = round(_mag_noise_nT(mag), 3)
-        m['mag_spike_count'] = _mag_spike_count(mag, spike_thresh)
-        m['pass_mag_noise']  = m['mag_noise_nT'] <= noise_thresh
-        m['pass_mag_spike']  = m['mag_spike_count'] == 0
+        m['mag_spike_count'] = _mag_spike_count(mag, _SPIKE_DETECTION_NT)
     else:
-        m.update(mag_noise_nT=np.nan, mag_spike_count=np.nan,
-                 pass_mag_noise=None, pass_mag_spike=None)
+        m.update(mag_noise_nT=np.nan, mag_spike_count=np.nan)
 
-    # ---- Diurnal -----------------------------------------------------------
-    m['diurnal_range_nT'] = round(_diurnal_range_nT(seg, tagesgang), 1) \
-        if not np.isnan(_diurnal_range_nT(seg, tagesgang)) else np.nan
-    if not np.isnan(m['diurnal_range_nT']):
-        m['pass_diurnal'] = m['diurnal_range_nT'] <= thresholds.get('diurnal_max_nT', 50.0)
-    else:
-        m['pass_diurnal'] = None
+    # ---- Diurnal variation (informative only) ------------------------------
+    dr = _diurnal_range_nT(seg, tagesgang)
+    m['diurnal_range_nT'] = round(dr, 1) if not np.isnan(dr) else np.nan
 
-    # ---- Overall pass ------------------------------------------------------
-    pass_cols = [v for k, v in m.items() if k.startswith('pass_') and k != 'pass_all']
-    defined   = [v for v in pass_cols if v is not None]
+    # ---- Overall pass (TestSurveyNav criteria only) ------------------------
+    flags   = [m.get('pass_altitude'), m.get('pass_cross_track'), m.get('pass_speed')]
+    defined = [f for f in flags if f is not None]
     m['pass_all'] = all(defined) if defined else None
 
     return m
@@ -239,21 +221,21 @@ def run_qc(
     raw_root: Path,
     survey_nav: pd.DataFrame,
     survey_thresholds: dict,
-    thresholds: dict,
     projection: str,
 ) -> pd.DataFrame:
     """
     Compute QC metrics for all selected (flight_id, line_id) segments.
 
+    Pass/fail thresholds come exclusively from survey_thresholds (TestSurveyNav).
+
     Parameters
     ----------
-    selected        : rows from line_selection.csv where selected=True
-    interim_root    : data/interim/<campaign>/<run_name>/
-    raw_root        : data/raw/<campaign>/Daten_Nisleg_2022/
-    survey_nav      : DataFrame from read_survey_nav
-    survey_thresholds : dict from read_survey_thresholds
-    thresholds      : m1 section of project.yaml
-    projection      : UTM CRS string
+    selected          : rows from line_selection.csv where selected=True
+    interim_root      : data/interim/<campaign>/<run_name>/
+    raw_root          : data/raw/<campaign>/Daten_Nisleg_2022/
+    survey_nav        : DataFrame from read_survey_nav
+    survey_thresholds : dict from read_survey_thresholds (TestSurveyNav)
+    projection        : UTM CRS string
 
     Returns
     -------
@@ -312,7 +294,7 @@ def run_qc(
 
         print(f"  QC {date}  flight {flight_id}  line {line_id} ...", end='  ')
         metrics = compute_segment_metrics(
-            seg, A, unit, thresholds, survey_thresholds,
+            seg, A, unit, survey_thresholds,
             tagesgang_cache[date], transformer,
         )
         if metrics:

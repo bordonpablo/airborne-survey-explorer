@@ -106,7 +106,6 @@ class QCViewer:
     def __init__(
         self,
         df: pd.DataFrame,
-        thresholds: dict,
         survey_thresholds: dict,
         nominal_alt: float,
         flight_id: str,
@@ -114,7 +113,6 @@ class QCViewer:
         qc_report: 'pd.DataFrame | None',
     ) -> None:
         self.df              = df
-        self.thr             = thresholds
         self.sth             = survey_thresholds
         self.nominal_alt     = nominal_alt
         self.flight_id       = flight_id
@@ -388,23 +386,20 @@ class QCViewer:
             self.fig.canvas.draw_idle()
             return
 
-        dist    = _along_track_km(seg)
-        thr     = self.thr
-        sth     = self.sth
-        qr      = self._qr(lid)
-        nom     = self.nominal_alt
-        pct_max = thr.get('pct_outside_max', 0.20)
+        dist = _along_track_km(seg)
+        sth  = self.sth
+        qr   = self._qr(lid)
+        nom  = self.nominal_alt
 
         # ==== Panel 1 — Radar altitude =====================================
+        # Thresholds from TestSurveyNav → colored reference lines + shading
         ax = self.ax_ralt
         rmin = sth.get('radar_min_m', nom - 30)
         rmax = sth.get('radar_max_m', nom + 30)
 
         if 'Ralt' in seg.columns:
             ralt = seg['Ralt'].values
-            # Green acceptance band
             ax.axhspan(rmin, rmax, alpha=0.10, color='#27ae60', zorder=0)
-            # Red fill where out of range
             ax.fill_between(dist, ralt, rmin,
                              where=ralt < rmin, alpha=0.35,
                              color='#e74c3c', interpolate=True, zorder=1)
@@ -427,8 +422,9 @@ class QCViewer:
         if qr is not None:
             mean = qr.get('ralt_mean_m')
             pct  = qr.get('ralt_pct_outside', 0.0)
+            pa   = qr.get('pass_altitude')
             if mean is not None and not (isinstance(mean, float) and np.isnan(mean)):
-                c = self._C_BAD if pct > pct_max else self._C_GOOD
+                c = self._C_GOOD if pa else self._C_BAD
                 self._panel_metric(ax,
                     f"media={mean:.0f} m  |  fuera de banda={pct:.0%}", c)
 
@@ -438,42 +434,22 @@ class QCViewer:
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
 
-        # ==== Panel 2 — Roll + Pitch ========================================
+        # ==== Panel 2 — Roll + Pitch (informativo — sin umbral) =============
         ax = self.ax_att
-        roll_lim  = thr.get('roll_max_deg',  5.0)
-        pitch_lim = thr.get('pitch_max_deg', 5.0)
-
-        ax.axhspan(-roll_lim, roll_lim, alpha=0.08, color='#27ae60', zorder=0)
         ax.axhline(0, color='#aaa', lw=0.5, zorder=1)
-
         for col, color in [('Roll', '#27ae60'), ('Pitch', '#8e44ad')]:
             if col in seg.columns:
                 ax.plot(dist, seg[col].values, color=color, lw=0.9,
                         label=col, zorder=2)
 
-        for lim, color, ls in [
-            (+roll_lim,  '#e74c3c', '--'),
-            (-roll_lim,  '#e74c3c', '--'),
-            (+pitch_lim, '#8e44ad', ':'),
-            (-pitch_lim, '#8e44ad', ':'),
-        ]:
-            ax.axhline(lim, color=color, ls=ls, lw=0.9, alpha=0.8, zorder=3)
-
         if qr is not None:
             parts = []
-            for key, lbl, lim in [
-                ('roll_pct_outside',  f'Roll>{roll_lim}°',   roll_lim),
-                ('pitch_pct_outside', f'Pitch>{pitch_lim}°', pitch_lim),
-            ]:
+            for key, lbl in [('roll_max_deg', 'Roll max'), ('pitch_max_deg', 'Pitch max')]:
                 v = qr.get(key)
                 if v is not None and not (isinstance(v, float) and np.isnan(v)):
-                    c = self._C_BAD if v > pct_max else self._C_GOOD
-                    parts.append((f"{lbl}: {v:.0%}", c))
+                    parts.append(f"{lbl}={v:.1f}°")
             if parts:
-                x_off = 1.0
-                for text, color in reversed(parts):
-                    self._panel_metric(ax, text, color, x=x_off)
-                    x_off -= 0.38
+                self._panel_metric(ax, '   |   '.join(parts), self._C_NEUT)
 
         ax.set_ylabel('Roll / Pitch (°)', fontsize=8)
         ax.legend(fontsize=7, loc='upper left', ncol=2,
@@ -481,7 +457,7 @@ class QCViewer:
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
 
-        # ==== Panel 3 — Yaw =================================================
+        # ==== Panel 3 — Yaw (informativo — sin umbral) ======================
         ax = self.ax_yaw
         if 'Yaw' in seg.columns:
             ax.plot(dist, seg['Yaw'].values, color='#e67e22',
@@ -490,20 +466,17 @@ class QCViewer:
 
         if qr is not None:
             std = qr.get('yaw_std_deg')
-            lim = thr.get('yaw_std_max_deg', 10.0)
             if std is not None and not (isinstance(std, float) and np.isnan(std)):
-                c = self._C_BAD if std > lim else self._C_GOOD
-                self._panel_metric(ax, f"std={std:.1f}°  (límite={lim:.0f}°)", c)
+                self._panel_metric(ax, f"std={std:.1f}°", self._C_NEUT)
 
         ax.set_ylabel('Yaw (°)', fontsize=8)
         ax.legend(fontsize=7, loc='upper left', framealpha=0.6)
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
 
-        # ==== Panel 4 — Magnéticos ==========================================
+        # ==== Panel 4 — Magnéticos (picos informativos, ruido informativo) ==
         ax = self.ax_mag
-        spike_thresh = thr.get('mag_spike_max_nT', 100.0)
-        noise_thresh = thr.get('mag_noise_max_nT',   5.0)
+        from src.m01_qc.metrics import _SPIKE_DETECTION_NT
 
         for col, color in [('Mag1', '#2980b9'), ('Mag2', '#c0392b')]:
             if col in seg.columns:
@@ -512,35 +485,28 @@ class QCViewer:
                         label=col, alpha=0.85, zorder=2)
 
                 if col == 'Mag1':
-                    mask     = _spike_mask(vals, spike_thresh)
+                    mask     = _spike_mask(vals, _SPIKE_DETECTION_NT)
                     n_spikes = int(mask.sum())
                     if n_spikes > 0:
                         ax.scatter(dist[mask], vals[mask],
                                    color='#f39c12', s=40, zorder=5,
-                                   label=f'Picos >{spike_thresh:.0f} nT ({n_spikes})')
+                                   label=f'Picos >{_SPIKE_DETECTION_NT:.0f} nT ({n_spikes})')
 
                     noise = _mag_noise_nT(vals)
                     ann_items = []
                     if not np.isnan(noise):
-                        c = self._C_BAD if noise > noise_thresh else self._C_GOOD
-                        ann_items.append(
-                            (f"ruido={noise:.2f} nT (lím={noise_thresh})", c))
-                    c_sp = self._C_BAD if n_spikes > 0 else self._C_GOOD
-                    ann_items.append((f"picos={n_spikes}", c_sp))
+                        ann_items.append(f"ruido={noise:.2f} nT")
+                    ann_items.append(f"picos={n_spikes}")
+                    self._panel_metric(ax, '   |   '.join(ann_items), self._C_NEUT)
 
-                    x_off = 1.0
-                    for text, color in reversed(ann_items):
-                        self._panel_metric(ax, text, color, x=x_off)
-                        x_off -= 0.38
-
-        # Cross-track + gaps from QC report (bottom-left of panel)
+        # Cross-track (con umbral de TestSurveyNav) + gaps informativos
         if qr is not None:
             extra = []
             ct  = qr.get('cross_track_max_m')
-            lct = thr.get('line_tolerance_m', 300.0)
+            ct_limit = sth.get('cross_track_m', 50.0)
             if ct is not None and not (isinstance(ct, float) and np.isnan(ct)):
-                c = self._C_BAD if ct > lct else self._C_GOOD
-                extra.append((f"desvío_transversal max={ct:.0f} m", c))
+                c = self._C_BAD if ct > ct_limit else self._C_GOOD
+                extra.append((f"desvío transv. max={ct:.0f} m  (lím={ct_limit:.0f} m)", c))
             ng = qr.get('n_gaps')
             if ng is not None and not (isinstance(ng, float) and np.isnan(ng)):
                 c = self._C_BAD if int(ng) > 0 else self._C_GOOD
@@ -585,7 +551,6 @@ def view(date: str, flight_id: str) -> None:
     nav_path    = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
     nominal_alt = cfg['survey_design']['nominal_altitude_m']
 
-    thresholds        = cfg.get('m1', {})
     survey_thresholds = read_survey_thresholds(nav_path)
 
     pq_path = (
@@ -624,7 +589,7 @@ def view(date: str, flight_id: str) -> None:
     print(f"Vuelo {flight_id}  ({date})  —  {n_lines} líneas.  "
           "Click en una línea para inspeccionar.")
 
-    QCViewer(df, thresholds, survey_thresholds, nominal_alt,
+    QCViewer(df, survey_thresholds, nominal_alt,
              flight_id, date, qc_report)
 
 

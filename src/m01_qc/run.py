@@ -91,7 +91,6 @@ def main(
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
     out_root     = PROJECT_ROOT / 'outputs' / campaign / run_name / 'qc'
 
-    thresholds        = cfg.get('m1', {})
     survey_nav        = read_survey_nav(nav_path)
     survey_thresholds = read_survey_thresholds(nav_path)
 
@@ -119,7 +118,7 @@ def main(
             print(f"No valid data for line {target_line}.")
             return
         out_path = out_root / row['date'] / f"flight_{row['flight_id']}_line_{target_line}_detail.png"
-        detail_figure(seg, thresholds, survey_thresholds, out_path)
+        detail_figure(seg, survey_thresholds, out_path)
         return
 
     # -------------------------------------------------------------------------
@@ -128,7 +127,7 @@ def main(
     print("Computing QC metrics...")
     qc_df = run_qc(
         selected, interim_root, raw_root,
-        survey_nav, survey_thresholds, thresholds, proj,
+        survey_nav, survey_thresholds, proj,
     )
 
     if qc_df.empty:
