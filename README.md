@@ -11,14 +11,14 @@ The reference campaign is **Mongolia 2022**. The pipeline is fully parametrised 
 
 ## Pipeline
 
-| Module | Folder | Description | Status |
-|--------|--------|-------------|--------|
-| M0 — Preparation | `src/m00_preparation/` | File parsing, sensor synchronisation, line identification and trimming | [complete](src/m00_preparation/README.md) |
-| M1 — QC | `src/m01_qc/` | Quality control: altitude, attitude, cross-track, speed, spacing, magnetic noise, diurnal | [complete](src/m01_qc/README.md) |
-| M2 — Magnetics | `src/m02_magnetics/` | Lag, diurnal, heading, IGRF corrections; levelling | planned |
-| M3 — Radiometry | `src/m03_radiometry/` | FSA corrections: dead-time, background, radon, altitude; concentrations | planned |
-| M4 — Gridding | `src/m04_gridding/` | Regular grid, magnetic and radiometric derived products | planned |
-| M5 — Export | `src/m05_export/` | Maps, profiles, GeoTIFF, Shapefile, final report | planned |
+| Module | Folder | Description |
+|--------|--------|-------------|
+| M0 — Preparation | `src/m00_preparation/` | File parsing, sensor synchronisation, line identification and trimming |
+| M1 — QC | `src/m01_qc/` | Quality control: altitude, attitude, cross-track, speed, spacing, magnetic noise, diurnal |
+| M2 — Magnetics | `src/m02_magnetics/` | Lag, diurnal, heading, IGRF corrections; levelling |
+| M3 — Radiometry | `src/m03_radiometry/` | FSA corrections: dead-time, background, radon, altitude; concentrations |
+| M4 — Gridding | `src/m04_gridding/` | Regular grid, magnetic and radiometric derived products |
+| M5 — Export | `src/m05_export/` | Maps, profiles, GeoTIFF, Shapefile, final report |
 
 ---
 
