@@ -10,7 +10,10 @@
       "Bash(python src/analyse_sessions_006_007.py)",
       "Bash(python src/step1_status.py)",
       "Bash(git rm *)",
-      "Bash(dir /b /a:d)"
+      "Bash(dir /b /a:d)",
+      "Bash(gh repo *)",
+      "PowerShell(gh repo view bordonpablo/airborne-survey-explorer --json description,homepageUrl)",
+      "Bash(python -c ' *)"
     ]
   }
 }

@@ -41,6 +41,9 @@ TRACK_COLS = ['flight_id', 'line_id', 'line_valid', 'M3clk', 'time_s',
               'Xgps', 'Ygps', 'Ralt', 'Mag1', 'Mag2',
               'Roll', 'Pitch', 'Yaw', 'Sk', 'Su', 'Sth']
 
+# Columns kept in the lightweight GeoPackage (fast to load in QGIS)
+SLIM_COLS = ['date', 'flight_id', 'line_id']
+
 # (layer_name, geometry_type_str, geometry_type_int, crs)
 _LAYERS = [
     ('survey_plan',   'Line',  1, CRS_UTM48N),
@@ -95,13 +98,33 @@ def load_parquets(
     return pd.concat(parts, ignore_index=True)
 
 
+def _slim(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Keep only identifier columns + geometry for the lightweight export."""
+    keep = [c for c in SLIM_COLS if c in gdf.columns] + ['geometry']
+    return gdf[keep]
+
+
+def _sanitise_for_gpkg(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Cast columns to types that fiona can serialise into GeoPackage.
+
+    pandas nullable integers (Int64) and booleans are not always supported
+    by older fiona/GDAL builds; converting them before GeoDataFrame creation
+    avoids silent column drops or write errors.
+    """
+    df = df.copy()
+    if 'line_id' in df.columns:
+        df['line_id'] = df['line_id'].astype(str).replace({'<NA>': '', 'nan': ''})
+    if 'line_valid' in df.columns:
+        df['line_valid'] = df['line_valid'].astype('int8')
+    return df
+
+
 def build_flight_tracks(df: pd.DataFrame) -> gpd.GeoDataFrame:
     """All GPS points as a Point GeoDataFrame in WGS84 — complete flight."""
-    valid = df.dropna(subset=['Xgps', 'Ygps'])
+    valid = _sanitise_for_gpkg(df.dropna(subset=['Xgps', 'Ygps']))
     geometry = gpd.points_from_xy(valid['Xgps'], valid['Ygps'])
-    gdf = gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
-    gdf['line_id'] = gdf['line_id'].astype(str).replace('<NA>', '')
-    return gdf
+    return gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
 
 
 def build_line_points(df: pd.DataFrame) -> gpd.GeoDataFrame:
@@ -109,11 +132,9 @@ def build_line_points(df: pd.DataFrame) -> gpd.GeoDataFrame:
     mask = df['line_id'].notna()
     if 'line_valid' in df.columns:
         mask &= df['line_valid']
-    valid = df[mask].dropna(subset=['Xgps', 'Ygps'])
+    valid = _sanitise_for_gpkg(df[mask].dropna(subset=['Xgps', 'Ygps']))
     geometry = gpd.points_from_xy(valid['Xgps'], valid['Ygps'])
-    gdf = gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
-    gdf['line_id'] = gdf['line_id'].astype(str).replace('<NA>', '')
-    return gdf
+    return gpd.GeoDataFrame(valid.reset_index(drop=True), geometry=geometry, crs=CRS_WGS84)
 
 
 def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
@@ -226,12 +247,20 @@ def export_gpkg(
     points.to_file(output_path, layer='line_points', driver='GPKG')
     tracks.to_file(output_path, layer='flight_tracks', driver='GPKG')
 
+    light_path = output_path.with_stem(output_path.stem + '_light')
+    print(f"Writing {light_path}...")
+    survey_plan.to_file(light_path, layer='survey_plan', driver='GPKG')
+    _slim(lines).to_file(light_path, layer='flight_lines', driver='GPKG')
+    _slim(points).to_file(light_path, layer='line_points', driver='GPKG')
+    _slim(tracks).to_file(light_path, layer='flight_tracks', driver='GPKG')
+
     print(f"\nDone.")
-    print(f"  GeoPackage   : {output_path}")
-    print(f"  survey_plan  — {len(survey_plan)} planned lines  (UTM 48N)")
+    print(f"  Full  : {output_path}")
+    print(f"  Light : {light_path}")
+    print(f"  survey_plan   — {len(survey_plan)} planned lines  (UTM 48N)")
     print(f"  flight_tracks — {len(tracks):,} GPS points (complete flight)")
-    print(f"  line_points  — {len(points):,} valid on-line points")
-    print(f"  flight_lines — {len(lines)} flown segments")
+    print(f"  line_points   — {len(points):,} valid on-line points")
+    print(f"  flight_lines  — {len(lines)} flown segments")
 
 
 if __name__ == '__main__':

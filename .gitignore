@@ -15,3 +15,6 @@ data/
 # Personal notes — not committed
 NOTES.md
 notes.md
+
+# Documentación interna — no pública por ahora
+docs/m02_correcciones_magneticas.md
