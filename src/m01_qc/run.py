@@ -30,7 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.m00_preparation.read_survey_nav import read_survey_nav, read_survey_thresholds
 from src.m01_qc.metrics import run_qc
-from src.m01_qc.viz import summary_figure, detail_figure
+from src.m01_qc.viz import detail_figure
 
 
 def load_config() -> dict:
@@ -63,18 +63,6 @@ def filter_selection(
         sel = sel[sel['line_id'] == target_line]
     return sel.reset_index(drop=True)
 
-
-def _build_gps_dict(selected: pd.DataFrame, interim_root: Path) -> dict:
-    """Load GPS coordinates for all selected segments (for the summary map)."""
-    gps_dict = {}
-    for _, row in selected.iterrows():
-        pq = interim_root / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
-        if not pq.exists():
-            continue
-        df  = pd.read_parquet(pq, columns=['line_id', 'line_valid', 'Xgps', 'Ygps'])
-        seg = df[(df['line_id'] == row['line_id']) & df['line_valid']]
-        gps_dict[(str(row['flight_id']), int(row['line_id']), row['date'])] = seg
-    return gps_dict
 
 
 def main(
@@ -149,10 +137,6 @@ def main(
     qc_df.to_csv(report_path, index=False)
     print(f"  Report saved: {report_path}")
 
-    # Summary figure
-    gps_dict  = _build_gps_dict(selected, interim_root)
-    fig_path  = out_root / f"{scope}.png"
-    summary_figure(qc_df, gps_dict, fig_path)
 
 
 if __name__ == '__main__':

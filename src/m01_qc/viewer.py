@@ -108,15 +108,15 @@ class QCViewer:
         df: pd.DataFrame,
         survey_thresholds: dict,
         nominal_alt: float,
-        flight_id: str,
-        date: str,
+        title: str,
+        segment_meta: dict,
         qc_report: 'pd.DataFrame | None',
     ) -> None:
         self.df              = df
         self.sth             = survey_thresholds
         self.nominal_alt     = nominal_alt
-        self.flight_id       = flight_id
-        self.date            = date
+        self.title           = title
+        self.segment_meta    = segment_meta   # lid -> (flight_id, date)
         self.qc_report       = qc_report
 
         on_line = df[df['line_id'].notna() & df['line_valid']].copy()
@@ -304,9 +304,14 @@ class QCViewer:
     # ------------------------------------------------------------------
 
     def _refresh_title(self) -> None:
-        sel_str = f"  ·  Línea {int(self._selected)}" if self._selected is not None else ''
+        sel_str = ''
+        if self._selected is not None:
+            sel_str = f"  ·  Línea {int(self._selected)}"
+            if self._selected in self.segment_meta:
+                fid, date = self.segment_meta[self._selected]
+                sel_str += f"  ·  Vuelo {fid}  ·  {date}"
         self.fig.suptitle(
-            f"M1 QC  —  Vuelo {self.flight_id}  ·  {self.date}"
+            f"M1 QC  —  {self.title}"
             f"  ({len(self.line_ids)} líneas){sel_str}"
             f"     ←  →  para navegar",
             fontsize=11, fontweight='bold',
@@ -544,57 +549,89 @@ def _find_qc_report(out_qc: Path, date: str, flight_id: str) -> 'Path | None':
     return None
 
 
-def view(date: str, flight_id: str) -> None:
-    cfg         = _load_config()
-    campaign    = cfg['campaign']['name']
-    run_name    = cfg['campaign']['run_name']
-    nav_path    = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
-    nominal_alt = cfg['survey_design']['nominal_altitude_m']
+def view(date: str | None = None, flight_id: str | None = None) -> None:
+    cfg          = _load_config()
+    campaign     = cfg['campaign']['name']
+    run_name     = cfg['campaign']['run_name']
+    nav_path     = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
+    nominal_alt  = cfg['survey_design']['nominal_altitude_m']
+    interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
+    out_qc       = PROJECT_ROOT / 'outputs' / campaign / run_name / 'qc'
 
     survey_thresholds = read_survey_thresholds(nav_path)
 
-    pq_path = (
-        PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
-        / date / f'flight_{flight_id}_prepared.parquet'
-    )
-    if not pq_path.exists():
-        raise FileNotFoundError(
-            f"Parquet no encontrado: {pq_path}\n"
-            "Ejecutá primero:  python -m src.m00_preparation.prepare"
-        )
+    if date is not None and flight_id is not None:
+        # --- Single flight mode ---
+        pq_path = interim_root / date / f'flight_{flight_id}_prepared.parquet'
+        if not pq_path.exists():
+            raise FileNotFoundError(
+                f"Parquet no encontrado: {pq_path}\n"
+                "Ejecutá primero:  python -m src.m00_preparation.prepare"
+            )
+        df = pd.read_parquet(pq_path)
+        on_line = df[df['line_id'].notna() & df['line_valid']]
+        segment_meta = {int(lid): (flight_id, date) for lid in on_line['line_id'].unique()}
+        title    = f"Vuelo {flight_id}  ·  {date}"
+        rpt_path = _find_qc_report(out_qc, date, flight_id)
+        qc_report = None
+        if rpt_path:
+            try:
+                qc_report = pd.read_csv(rpt_path, dtype={'flight_id': str, 'line_id': int})
+                qc_report = qc_report[qc_report['flight_id'] == flight_id].reset_index(drop=True)
+            except Exception as e:
+                print(f"  Advertencia: no se pudo cargar el reporte QC: {e}")
 
-    df = pd.read_parquet(pq_path)
-    if df[df['line_id'].notna() & df['line_valid']].empty:
-        print("No hay datos válidos de líneas en este parquet.")
+    else:
+        # --- Whole campaign mode ---
+        sel_path = interim_root / 'line_selection.csv'
+        if not sel_path.exists():
+            raise FileNotFoundError(
+                "line_selection.csv no encontrado.\n"
+                "Ejecutá primero:  python -m src.m00_preparation.build_line_selection"
+            )
+        sel = pd.read_csv(sel_path, dtype={'flight_id': str, 'line_id': int})
+        sel = sel[sel['selected'] == True]
+
+        parts: list[pd.DataFrame] = []
+        segment_meta: dict = {}
+        for _, row in sel.iterrows():
+            pq = interim_root / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
+            if not pq.exists():
+                continue
+            seg_df  = pd.read_parquet(pq)
+            lid_int = int(row['line_id'])
+            mask    = seg_df['line_id'] == lid_int
+            if 'line_valid' in seg_df.columns:
+                mask &= seg_df['line_valid']
+            seg = seg_df[mask]
+            if not seg.empty:
+                parts.append(seg)
+                segment_meta[lid_int] = (str(row['flight_id']), row['date'])
+
+        if not parts:
+            raise FileNotFoundError("No hay segmentos seleccionados. Revisá line_selection.csv.")
+        df    = pd.concat(parts, ignore_index=True)
+        title = f"Campaña completa"
+
+        qc_report = None
+        rpt_path  = out_qc / 'qc_report.csv'
+        if rpt_path.exists():
+            try:
+                qc_report = pd.read_csv(rpt_path, dtype={'flight_id': str, 'line_id': int})
+            except Exception as e:
+                print(f"  Advertencia: no se pudo cargar el reporte QC: {e}")
+
+    if df[df['line_id'].notna()].empty:
+        print("No hay datos válidos de líneas.")
         return
 
-    # QC report para anotaciones (opcional)
-    qc_report = None
-    out_qc    = PROJECT_ROOT / 'outputs' / campaign / run_name / 'qc'
-    rpt_path  = _find_qc_report(out_qc, date, flight_id)
-    if rpt_path:
-        try:
-            qc_report = pd.read_csv(rpt_path, dtype={'flight_id': str, 'line_id': int})
-            qc_report = qc_report[qc_report['flight_id'] == flight_id].reset_index(drop=True)
-            print(f"  Reporte QC: {rpt_path.name}  ({len(qc_report)} líneas)")
-        except Exception as e:
-            print(f"  Advertencia: no se pudo cargar el reporte QC: {e}")
-    else:
-        print(
-            "  No se encontró reporte QC — ejecutá "
-            "python -m src.m01_qc.run primero para ver anotaciones de métricas."
-        )
+    n_lines = len(segment_meta)
+    print(f"{title}  —  {n_lines} líneas.  Click en una línea para inspeccionar.")
 
-    n_lines = df[df['line_id'].notna() & df['line_valid']]['line_id'].nunique()
-    print(f"Vuelo {flight_id}  ({date})  —  {n_lines} líneas.  "
-          "Click en una línea para inspeccionar.")
-
-    QCViewer(df, survey_thresholds, nominal_alt,
-             flight_id, date, qc_report)
+    QCViewer(df, survey_thresholds, nominal_alt, title, segment_meta, qc_report)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("Uso: python -m src.m01_qc.viewer <fecha> <flight_id>")
-        sys.exit(1)
-    view(sys.argv[1], sys.argv[2].zfill(5))
+    date_arg   = sys.argv[1] if len(sys.argv) > 1 else None
+    flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
+    view(date_arg, flight_arg)

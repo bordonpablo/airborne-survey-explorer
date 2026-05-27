@@ -36,23 +36,7 @@ computes QC metrics per segment, saves a report CSV, and opens a visualisation.
 | `mag_spike_count` | Mag1 | Number of isolated spikes above threshold |
 | `diurnal_range_nT` | Tagesgang | Base-station variation during the line |
 
-Altitude thresholds (RadarMin, RadarMax, SpeedMin, SpeedMax) are read from
-`TestSurveyNav.csv`. All other thresholds are in `config/project.yaml` under `m1:`.
-
-## Configuration
-
-```yaml
-m1:
-  line_tolerance_m: 300        # max cross-track deviation (m)
-  roll_max_deg: 5.0
-  pitch_max_deg: 5.0
-  yaw_std_max_deg: 10.0        # heading std dev limit
-  gap_max_m: 200.0             # max GPS gap to pass spacing check
-  pct_outside_max: 0.20        # max fraction of bad points to pass a metric
-  mag_noise_max_nT: 5.0
-  mag_spike_max_nT: 100.0
-  diurnal_max_nT: 50.0
-```
+All pass/fail thresholds (`RadarMin`, `RadarMax`, `CrossTrack`, `GroundSpeedMin`, `GroundSpeedMax`) come exclusively from `TestSurveyNav.csv`. No thresholds for this module are defined in `config/project.yaml`.
 
 ## Execution
 
@@ -69,50 +53,21 @@ python -m src.m01_qc.run 22.04.2022 00427         # one flight
 Produces:
 - Terminal table of pass/fail per metric per line
 - `outputs/<campaign>/<run_name>/qc/<scope>_qc_report.csv`
-- Interactive figure: GPS map (green = pass, red = fail) + metric heatmap
 
-### Detail mode — one line, all variables simultaneously
+### Detail mode — one line
 
 ```powershell
 python -m src.m01_qc.run 22.04.2022 00427 10010
 ```
 
-Opens a multi-panel figure with all QC variables at once:
-- GPS track map
-- Radar altitude (with RadarMin/RadarMax reference lines)
-- Roll + Pitch (with ±threshold lines)
-- Yaw (heading consistency)
-- Mag1 + Mag2
-
-All profile panels share the along-track x-axis.
-
-### Interactive viewer — one flight, click to inspect
+### Interactive viewer
 
 ```powershell
-python -m src.m01_qc.viewer 24.04.2022 00428
+python -m src.m01_qc.viewer                    # toda la campaña
+python -m src.m01_qc.viewer 24.04.2022 00428   # un vuelo específico
 ```
 
-Opens a window with two columns:
-
-**Left — satellite map** (requires `contextily`):
-- All survey lines for the flight are drawn on top of an Esri WorldImagery basemap.
-- Lines are coloured **green** (pass) / **red** (fail) if a QC report exists for that
-  flight, or **blue** when no report is available.
-  Run `python -m src.m01_qc.run <date> <flight>` first to generate the report.
-- The currently selected line is highlighted in **orange**.
-- Click any line to select it and update the profiles.
-
-**Right — four stacked profile panels** (all share the along-track x-axis):
-1. Radar altitude (Ralt/Lalt) with RadarMin/RadarMax reference lines and
-   mean altitude + fraction-outside annotation.
-2. Roll + Pitch with ±threshold lines; fraction-outside annotation per channel.
-3. Yaw with heading standard-deviation annotation.
-4. Mag1 + Mag2 with spike markers (orange dots) and noise / spike-count
-   annotations. Cross-track deviation, speed and gap count are shown at
-   the right edge of this panel.
-
-All annotations show the metric value and a ✓/✗ symbol matched to the
-thresholds in `config/project.yaml` (`m1:` section) and `TestSurveyNav.csv`.
+Requires `contextily` for the satellite basemap (`pip install contextily`).
 
 ---
 
@@ -121,8 +76,7 @@ thresholds in `config/project.yaml` (`m1:` section) and `TestSurveyNav.csv`.
 | Path | Contents |
 |---|---|
 | `outputs/<campaign>/<run_name>/qc/<scope>_qc_report.csv` | Per-line metrics and pass/fail |
-| `outputs/<campaign>/<run_name>/qc/<scope>_qc_report.png` | Summary map + heatmap |
-| `outputs/<campaign>/<run_name>/qc/<date>/flight_X_line_Y_<var>.png` | Detail view snapshot |
+| `outputs/<campaign>/<run_name>/qc/<date>/flight_X_line_Y_detail.png` | Detail view snapshot |
 
 ## After reviewing the report
 
