@@ -4,8 +4,8 @@ Applies the full chain of magnetic corrections to all selected survey lines,
 starting from the compensated field (Mag1C / Mag2C) delivered by M0 and producing
 the Residual Magnetic Anomaly (column `Mag_Final`).
 
-For a detailed explanation of each correction, including formulae and geophysical
-context, see [docs/m02_correcciones_magneticas.md](../../docs/m02_correcciones_magneticas.md).
+For a plain-language explanation of the correction order and column names
+see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 
 ---
 
@@ -13,10 +13,12 @@ context, see [docs/m02_correcciones_magneticas.md](../../docs/m02_correcciones_m
 
 | Script | Role |
 |---|---|
-| `run.py` | **Main entry point** (placeholder — use individual scripts while M2 is being built). |
+| `run.py` | **Main entry point.** Reads `line_selection.csv` and runs steps 1–2 (lag correction). |
 | `inspect_raw.py` | **Raw inspection.** Four-panel PNG per line before any correction. |
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
 | `validate.py` | **Specialist comparison.** Reads Geosoft .dat/.ddf files and compares columns. |
+| `data/reference/plot_reference.py` | **Reference maps.** One map + one GeoPackage layer per intermediate column. Run once. |
+| `data/reference/plot_corrections_impact.py` | **Correction impact.** Bar chart of magnitudes, spatial difference maps, and profile along one line. |
 | `diurnal.py` | Diurnal correction (base station subtraction). [pendiente] |
 | `igrf.py` | IGRF-13 removal (ppigrf). [pendiente] |
 | `heading.py` | Heading correction (residual aircraft interference). [pendiente] |
@@ -124,6 +126,21 @@ df_ref = read_specialist_data(
 stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compensado')
 ```
 
+### Reference data — specialist outputs
+
+Run once before starting implementation. Generates ground-truth maps and a
+GeoPackage to compare against at each correction step.
+
+```powershell
+# Maps + GeoPackage of all intermediate columns
+python data/reference/plot_reference.py
+
+# Correction impact: magnitude chart, difference maps, profile along one line
+python data/reference/plot_corrections_impact.py
+```
+
+Output folder: `outputs/<campaign>/<run_name>/reference/`
+
 ---
 
 ## Outputs
@@ -133,10 +150,16 @@ stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compe
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 4-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
 | `outputs/<campaign>/<run_name>/m02/lag/lag_diagnosis_lineA_lineB.png` | Cross-correlation diagnostic for one E/W pair |
+| `outputs/<campaign>/<run_name>/reference/ref_<col>.png` | One map per specialist column |
+| `outputs/<campaign>/<run_name>/reference/ref_summary_*.png` | Summary panels per group (mag1, mag2, finals) |
+| `outputs/<campaign>/<run_name>/reference/specialist_magnetics.gpkg` | GeoPackage — one layer per column |
+| `outputs/<campaign>/<run_name>/reference/impact_magnitudes.png` | Bar chart of correction magnitudes (nT) |
+| `outputs/<campaign>/<run_name>/reference/impact_diff_maps.png` | Spatial maps of step-by-step differences |
+| `outputs/<campaign>/<run_name>/reference/impact_profile.png` | Field evolution along one survey line |
 
 ---
 
 ## Reference
 
 - Specialist processing report and reference data: `data/reference/`
-- Geophysical background for each correction: [docs/m02_correcciones_magneticas.md](../../docs/m02_correcciones_magneticas.md)
+- Correction chain explained: [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md)
