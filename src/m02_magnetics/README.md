@@ -17,8 +17,7 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 | `inspect_raw.py` | **Raw inspection.** Four-panel PNG per line before any correction. |
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
 | `validate.py` | **Specialist comparison.** Reads Geosoft .dat/.ddf files and compares columns. |
-| `data/reference/plot_reference.py` | **Reference maps.** One map + one GeoPackage layer per intermediate column. Run once. |
-| `data/reference/plot_corrections_impact.py` | **Correction impact.** Bar chart of magnitudes, spatial difference maps, and profile along one line. |
+| `validate.py` — see also `data/reference/` | Reads Geosoft .dat/.ddf and compares specialist columns against ours. |
 | `diurnal.py` | Diurnal correction (base station subtraction). [pendiente] |
 | `igrf.py` | IGRF-13 removal (ppigrf). [pendiente] |
 | `heading.py` | Heading correction (residual aircraft interference). [pendiente] |
@@ -126,21 +125,6 @@ df_ref = read_specialist_data(
 stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compensado')
 ```
 
-### Reference data — specialist outputs
-
-Run once before starting implementation. Generates ground-truth maps and a
-GeoPackage to compare against at each correction step.
-
-```powershell
-# Maps + GeoPackage of all intermediate columns
-python data/reference/plot_reference.py
-
-# Correction impact: magnitude chart, difference maps, profile along one line
-python data/reference/plot_corrections_impact.py
-```
-
-Output folder: `outputs/<campaign>/<run_name>/reference/`
-
 ---
 
 ## Outputs
@@ -150,12 +134,7 @@ Output folder: `outputs/<campaign>/<run_name>/reference/`
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 4-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
 | `outputs/<campaign>/<run_name>/m02/lag/lag_diagnosis_lineA_lineB.png` | Cross-correlation diagnostic for one E/W pair |
-| `outputs/<campaign>/<run_name>/reference/ref_<col>.png` | One map per specialist column |
-| `outputs/<campaign>/<run_name>/reference/ref_summary_*.png` | Summary panels per group (mag1, mag2, finals) |
-| `outputs/<campaign>/<run_name>/reference/specialist_magnetics.gpkg` | GeoPackage — one layer per column |
-| `outputs/<campaign>/<run_name>/reference/impact_magnitudes.png` | Bar chart of correction magnitudes (nT) |
-| `outputs/<campaign>/<run_name>/reference/impact_diff_maps.png` | Spatial maps of step-by-step differences |
-| `outputs/<campaign>/<run_name>/reference/impact_profile.png` | Field evolution along one survey line |
+| `outputs/<campaign>/<run_name>/reference/` | Specialist reference maps and GeoPackage — see `data/reference/README.md` |
 
 ---
 
