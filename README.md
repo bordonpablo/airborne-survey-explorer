@@ -126,3 +126,5 @@ script descriptions, and usage examples.
 |---|---|
 | M0 — Data Preparation | [src/m00_preparation/README.md](src/m00_preparation/README.md) |
 | M1 — Quality Control | [src/m01_qc/README.md](src/m01_qc/README.md) |
+| M2 — Magnetics | [src/m02_magnetics/README.md](src/m02_magnetics/README.md) |
+| Reference data | [data/reference/README.md](data/reference/README.md) |
