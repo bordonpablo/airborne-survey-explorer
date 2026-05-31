@@ -124,7 +124,7 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
 
     parquet_path = (
         PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
-        / date / f'flight_{flight_id}_prepared.parquet'
+        / 'm00' / date / f'flight_{flight_id}_prepared.parquet'
     )
     if not parquet_path.exists():
         raise FileNotFoundError(f"Parquet not found: {parquet_path}\nRun prepare.py first.")
@@ -137,7 +137,7 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
         if on_line.empty:
             raise ValueError(f"No valid data for line {line_id} in flight {flight_id}.")
 
-    out_base = PROJECT_ROOT / 'outputs' / campaign / run_name / 'inspection' / date
+    out_base = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm00' / date
     print_summary(on_line, flight_id, date)
 
     for lid, seg in on_line.groupby('line_id'):

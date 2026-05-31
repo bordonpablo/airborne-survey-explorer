@@ -77,7 +77,7 @@ def main(
     nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
     raw_root = PROJECT_ROOT / cfg['campaign']['raw_data_path']
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
-    out_root     = PROJECT_ROOT / 'outputs' / campaign / run_name / 'qc'
+    out_root     = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm01'
 
     survey_nav        = read_survey_nav(nav_path)
     survey_thresholds = read_survey_thresholds(nav_path)
@@ -99,7 +99,7 @@ def main(
     # -------------------------------------------------------------------------
     if target_line is not None:
         row = selected.iloc[0]
-        pq  = interim_root / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
+        pq  = interim_root / 'm00' / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
         df  = pd.read_parquet(pq)
         seg = df[(df['line_id'] == target_line) & df['line_valid']].copy()
         if seg.empty:

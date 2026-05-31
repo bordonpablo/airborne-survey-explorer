@@ -12,7 +12,7 @@ config/project.yaml. For each flight found in a day folder, it:
   2. Synchronises sensors onto the GGA time axis
   3. Clips each line segment to the planned start/end coordinates (geometric)
   4. Flags turns using cross-track distance from the planned line
-  5. Saves to data/interim/<campaign>/<run_name>/<date>/flight_<N>_prepared.parquet
+  5. Saves to data/interim/<campaign>/<run_name>/m00/<date>/flight_<N>_prepared.parquet
 """
 
 import shutil
@@ -90,7 +90,7 @@ def prepare_flight(
     n_total = len(filtered)
     print(f"  {n_lines} survey lines, {n_valid:,} valid rows of {n_total:,} total")
 
-    out_path = interim_dir / date_str / f'flight_{flight_id}_prepared.parquet'
+    out_path = interim_dir / 'm00' / date_str / f'flight_{flight_id}_prepared.parquet'
     save_prepared(filtered, out_path)
 
 

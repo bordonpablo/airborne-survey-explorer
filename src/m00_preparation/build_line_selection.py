@@ -52,11 +52,11 @@ def scan_parquets(
     One row per (flight_id, line_id) combination found across all parquets.
     """
     if target_date and target_flight:
-        candidates = [interim_root / target_date / f'flight_{target_flight}_prepared.parquet']
+        candidates = [interim_root / 'm00' / target_date / f'flight_{target_flight}_prepared.parquet']
     elif target_date:
-        candidates = sorted((interim_root / target_date).glob('flight_*_prepared.parquet'))
+        candidates = sorted((interim_root / 'm00' / target_date).glob('flight_*_prepared.parquet'))
     else:
-        candidates = sorted(interim_root.rglob('flight_*_prepared.parquet'))
+        candidates = sorted((interim_root / 'm00').rglob('flight_*_prepared.parquet'))
 
     rows = []
     for pq in candidates:

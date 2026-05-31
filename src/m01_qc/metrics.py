@@ -265,7 +265,7 @@ def run_qc(
         flight_id = str(sel['flight_id'])
         line_id   = int(sel['line_id'])
 
-        pq_path = interim_root / date / f'flight_{flight_id}_prepared.parquet'
+        pq_path = interim_root / 'm00' / date / f'flight_{flight_id}_prepared.parquet'
         if not pq_path.exists():
             print(f"  Skipping {date}/{flight_id} line {line_id}: parquet not found")
             continue

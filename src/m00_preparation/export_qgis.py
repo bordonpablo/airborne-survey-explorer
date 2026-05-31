@@ -75,11 +75,11 @@ def load_parquets(
 ) -> pd.DataFrame:
     """Load prepared parquet files, optionally filtered by date and flight."""
     if target_date and target_flight:
-        candidates = [interim_root / target_date / f'flight_{target_flight}_prepared.parquet']
+        candidates = [interim_root / 'm00' / target_date / f'flight_{target_flight}_prepared.parquet']
     elif target_date:
-        candidates = sorted((interim_root / target_date).glob('flight_*_prepared.parquet'))
+        candidates = sorted((interim_root / 'm00' / target_date).glob('flight_*_prepared.parquet'))
     else:
-        candidates = sorted(interim_root.rglob('flight_*_prepared.parquet'))
+        candidates = sorted((interim_root / 'm00').rglob('flight_*_prepared.parquet'))
 
     parts = []
     for pq in candidates:
@@ -267,13 +267,14 @@ if __name__ == '__main__':
     date_arg = sys.argv[1] if len(sys.argv) > 1 else None
     flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
 
-    cfg = load_config()
-    base = PROJECT_ROOT / 'outputs' / cfg['campaign']['name']
+    cfg      = load_config()
+    out_root = (PROJECT_ROOT / 'outputs' / cfg['campaign']['name']
+                / cfg['campaign']['run_name'] / 'm00')
     if date_arg and flight_arg:
-        out = base / date_arg / flight_arg / cfg['campaign']['run_name'] / f'{flight_arg}.gpkg'
+        out = out_root / date_arg / f'{flight_arg}.gpkg'
     elif date_arg:
-        out = base / date_arg / cfg['campaign']['run_name'] / f'{date_arg}.gpkg'
+        out = out_root / date_arg / f'{date_arg}.gpkg'
     else:
-        out = base / cfg['campaign']['run_name'] / f'{cfg["campaign"]["name"]}.gpkg'
+        out = out_root / f'{cfg["campaign"]["name"]}.gpkg'
 
     export_gpkg(out, date_arg, flight_arg)

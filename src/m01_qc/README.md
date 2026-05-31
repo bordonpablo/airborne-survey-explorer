@@ -52,7 +52,7 @@ python -m src.m01_qc.run 22.04.2022 00427         # one flight
 
 Produces:
 - Terminal table of pass/fail per metric per line
-- `outputs/<campaign>/<run_name>/qc/<scope>_qc_report.csv`
+- `outputs/<campaign>/<run_name>/m01/<scope>_qc_report.csv`
 
 ### Detail mode — one line
 
@@ -75,8 +75,8 @@ Requires `contextily` for the satellite basemap (`pip install contextily`).
 
 | Path | Contents |
 |---|---|
-| `outputs/<campaign>/<run_name>/qc/<scope>_qc_report.csv` | Per-line metrics and pass/fail |
-| `outputs/<campaign>/<run_name>/qc/<date>/flight_X_line_Y_detail.png` | Detail view snapshot |
+| `outputs/<campaign>/<run_name>/m01/<scope>_qc_report.csv` | Per-line metrics and pass/fail |
+| `outputs/<campaign>/<run_name>/m01/<date>/flight_X_line_Y_detail.png` | Detail view snapshot |
 
 ## After reviewing the report
 

@@ -556,13 +556,13 @@ def view(date: str | None = None, flight_id: str | None = None) -> None:
     nav_path     = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
     nominal_alt  = cfg['survey_design']['nominal_altitude_m']
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
-    out_qc       = PROJECT_ROOT / 'outputs' / campaign / run_name / 'qc'
+    out_qc       = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm01'
 
     survey_thresholds = read_survey_thresholds(nav_path)
 
     if date is not None and flight_id is not None:
         # --- Single flight mode ---
-        pq_path = interim_root / date / f'flight_{flight_id}_prepared.parquet'
+        pq_path = interim_root / 'm00' / date / f'flight_{flight_id}_prepared.parquet'
         if not pq_path.exists():
             raise FileNotFoundError(
                 f"Parquet no encontrado: {pq_path}\n"
@@ -595,7 +595,7 @@ def view(date: str | None = None, flight_id: str | None = None) -> None:
         parts: list[pd.DataFrame] = []
         segment_meta: dict = {}
         for _, row in sel.iterrows():
-            pq = interim_root / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
+            pq = interim_root / 'm00' / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
             if not pq.exists():
                 continue
             seg_df  = pd.read_parquet(pq)
