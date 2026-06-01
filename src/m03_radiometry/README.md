@@ -68,6 +68,104 @@ software **GammAn** (Medusa Radiometrics) and cannot be replicated in Python.
 
 ---
 
+## Columnas del archivo SPC crudo
+
+El prefijo **`S`** identifica al espectrómetro (sensor M2 en el DAS). Cada fila es
+una muestra a ~1 Hz.
+
+### Tiempo y posición
+
+| Columna | Unidad | Descripción |
+|---------|--------|-------------|
+| `M2clk` | ms | Reloj del sistema desde el arranque del DAS — eje de sincronización compartido con MAG (M1clk) y GGA (M3clk) |
+| `Sxgps`, `Sygps` | ° | Longitud y latitud GPS del espectrómetro |
+| `Szgps` | m | Altitud GPS sobre el nivel del mar |
+| `Swayp` | — | Nombre de la línea de vuelo asignado por el sistema de navegación; en blanco durante transits y virajes |
+
+### Altímetro
+
+| Columna | Unidad | Descripción |
+|---------|--------|-------------|
+| `Sralt` | m | **Altímetro de radar** — distancia al terreno directamente debajo del avión. No es altitud sobre el mar (eso es `Szgps`). Es la variable más importante para la corrección de altura en radiometría. Se suaviza antes de GammAn. |
+
+Valor esperado en vuelo normal: 80–120 m (drape nominal 100 m). Valores
+persistentemente > 120 m indican que la corrección de altura del FSA será menos
+confiable. Valores = 0 o constantes indican falla del sensor.
+
+### Sensores ambientales — voltaje crudo vs. valor calibrado
+
+El sistema registra dos versiones de cada variable ambiental. Siempre se usan
+los valores calibrados.
+
+| Voltaje crudo | Valor calibrado | Unidad | Qué mide |
+|---------------|-----------------|--------|----------|
+| `BaroV` | `Sbaro` | mBar | Presión barométrica. GammAn la usa para la corrección HSTP (normalización a condiciones estándar). Disminuye durante el ascenso. |
+| `TempV` | `Stemp` | °C | Temperatura del aire. Afecta la densidad del aire y por tanto la corrección de altura. Cambia lentamente con la altitud y la hora del día. |
+| `HumdV` | `Shumd` | % | Humedad relativa. Influencia menor en el procesamiento; se entrega como referencia. |
+
+Ambas versiones se suavizan antes de GammAn (`Sbaro_smooth`, `Stemp_smooth`).
+El ruido de alta frecuencia en estos canales migra directamente a las
+concentraciones finales de K/U/Th.
+
+### Tiempo de adquisición del detector
+
+| Columna | Unidad | Descripción |
+|---------|--------|-------------|
+| `Sreal` | s | **Real time** — duración total de la muestra, típicamente exactamente 1.000 s |
+| `Slive` | s | **Live time** — tiempo durante el cual el detector estuvo disponible para registrar pulsos. Siempre ≤ `Sreal`. |
+
+La diferencia `Sreal − Slive` es el **dead time**: instantes en que el detector
+estaba ocupado procesando un evento anterior y no podía registrar uno nuevo.
+
+`livetime_frac = Slive / Sreal` debería ser > 0.99 en condiciones normales.
+Si cae por debajo de 0.99 significa que el detector perdió pulsos — las
+concentraciones resultantes estarán **subestimadas** en esas zonas porque
+GammAn no puede recuperar los pulsos perdidos.
+
+### Tasa de conteo total y cuentas por ventana IAEA
+
+| Columna | Unidad | Descripción |
+|---------|--------|-------------|
+| `Srate` | cps | **Total count rate** — todos los fotones detectados por segundo, de cualquier energía. Indicador general de actividad del detector y de la concentración de radioelementos debajo del avión. |
+| `Sk` | cps | Cuentas en la ventana de energía del **K-40** (~1.46 MeV) — proxy crudo de potasio. |
+| `Su` | cps | Cuentas en la ventana del **Bi-214** (~1.76 MeV) — proxy crudo de **uranio**. El Bi-214 es producto de desintegración del U-238 en la serie del radio. |
+| `Sth` | cps | Cuentas en la ventana del **Tl-208** (~2.61 MeV) — proxy crudo de **torio**. El Tl-208 es producto de desintegración del Th-232. |
+
+**Importante**: `Sk`, `Su`, `Sth` son el método de ventana IAEA clásico —
+sencillo, ruidoso, sin corrección de altura ni radón. No son concentraciones
+FSA. Sirven para QC visual (el detector registró señal, hay variabilidad
+geológica) pero **no se usan en el procesamiento final**.
+
+### Estabilización espectral — Sa0, Sa1, Sa2
+
+El cristal CsI cambia ligeramente de ganancia con la temperatura y las
+variaciones de alta tensión. Sin corrección, los picos del espectro se corren
+de canal y el sistema confundiría energías. La estabilización espectral aplica
+una corrección polinómica en tiempo real para mantener los picos centrados:
+
+```
+canal_corregido = Sa0 + Sa1 · canal + Sa2 · canal²
+```
+
+| Columna | Descripción |
+|---------|-------------|
+| `Sa0` | Offset del polinomio (término independiente) |
+| `Sa1` | Ganancia lineal |
+| `Sa2` | Corrección cuadrática — muy pequeña (~−0.0005), típicamente constante |
+
+Valores constantes a lo largo del vuelo indican detector estable. Una deriva
+sostenida en `Sa0` o `Sa1` indica inestabilidad de ganancia del cristal
+(típicamente por cambios térmicos); GammAn deberá compensarla durante la
+re-estabilización post-proceso.
+
+### Espectro crudo — Sbin
+
+| Columna | Descripción |
+|---------|-------------|
+| `Sbin` | Los 512 canales del espectro gamma completo, codificados en hexadecimal. Cada canal cuenta los fotones detectados en ese rango de energía. Es la materia prima que GammAn deconvoluciona con FSA para producir K, U y Th. Se pasa a GammAn sin modificar. |
+
+---
+
 ## Etapa A — Preparación de SPCs para GammAn
 
 ### Qué hace
