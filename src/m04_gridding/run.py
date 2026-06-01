@@ -39,7 +39,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.m04_gridding.grid import load_mag_final, reproject_to_utm, make_grid
-from src.m04_gridding.derivatives import compute_derivatives
+from src.m04_gridding.derivatives import compute_derivatives, field_direction
 
 
 def load_config() -> dict:
@@ -88,38 +88,50 @@ def plot_quicklook(
     grids: dict[str, np.ndarray],
     out_path: Path,
 ) -> None:
-    """Four-panel quick-look map of all gridded products."""
+    """Six-panel quick-look map of all gridded products."""
     titles = {
         'Mag_Final':           'Residual Magnetic Anomaly (nT)',
+        'rtp':                 'Reduction to Pole (nT)',
         'analytic_signal':     'Analytic Signal (nT/m)',
+        'horizontal_gradient': 'Horizontal Gradient (nT/m)',
         'vertical_derivative': 'Vertical Derivative (nT/m)',
         'tilt_derivative':     'Tilt Derivative (°)',
     }
     cmaps = {
         'Mag_Final':           'RdBu_r',
+        'rtp':                 'RdBu_r',
         'analytic_signal':     'hot_r',
+        'horizontal_gradient': 'hot_r',
         'vertical_derivative': 'RdBu_r',
         'tilt_derivative':     'RdBu_r',
     }
 
-    E, N = np.meshgrid(grid_e / 1000, grid_n / 1000)   # km for display
-    fig, axes = plt.subplots(2, 2, figsize=(16, 14))
-    axes_flat = axes.flatten()
+    available = {k: v for k, v in titles.items() if k in grids}
+    n    = len(available)
+    ncols = 3
+    nrows = (n + ncols - 1) // ncols
+
+    E, N = np.meshgrid(grid_e / 1000, grid_n / 1000)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(8 * ncols, 7 * nrows))
+    axes_flat = np.array(axes).flatten()
+    titles = available   # reuse variable
 
     for ax, (key, title) in zip(axes_flat, titles.items()):
         z = grids.get(key)
         if z is None:
             ax.set_visible(False)
             continue
+        cmap = cmaps.get(key, 'RdBu_r')
         data = np.ma.filled(z, np.nan)
         p2, p98 = np.nanpercentile(data[~np.isnan(data)], [2, 98])
-        if key in ('Mag_Final', 'vertical_derivative', 'tilt_derivative'):
+        sym_keys = {'Mag_Final', 'rtp', 'vertical_derivative', 'tilt_derivative'}
+        if key in sym_keys:
             vabs = max(abs(p2), abs(p98))
             vmin, vmax = -vabs, vabs
         else:
             vmin, vmax = p2, p98
 
-        im = ax.pcolormesh(E, N, data, cmap=cmaps[key],
+        im = ax.pcolormesh(E, N, data, cmap=cmap,
                            vmin=vmin, vmax=vmax, shading='auto', rasterized=True)
         plt.colorbar(im, ax=ax, shrink=0.8, label=title.split('(')[-1].rstrip(')'))
         ax.set_title(title, fontsize=10)
@@ -171,7 +183,11 @@ def main() -> None:
 
     # ── Compute derivatives ───────────────────────────────────────────────────
     print("\n── Computing derivative products ────────────────────────────────────")
-    derivs = compute_derivatives(grid_z, cell_size_m)
+    lon_c, lat_c   = cfg['campaign']['center_area']
+    start_date     = cfg['campaign']['start_date']   # YYYY-MM-DD
+    y, mo, d       = [int(x) for x in start_date.split('-')]
+    inc_deg, dec_deg = field_direction(lon_c, lat_c, 0.1, y, mo, d)
+    derivs = compute_derivatives(grid_z, cell_size_m, inc_deg, dec_deg)
 
     # ── Export GeoTIFFs ───────────────────────────────────────────────────────
     print("\n── Exporting GeoTIFFs ───────────────────────────────────────────────")
@@ -187,7 +203,8 @@ def main() -> None:
     print(f"\n{sep}")
     print(f"  M4 complete.")
     print(f"  Output: outputs/{campaign}/{run_name}/m04/")
-    print(f"  GeoTIFFs: Mag_Final.tif, analytic_signal.tif,")
+    print(f"  GeoTIFFs: Mag_Final.tif, rtp.tif")
+    print(f"            analytic_signal.tif, horizontal_gradient.tif")
     print(f"            vertical_derivative.tif, tilt_derivative.tif")
     print(f"{sep}")
 

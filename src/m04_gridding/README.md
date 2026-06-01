@@ -39,10 +39,12 @@ python -m src.m04_gridding.run
 | File | Contents |
 |---|---|
 | `Mag_Final.tif` | Residual Magnetic Anomaly grid (nT), GeoTIFF EPSG:32648 |
+| `rtp.tif` | Reduction to Pole (nT) |
 | `analytic_signal.tif` | Analytic signal amplitude (nT/m) |
+| `horizontal_gradient.tif` | Horizontal gradient magnitude (nT/m) |
 | `vertical_derivative.tif` | First vertical derivative (nT/m) |
 | `tilt_derivative.tif` | Tilt derivative (degrees, ±90°) |
-| `Mag_products_map.png` | Four-panel quick-look map |
+| `Mag_products_map.png` | Six-panel quick-look map |
 
 ---
 
@@ -59,6 +61,11 @@ All derivatives are computed in the wavenumber (FFT) domain:
 
 | Product | Formula | Use |
 |---|---|---|
+| RTP | Stabilised phase filter (Blakely 1995) | Reposition anomalies over sources |
 | Analytic signal | `sqrt((dB/dx)² + (dB/dy)² + (dB/dz)²)` | Body edges, contacts |
+| Horizontal gradient | `sqrt((dB/dx)² + (dB/dy)²)` | Contacts and faults |
 | Vertical derivative | `dB/dz` | Enhance shallow sources |
-| Tilt derivative | `atan(dB/dz / sqrt((dB/dx)²+(dB/dy)²))` | Geological contacts |
+| Tilt derivative | `atan(dB/dz / HGM)` | Geological contacts |
+
+Inclination and declination for RTP are computed automatically from IGRF-13
+at the survey centre (`campaign.center_area`) and start date (`campaign.start_date`).
