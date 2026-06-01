@@ -95,10 +95,12 @@ Output: `outputs/<campaign>/<run_name>/m04/`
 | File | Contents |
 |---|---|
 | `Mag_Final.tif` | Residual Magnetic Anomaly — 60 m grid, EPSG:32648 |
+| `rtp.tif` | Reduction to Pole |
 | `analytic_signal.tif` | Analytic signal amplitude |
+| `horizontal_gradient.tif` | Horizontal gradient magnitude |
 | `vertical_derivative.tif` | First vertical derivative |
 | `tilt_derivative.tif` | Tilt derivative (°) |
-| `Mag_products_map.png` | Four-panel quick-look |
+| `Mag_products_map.png` | Six-panel quick-look |
 
 ---
 
