@@ -18,7 +18,13 @@
       "Bash(pip install *)",
       "Bash(python -c \"import ppigrf, numpy as np; from datetime import datetime; Be,Bn,Bu = ppigrf.igrf\\(107.5, 47.8, 0.1, datetime\\(2022,4,22\\)\\); print\\(f'Be={Be:.2f} Bn={Bn:.2f} Bu={Bu:.2f} F={np.sqrt\\(Be**2+Bn**2+Bu**2\\):.2f} nT'\\)\")",
       "Bash(python -c \"import ppigrf, numpy as np; from datetime import datetime; Be,Bn,Bu = ppigrf.igrf\\(107.5, 47.8, 0.1, datetime\\(2022,4,22\\)\\); F=np.sqrt\\(Be**2+Bn**2+Bu**2\\); print\\('Be:', Be, 'Bn:', Bn, 'Bu:', Bu, 'F:', F\\)\")",
-      "Bash(airborne-env\\\\Scripts\\\\python.exe -c \"import scipy; import rasterio; print\\('scipy', scipy.__version__\\); print\\('rasterio', rasterio.__version__\\)\")"
+      "Bash(airborne-env\\\\Scripts\\\\python.exe -c \"import scipy; import rasterio; print\\('scipy', scipy.__version__\\); print\\('rasterio', rasterio.__version__\\)\")",
+      "Bash(git status *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(python -)",
+      "Bash(git checkout *)"
     ]
   }
 }
