@@ -250,23 +250,11 @@ python -m src.m03_radiometry.run_a 02.05.2022 00447
 
 ### Salidas de Etapa A
 
-Por cada vuelo se generan los siguientes archivos:
-
-**Datos para GammAn** — en `data/interim/<campaign>/<run_name>/m03_gamman/input/<date>/flight_XXXXX/`:
-
-| Archivo | Contenido |
-|---------|-----------|
-| `SPC_gamman_ready.csv` | Columnas escalares SPC + Sa2 + espectro decodificado (ch000…ch255). `Sralt`, `Sbaro` y `Stemp` reemplazados por sus versiones suavizadas. **Este es el archivo que entra a GammAn.** |
-| `SPC_decoded.csv` | Idéntico al anterior pero con `Sralt`, `Sbaro` y `Stemp` en sus valores originales sin modificar. Sirve como referencia para comparar. |
-
-El espectro (`ch000`…`ch255`) son los 256 canales uint16 LE decodificados del campo `Sbin` del archivo SPC original.
-
-**Figuras de inspección** — en `outputs/<campaign>/<run_name>/m03/inspection/<date>/`:
-
-| Archivo | Contenido |
-|---------|-----------|
-| `flight_XXXXX_spc.png` | Overview completo: live time, estabilidad de ganancia, cuentas brutas K/U/Th |
-| `flight_XXXXX_smooth_qc.png` | QC del suavizado: Sralt, Sbaro y Stemp crudos vs. suavizados, eje X recortado al período de vuelo real |
+| Ruta | Contenido |
+|------|-----------|
+| `data/interim/<campaign>/<run_name>/m03_gamman/input/flight_XXXXX_spc.txt` | SPC suavizado, listo para GammAn |
+| `outputs/<campaign>/<run_name>/m03/etapa_a/<date>/flight_XXXXX_smooth.png` | Perfil de Sralt/Sbaro/Stemp antes y después del suavizado |
+| `outputs/<campaign>/<run_name>/m03/etapa_a_report.csv` | Resumen: filas por vuelo, rangos de columnas ambientales |
 
 ---
 
@@ -276,8 +264,7 @@ GammAn es software propietario de Medusa Radiometrics. Los siguientes pasos se
 ejecutan manualmente por el operador.
 
 1. Abrir GammAn
-2. Importar el archivo `SPC_gamman_ready.csv` desde
-   `m03_gamman/input/<date>/flight_XXXXX/`
+2. Importar el archivo desde `m03_gamman/input/flight_XXXXX_spc.txt`
 3. Ejecutar **energy calibration** (estabilización espectral) usando la calibración
    del detector Medusa 4.3 L CsI de la campaña
 4. Ejecutar **FSA deconvolution** — produce concentraciones corregidas por
@@ -404,29 +391,13 @@ radiometry:
 
 ## Salidas finales del módulo
 
-### Etapa A — preparación para GammAn
-
 | Ruta | Contenido |
 |------|-----------|
-| `data/interim/.../m03_gamman/input/<date>/flight_XXXXX/SPC_gamman_ready.csv` | Todas las columnas SPC + ch000…ch255, con Sralt/Sbaro/Stemp suavizados. Input para GammAn. |
-| `data/interim/.../m03_gamman/input/<date>/flight_XXXXX/SPC_decoded.csv` | Igual pero con valores originales de Sralt/Sbaro/Stemp. Referencia de comparación. |
-| `outputs/.../m03/inspection/<date>/flight_XXXXX_spc.png` | Overview del vuelo: live time, ganancia, cuentas K/U/Th |
-| `outputs/.../m03/inspection/<date>/flight_XXXXX_smooth_qc.png` | QC del suavizado pre-GammAn |
-| `outputs/.../m03/inspection/campaign_spc_map.png` | Mapa de campaña — tasa de conteo total |
-
-### Etapa B — GammAn (externo)
-
-| Ruta | Contenido |
-|------|-----------|
-| `data/interim/.../m03_gamman/output/<date>/flight_XXXXX_gamman.txt` | Output de GammAn con concentraciones FSA (colocar manualmente) |
-
-### Etapa C — post-GammAn (pendiente)
-
-| Ruta | Contenido |
-|------|-----------|
-| `data/interim/.../m03/<date>/flight_XXXXX_m03.parquet` | Parquet radiométrico final: K/U/Th levellados, microlevellados, Dose Rate |
-| `outputs/.../m03/campaign_m03.gpkg` | GeoPackage consolidado, una capa por columna final |
-| `outputs/.../m03/campaign_m03_map.png` | Mapa K, U, Th, Dose Rate lado a lado |
+| `data/interim/<campaign>/<run_name>/m03_gamman/input/flight_XXXXX_spc.txt` | SPC suavizado para GammAn (Etapa A) |
+| `data/interim/<campaign>/<run_name>/m03_gamman/output/flight_XXXXX_gamman.txt` | Output de GammAn (colocado manualmente, Etapa B) |
+| `data/interim/<campaign>/<run_name>/m03/<date>/flight_XXXXX_m03.parquet` | Parquet radiométrico final por vuelo (Etapa C) |
+| `outputs/<campaign>/<run_name>/m03/campaign_m03.gpkg` | GeoPackage consolidado, una capa por columna final |
+| `outputs/<campaign>/<run_name>/m03/campaign_m03_map.png` | Mapa K, U, Th, Dose Rate lado a lado |
 
 ---
 
