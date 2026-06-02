@@ -132,7 +132,7 @@ def plot_flight(
     ax_win = fig.add_subplot(gs[2, :])
 
     # ── ① Altimetría ──────────────────────────────────────────────────────────
-    ax_alt.plot(t, df['Sralt'],        color='0.75', lw=0.7, label='Sralt crudo')
+    ax_alt.plot(t, df['Sralt'],        color='0.50', lw=1.0, label='Sralt crudo')
     ax_alt.plot(t, df['Sralt_smooth'], color='tab:blue', lw=1.3,
                 label=f'Sralt suavizado  (ventana {window_sralt} s)')
     ax_alt.axhline(max_alt_m, color='tab:red', ls='--', lw=1.1,
@@ -156,11 +156,11 @@ def plot_flight(
 
     # ── ② Presión y temperatura ───────────────────────────────────────────────
     ax2b = ax_env.twinx()
-    ax_env.plot(t, df['Sbaro'],        color='tab:blue', alpha=0.25, lw=0.6)
-    ax_env.plot(t, df['Sbaro_smooth'], color='tab:blue', lw=1.3,
+    ax_env.plot(t, df['Sbaro'],        color='tab:blue', alpha=0.60, lw=1.0, label='Sbaro crudo')
+    ax_env.plot(t, df['Sbaro_smooth'], color='tab:blue', lw=2.2,
                 label=f'Sbaro suavizado  ({window_env} s)')
-    ax2b.plot(t, df['Stemp'],          color='tab:orange', alpha=0.25, lw=0.6)
-    ax2b.plot(t, df['Stemp_smooth'],   color='tab:orange', lw=1.3,
+    ax2b.plot(t, df['Stemp'],          color='tab:orange', alpha=0.60, lw=1.0, label='Stemp crudo')
+    ax2b.plot(t, df['Stemp_smooth'],   color='tab:orange', lw=2.2,
               label=f'Stemp suavizado  ({window_env} s)')
     _shade_on_line(ax_env, t, on)
     ax_env.set_xlim(0, t_max)
@@ -310,6 +310,128 @@ def plot_campaign_map(
     print(f'    → {out_path.relative_to(PROJECT_ROOT)}')
 
 
+def plot_smoothing_qc(
+    df: pd.DataFrame,
+    flight_id: str,
+    date: str,
+    out_path: Path,
+    window_sralt: int,
+    window_env: int,
+) -> None:
+    """
+    Dedicated 3-panel figure: raw vs. smoothed for Sralt, Sbaro, Stemp.
+
+    X-axis is trimmed to the survey period (first to last on-line sample
+    ± 10 min buffer) so the scale is not dominated by ground initialization.
+    Y-axis uses P2–P98 limits to prevent outliers from compressing the signal.
+
+    This is the figure to use for deciding whether the smoothing window is
+    appropriate — not too short (leaves noise) and not too long (distorts trends).
+    """
+    df  = smooth_env(df, window_sralt, window_env)
+    t   = _minutes(df['M2clk'])
+    on  = _on_line_mask(df['Swayp'])
+
+    # Trim x-axis to survey period ± 10 min
+    on_idx = np.where(on.values)[0]
+    if len(on_idx) > 0:
+        x_lo = max(0.0,    t.values[on_idx[0]]  - 10.0)
+        x_hi = min(t.max(), t.values[on_idx[-1]] + 10.0)
+    else:
+        x_lo, x_hi = 0.0, t.max()
+
+    mask  = (t >= x_lo) & (t <= x_hi)
+    t_win = t[mask].reset_index(drop=True)
+    on_win = on[mask].reset_index(drop=True)
+
+    VARS = [
+        ('Sralt', 'Sralt_smooth', 'Altímetro de radar  (Sralt)',
+         'm  — altura sobre terreno', 'tab:blue',   window_sralt),
+        ('Sbaro', 'Sbaro_smooth', 'Presión barométrica  (Sbaro)',
+         'mBar', 'tab:cyan',    window_env),
+        ('Stemp', 'Stemp_smooth', 'Temperatura del aire  (Stemp)',
+         '°C',   'tab:orange',  window_env),
+    ]
+
+    fig, axes = plt.subplots(
+        3, 1, figsize=(14, 10), sharex=True,
+    )
+    fig.subplots_adjust(hspace=0.38, left=0.08, right=0.97, top=0.90, bottom=0.07)
+
+    for ax, (raw_col, sm_col, title, ylabel, color, win) in zip(axes, VARS):
+        raw = df[raw_col][mask].reset_index(drop=True)
+        sm  = df[sm_col][mask].reset_index(drop=True)
+
+        # Y limits: P2–P98 of the raw signal in the display window
+        y_lo  = np.nanpercentile(raw.values, 2)
+        y_hi  = np.nanpercentile(raw.values, 98)
+        margin = max((y_hi - y_lo) * 0.20, 0.5)
+        ax.set_ylim(y_lo - margin, y_hi + margin)
+
+        ax.plot(t_win, raw, color='0.55', lw=1.0, alpha=1.0,
+                label='crudo', zorder=1)
+        ax.plot(t_win, sm,  color=color,  lw=2.5, alpha=1.0,
+                label=f'suavizado  (ventana {win} s)', zorder=2)
+
+        _shade_on_line(ax, t_win, on_win)
+
+        ax.set_ylabel(ylabel, fontsize=9)
+        ax.set_title(title, fontsize=9, loc='left', weight='bold')
+        ax.legend(fontsize=8, loc='upper right')
+        ax.grid(alpha=0.3)
+        ax.tick_params(labelsize=8)
+
+    axes[-1].set_xlabel('Tiempo desde inicio del vuelo  (min)', fontsize=9)
+    axes[-1].set_xlim(x_lo, x_hi)
+
+    fig.suptitle(
+        f'QC suavizado pre-GammAn — Vuelo {flight_id}  |  {date}\n'
+        f'Ventanas: Sralt={window_sralt} s  ·  Sbaro/Stemp={window_env} s  ·  '
+        f'Región: {x_lo:.0f}–{x_hi:.0f} min  ·  '
+        f'Verde = tramos en línea de producción',
+        fontsize=10, weight='bold',
+    )
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print(f'    → {out_path.relative_to(PROJECT_ROOT)}')
+
+
+def save_spc_csvs(
+    df_raw: pd.DataFrame,
+    flight_id: str,
+    date: str,
+    interim_root: Path,
+    window_sralt: int,
+    window_env: int,
+) -> None:
+    """
+    Save raw and smoothed SPC scalar data as CSV files.
+
+    Two files per flight:
+      _spc_raw.csv    : columnas escalares tal como salen de read_spc
+      _spc_smooth.csv : ídem más Sralt_smooth, Sbaro_smooth, Stemp_smooth
+
+    Permiten comparar visualmente qué entra a GammAn antes y después del
+    suavizado, y verificar que la ventana elegida es apropiada.
+    Nota: no son los archivos de input de GammAn (ese requiere también el
+    espectro Sbin — lo hará export_gamman.py).
+    """
+    out_dir = interim_root / 'm03_gamman' / 'input' / date
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    raw_path = out_dir / f'flight_{flight_id}_spc_raw.csv'
+    df_raw.to_csv(raw_path, index=False)
+
+    df_smooth = smooth_env(df_raw, window_sralt, window_env)
+    sm_path   = out_dir / f'flight_{flight_id}_spc_smooth.csv'
+    df_smooth.to_csv(sm_path, index=False)
+
+    print(f'    CSV raw    → {raw_path.relative_to(PROJECT_ROOT)}')
+    print(f'    CSV smooth → {sm_path.relative_to(PROJECT_ROOT)}')
+
+
 def main(
     target_date: str | None = None,
     target_flight: str | None = None,
@@ -324,6 +446,7 @@ def main(
     window_sralt = int(rad_cfg.get('smooth_window_sralt', 5))
     window_env   = int(rad_cfg.get('smooth_window_env', 5))
     max_alt_m    = float(rad_cfg.get('max_usable_altitude_m', 120.0))
+    interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
 
     print(f'Campaign : {campaign}')
     print(f'Run      : {run_name}')
@@ -365,9 +488,19 @@ def main(
                 f'Srate: {df["Srate"].mean():.0f} cps'
             )
 
+            # Figura 1 — overview completo del vuelo (5 paneles)
             out_path = out_root / date / f'flight_{flight_id}_spc.png'
             plot_flight(df, flight_id, date, out_path,
                         window_sralt, window_env, max_alt_m)
+
+            # Figura 2 — QC del suavizado (Sralt, Sbaro, Stemp)
+            smooth_path = out_root / date / f'flight_{flight_id}_smooth_qc.png'
+            plot_smoothing_qc(df, flight_id, date, smooth_path,
+                              window_sralt, window_env)
+
+            # CSVs — crudo y suavizado para comparación
+            save_spc_csvs(df, flight_id, date, interim_root,
+                          window_sralt, window_env)
 
             all_data.append((flight_id, df))
 
