@@ -5,25 +5,72 @@ Each SPC file contains ~1 Hz gamma-ray spectrometry data: scalar sensor
 readings plus a raw 512-channel spectrum (Sbin) for every second of flight.
 
 Parsing note: the last numeric column (Sa2) and Sbin share a token with no
-separator between them. Sa2 is a calibration constant not needed for scalar
-processing, so that token is discarded. Sbin is passed unmodified to GammAn.
+separator between them. The Sa2 float occupies the first characters; the
+remaining hex encodes the binary spectrum ending with the five-byte
+terminator ffffffffff and the line marker ##.
+
+Sbin structure (verified against SPC00447.txt):
+  - Preamble: 69 bytes (138 hex chars) — includes Sa2 decimal string +
+    binary metadata. Skipped automatically by the rfind approach.
+  - Channel data: 256 × uint16 LE = 512 bytes = 1024 hex chars
+  - Terminator: ffffffffff (5 bytes = 10 hex chars)
+  - End marker: ##
 
 The optional Swayp field (survey line ID) is detected by token count:
   23 tokens → Swayp absent (transit or ferry)
   24 tokens → Swayp present at position 4
 """
 
+import re
+import struct
+
 import pandas as pd
 from pathlib import Path
 
 
-def read_spc(path: Path | str) -> pd.DataFrame:
+def _decode_sbin(token: str) -> tuple[float, list[int] | None]:
+    """
+    Extract Sa2 and decode 256 uint16 LE spectrum channels from the
+    concatenated Sa2+Sbin token (last token on each SPC data line).
+
+    The 256 channel counts are the 1024 hex chars immediately before
+    the ffffffffff terminator. The preamble (Sa2 decimal string +
+    69 bytes of binary metadata) is skipped automatically.
+
+    Returns (sa2, channels) — channels is a list of 256 ints, or None.
+    """
+    sa2 = float('nan')
+    m = re.match(r'^(-?\d+\.\d+)', token)
+    if m:
+        try:
+            sa2 = float(m.group(1))
+        except ValueError:
+            pass
+
+    s   = token.lower().rstrip().rstrip('#')
+    pos = s.rfind('ffffffffff')
+    if pos < 1024:
+        return sa2, None
+
+    try:
+        channels = list(struct.unpack('<256H', bytes.fromhex(s[pos - 1024 : pos])))
+        return sa2, channels
+    except Exception:
+        return sa2, None
+
+
+def read_spc(
+    path: Path | str,
+    decode_spectrum: bool = False,
+) -> pd.DataFrame:
     """
     Parse one SPC file and return a DataFrame of scalar channels.
 
     Parameters
     ----------
-    path : path to SPC*.txt
+    path             : path to SPC*.txt
+    decode_spectrum  : if True, decode Sbin into 256 uint16 columns
+                       ch000…ch255 and include Sa2.
 
     Returns
     -------
@@ -33,6 +80,7 @@ def read_spc(path: Path | str) -> pd.DataFrame:
         Sbaro, Stemp, Shumd,
         Sreal, Slive, Srate,
         Sk, Su, Sth, Sa0, Sa1,
+        [Sa2, ch000…ch255  ← only when decode_spectrum=True]
         livetime_frac
     """
     path = Path(path)
@@ -44,11 +92,8 @@ def read_spc(path: Path | str) -> pd.DataFrame:
             if '##' not in line:
                 continue
             parts = line.split()
-            n = len(parts)
+            n     = len(parts)
 
-            # Token count distinguishes whether Swayp is present:
-            #   23 → no Swayp  (fields 0-21 = M2st..Sa1, field 22 = Sa2+Sbin)
-            #   24 → Swayp at parts[4]  (fields 0-3 + 5-22 = M2st..Sa1, 23 = Sa2+Sbin)
             if n == 23:
                 swayp = ''
                 p = parts
@@ -59,7 +104,7 @@ def read_spc(path: Path | str) -> pd.DataFrame:
                 continue
 
             try:
-                rows.append({
+                row = {
                     'M2clk': float(p[1]),
                     'Sdate': p[2],
                     'Stime': float(p[3]),
@@ -79,9 +124,21 @@ def read_spc(path: Path | str) -> pd.DataFrame:
                     'Sth':   float(p[19]),
                     'Sa0':   float(p[20]),
                     'Sa1':   float(p[21]),
-                    # p[22] = Sa2+Sbin concatenated — discarded
+                    # p[22] = Sa2+Sbin concatenated
                     'Swayp': swayp,
-                })
+                }
+
+                if decode_spectrum:
+                    sa2, channels = _decode_sbin(p[22])
+                    row['Sa2'] = sa2
+                    if channels is not None:
+                        for i, v in enumerate(channels):
+                            row[f'ch{i:03d}'] = v
+                    else:
+                        for i in range(256):
+                            row[f'ch{i:03d}'] = None
+
+                rows.append(row)
             except (ValueError, IndexError):
                 continue
 
@@ -89,7 +146,7 @@ def read_spc(path: Path | str) -> pd.DataFrame:
     if df.empty:
         return df
 
-    stem = path.stem
+    stem      = path.stem
     flight_id = stem[3:] if stem.upper().startswith('SPC') else stem
     df.insert(0, 'flight_id', flight_id)
 
