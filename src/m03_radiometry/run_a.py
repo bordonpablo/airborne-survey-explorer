@@ -75,23 +75,22 @@ def main(
         for spc_path in spc_files:
             stem      = spc_path.stem
             flight_id = stem[3:] if stem.upper().startswith('SPC') else stem
+            out_dir   = out_root / date / f'flight_{flight_id}'
 
-            out_dir  = out_root / date
-            out_path = out_dir / f'flight_{flight_id}_spc_gamman.txt'
+            print(f'  {spc_path.name}')
 
-            print(f'  {spc_path.name}  →  ', end='')
-
-            n = export_gamman(spc_path, out_path, window_sralt, window_env)
-
-            if n > 0:
-                print(f'{out_path.relative_to(PROJECT_ROOT)}  ({n:,} rows)')
+            try:
+                gamman_path, decoded_path = export_gamman(
+                    spc_path, out_dir, window_sralt, window_env,
+                )
+                print(f'    gamman  → {gamman_path.relative_to(PROJECT_ROOT)}')
+                print(f'    decoded → {decoded_path.relative_to(PROJECT_ROOT)}')
                 total_flights += 1
-                total_rows    += n
-            else:
-                print('[skipped]')
+            except ValueError as e:
+                print(f'    [skipped] {e}')
 
-    print(f'\nDone.  {total_flights} file(s)  ·  {total_rows:,} rows total')
-    print(f'GammAn input: data/interim/{campaign}/{run_name}/m03_gamman/input/')
+    print(f'\nDone.  {total_flights} flight(s)')
+    print(f'Output: data/interim/{campaign}/{run_name}/m03_gamman/input/')
 
 
 if __name__ == '__main__':

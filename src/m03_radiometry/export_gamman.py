@@ -1,150 +1,85 @@
 """
-Export smoothed SPC file for GammAn import (Etapa A).
+Generate GammAn-ready CSV files from SPC data (Etapa A).
 
-GammAn's FSA requires the raw 512-channel spectrum (Sbin) in the original
-SPC format. The only change before import is to smooth Sralt, Sbaro, and
-Stemp to avoid migrating their high-frequency noise into the FSA corrections.
+Creates two CSV files per flight:
 
-Strategy: rewrite the SPC file line by line, replacing only the three
-environmental fields in-place. Every other character — including the Sbin
-hex block and the ## terminator — is copied unchanged.
+  SPC_gamman_ready.csv  — for GammAn import:
+      All scalar SPC columns + Sa2 + decoded spectrum (ch000 … ch255),
+      with Sralt, Sbaro and Stemp replaced by their smoothed values.
 
-Replacement is character-position based: the new value is right-justified
-in the same width as the original token, so the fixed-width column layout
-is preserved exactly.
+  SPC_decoded.csv  — reference version:
+      Identical structure but Sralt, Sbaro and Stemp at original values.
+
+Both files contain the full flight (not filtered to survey lines) because
+GammAn needs all spectra for the spectral stabilisation step.
 """
 
 from pathlib import Path
+
+import pandas as pd
 
 from src.m03_radiometry.read_spc import read_spc
 from src.m03_radiometry.smooth_env import smooth_env
 
 
-def _find_token_pos(line: str, n: int) -> tuple[int, int]:
-    """
-    Return (start, end) character positions of the nth whitespace-separated
-    token in line. Returns (-1, -1) if there are fewer than n+1 tokens.
-    """
-    pos   = 0
-    count = 0
-    while pos < len(line):
-        while pos < len(line) and line[pos] == ' ':
-            pos += 1
-        if pos >= len(line):
-            break
-        end = pos
-        while end < len(line) and line[end] != ' ':
-            end += 1
-        if count == n:
-            return pos, end
-        count += 1
-        pos = end
-    return -1, -1
-
-
-def _replace_token(line: str, token_idx: int, new_value: float) -> str:
-    """
-    Replace the token at token_idx with new_value, formatted with the same
-    number of decimal places as the original and right-justified in the
-    same column width.
-    """
-    start, end = _find_token_pos(line, token_idx)
-    if start < 0:
-        return line
-
-    old_str  = line[start:end]
-    decimals = len(old_str.split('.')[-1]) if '.' in old_str else 3
-    new_str  = f'{new_value:.{decimals}f}'
-
-    # Preserve column width: right-justify new value in the same number of chars.
-    # If the new value is wider (rare for smoothed environmental data), allow it
-    # to be slightly wider rather than truncating.
-    width   = max(len(old_str), len(new_str))
-    new_str = new_str.rjust(width)
-
-    return line[:start] + new_str + line[end:]
+# Scalar columns in output order (spectrum channels are appended after)
+_SCALAR_COLS = [
+    'flight_id',
+    'M2clk', 'Sdate', 'Stime', 'Swayp',
+    'Sxgps', 'Sygps', 'Szgps',
+    'Sralt', 'Sbaro', 'Stemp', 'Shumd',
+    'Sreal', 'Slive', 'Srate',
+    'Sk', 'Su', 'Sth',
+    'Sa0', 'Sa1', 'Sa2',
+]
+_CHANNEL_COLS = [f'ch{i:03d}' for i in range(256)]
 
 
 def export_gamman(
-    spc_path: Path | str,
-    out_path: Path | str,
+    spc_path:    Path | str,
+    out_dir:     Path | str,
     window_sralt: int = 5,
     window_env:   int = 5,
-) -> int:
+) -> tuple[Path, Path]:
     """
-    Write a GammAn-ready SPC file with smoothed Sralt, Sbaro, and Stemp.
-
-    Reads the original SPC file twice:
-      1. Through read_spc + smooth_env to compute the smoothed values.
-      2. Line by line to rewrite, replacing only the three environmental
-         fields and copying everything else verbatim.
+    Generate SPC_gamman_ready.csv and SPC_decoded.csv for one flight.
 
     Parameters
     ----------
-    spc_path     : path to the original SPC*.txt file
-    out_path     : path for the output file (GammAn input)
-    window_sralt : smoothing window for Sralt (samples)
-    window_env   : smoothing window for Sbaro and Stemp
+    spc_path      : path to the original SPC*.txt file
+    out_dir       : output directory (created if it does not exist)
+    window_sralt  : rolling-median window for Sralt  (samples = seconds)
+    window_env    : rolling-median window for Sbaro and Stemp
 
     Returns
     -------
-    Number of data rows written.
+    (gamman_path, decoded_path) — paths to the two CSV files written.
     """
     spc_path = Path(spc_path)
-    out_path = Path(out_path)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_dir  = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Compute smoothed values — one row per valid SPC data line
-    df = read_spc(spc_path)
+    df = read_spc(spc_path, decode_spectrum=True)
     if df.empty:
-        print(f'  [export] {spc_path.name}: empty — skipping')
-        return 0
+        raise ValueError(f'No data parsed from {spc_path.name}')
 
-    df = smooth_env(df, window_sralt, window_env)
-    smooth_vals = df[['Sralt_smooth', 'Sbaro_smooth', 'Stemp_smooth']].values
-    smooth_idx  = 0
+    df_smooth = smooth_env(df, window_sralt, window_env)
 
-    rows_written = 0
-    with open(spc_path, encoding='latin-1') as f_in, \
-         open(out_path, 'w',  encoding='latin-1') as f_out:
+    # Keep only columns that actually exist in df (Sa2 / channels may be
+    # absent if spectrum decoding failed for all rows)
+    cols = [c for c in _SCALAR_COLS + _CHANNEL_COLS if c in df.columns]
 
-        # Header line — copy unchanged
-        f_out.write(f_in.readline())
+    # ── SPC_decoded.csv — original Sralt / Sbaro / Stemp ─────────────────────
+    decoded_path = out_dir / 'SPC_decoded.csv'
+    df[cols].to_csv(decoded_path, index=False)
 
-        for raw_line in f_in:
-            if '##' not in raw_line:
-                f_out.write(raw_line)
-                continue
+    # ── SPC_gamman_ready.csv — smoothed Sralt / Sbaro / Stemp ────────────────
+    df_out = df[cols].copy()
+    df_out['Sralt'] = df_smooth['Sralt_smooth'].values
+    df_out['Sbaro'] = df_smooth['Sbaro_smooth'].values
+    df_out['Stemp'] = df_smooth['Stemp_smooth'].values
 
-            parts = raw_line.split()
-            n     = len(parts)
+    gamman_path = out_dir / 'SPC_gamman_ready.csv'
+    df_out.to_csv(gamman_path, index=False)
 
-            if n not in (23, 24):
-                # Unexpected format — copy unchanged
-                f_out.write(raw_line)
-                continue
-
-            if smooth_idx >= len(smooth_vals):
-                # More lines in file than rows parsed (shouldn't happen)
-                f_out.write(raw_line)
-                continue
-
-            sralt_s, sbaro_s, stemp_s = smooth_vals[smooth_idx]
-            smooth_idx += 1
-
-            swayp_present = (n == 24)
-            offset        = 1 if swayp_present else 0
-
-            # Field indices in parts[] (with Swayp counted):
-            #   Sralt = 7 + offset
-            #   Sbaro = 11 + offset
-            #   Stemp = 12 + offset
-            line = raw_line.rstrip('\n')
-            line = _replace_token(line, 7  + offset, sralt_s)
-            line = _replace_token(line, 11 + offset, sbaro_s)
-            line = _replace_token(line, 12 + offset, stemp_s)
-
-            f_out.write(line + '\n')
-            rows_written += 1
-
-    return rows_written
+    return gamman_path, decoded_path
