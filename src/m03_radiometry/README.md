@@ -38,8 +38,8 @@ software **GammAn** (Medusa Radiometrics) and cannot be replicated in Python.
 | `inspect_spc.py` | A | ✅ | QC visual del SPC crudo — 5 paneles por vuelo + mapa de campaña |
 | `read_spc.py` | A | ✅ | Lee y parsea archivos `SPC*.txt` crudos |
 | `smooth_env.py` | A | ✅ | Suaviza `Sralt`, `Sbaro`, `Stemp` antes de GammAn |
-| `run_a.py` | A | pendiente | Orquestador Etapa A — lee SPCs, suaviza, exporta para GammAn |
-| `export_gamman.py` | A | pendiente | Exporta el SPC suavizado en formato ASCII para GammAn |
+| `run_a.py` | A | ✅ | Orquestador Etapa A — itera vuelos y llama a export_gamman |
+| `export_gamman.py` | A | ✅ | Reescribe el SPC con Sralt/Sbaro/Stemp suavizados, Sbin intacto |
 | `run_c.py` | C | pendiente | Orquestador Etapa C — desde GammAn output hasta parquets finales |
 | `read_gamman.py` | C | pendiente | Parsea el output ASCII de GammAn |
 | `sync_nav.py` | C | pendiente | Merge por `M2clk` con parquets de M0 para añadir coords GPS y `line_id` |
@@ -235,7 +235,7 @@ python -m src.m03_radiometry.inspect_spc 02.05.2022 00447
 Genera una figura de 5 paneles por vuelo (ver descripción de paneles más abajo)
 y un mapa de campaña si se ejecuta sin argumentos.
 
-### Preparación para GammAn (pendiente: run_a.py)
+### Preparación para GammAn
 
 ```powershell
 # Todos los vuelos de la campaña
