@@ -84,7 +84,49 @@ Final column: `Mag_Final` in each `_m02.parquet`.
 
 ---
 
-## 5. M4 — Gridding
+## 5. M3 — Radiometry (Etapa A — pre-GammAn)
+
+### Inspección QC del espectrómetro
+
+```powershell
+python -m src.m03_radiometry.inspect_spc              # toda la campaña
+python -m src.m03_radiometry.inspect_spc 02.05.2022   # un día
+```
+
+Genera dos figuras por vuelo en `outputs/<campaign>/<run_name>/m03/inspection/<date>/`:
+
+| Figura | Qué muestra |
+|--------|-------------|
+| `flight_XXXXX_spc.png` | Live time, estabilidad de ganancia, cuentas brutas K/U/Th |
+| `flight_XXXXX_smooth_qc.png` | Sralt/Sbaro/Stemp crudos vs. suavizados — verificar que el filtro es correcto |
+
+### Preparar archivos para GammAn
+
+```powershell
+python -m src.m03_radiometry.run_a 02.05.2022 00447   # un vuelo
+python -m src.m03_radiometry.run_a                    # toda la campaña
+```
+
+Genera por vuelo en `data/interim/<campaign>/<run_name>/m03_gamman/input/<date>/flight_XXXXX/`:
+
+| Archivo | Qué es |
+|---------|--------|
+| `SPC_gamman_ready.csv` | Columnas SPC + espectro decodificado (ch000…ch255) con Sralt/Sbaro/Stemp **suavizados**. Importar en GammAn. |
+| `SPC_decoded.csv` | Igual pero con valores **originales** de Sralt/Sbaro/Stemp. Referencia. |
+
+### Etapa B — GammAn (manual)
+
+1. Importar `SPC_gamman_ready.csv` en GammAn
+2. Ejecutar energy calibration + FSA + corrección de radón (ventana 9 muestras)
+3. Exportar resultado en `data/interim/<campaign>/<run_name>/m03_gamman/output/`
+
+### Etapa C — post-GammAn (pendiente)
+
+Ver `src/m03_radiometry/README.md` para el estado de implementación.
+
+---
+
+## 6. M4 — Gridding
 
 ```powershell
 python -m src.m04_gridding.run
@@ -117,10 +159,14 @@ outputs/<campaign>/<run_name>/
 
 ```
 data/interim/<campaign>/<run_name>/
-├── m00/<date>/flight_XXXXX_prepared.parquet   ← output of M0
-├── m02/<date>/flight_XXXXX_m02.parquet        ← output of M2 (Mag_Final inside)
-├── line_selection.csv                          ← bridge M0→M1→M2 (edit manually)
-└── config.yaml                                 ← config snapshot
+├── m00/<date>/flight_XXXXX_prepared.parquet        ← output of M0
+├── m02/<date>/flight_XXXXX_m02.parquet             ← output of M2 (Mag_Final inside)
+├── m03_gamman/input/<date>/flight_XXXXX/
+│   ├── SPC_gamman_ready.csv                        ← M3 Etapa A input for GammAn
+│   └── SPC_decoded.csv                             ← M3 Etapa A reference
+├── m03_gamman/output/                              ← GammAn output (placed manually)
+├── line_selection.csv                              ← bridge M0→M1→M2 (edit manually)
+└── config.yaml                                     ← config snapshot
 ```
 
 ---
