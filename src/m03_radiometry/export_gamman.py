@@ -74,9 +74,15 @@ def export_gamman(
     # Only keep columns that exist (Sa2 present when decode_spectrum=True)
     cols = [c for c in _SCALAR_COLS + _CHANNEL_COLS if c in df.columns]
 
+    def _clean(frame: pd.DataFrame) -> pd.DataFrame:
+        out = frame.copy()
+        if 'Swayp' in out.columns:
+            out['Swayp'] = out['Swayp'].fillna('0').replace('', '0')
+        return out
+
     # ── SPC_decoded.csv — valores originales ─────────────────────────────────
     decoded_path = out_dir / 'SPC_decoded.csv'
-    df[cols].to_csv(decoded_path, index=False)
+    _clean(df[cols]).to_csv(decoded_path, index=False)
 
     # ── SPC_gamman_ready.csv — Sralt/Sbaro/Stemp suavizados ──────────────────
     df_out = df[cols].copy()
@@ -85,6 +91,6 @@ def export_gamman(
     df_out['Stemp'] = df_smooth['Stemp_smooth'].values
 
     gamman_path = out_dir / 'SPC_gamman_ready.csv'
-    df_out.to_csv(gamman_path, index=False)
+    _clean(df_out).to_csv(gamman_path, index=False)
 
     return gamman_path, decoded_path

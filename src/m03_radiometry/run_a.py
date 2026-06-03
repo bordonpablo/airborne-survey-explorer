@@ -80,8 +80,8 @@ def main(
                 gamman_path, decoded_path = export_gamman(
                     spc_path, out_dir, window_sralt, window_env,
                 )
-                print(f'    decoded      → {decoded_path.relative_to(PROJECT_ROOT)}')
-                print(f'    gamman_ready → {gamman_path.relative_to(PROJECT_ROOT)}')
+                print(f'    decoded      -> {decoded_path.relative_to(PROJECT_ROOT)}')
+                print(f'    gamman_ready -> {gamman_path.relative_to(PROJECT_ROOT)}')
                 total += 1
             except ValueError as e:
                 print(f'    [skipped] {e}')
