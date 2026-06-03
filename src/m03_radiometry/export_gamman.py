@@ -6,22 +6,18 @@ Creates two CSV files per flight:
   SPC_decoded.csv       — referencia:
       Todas las columnas escalares del SPC + Sa2 + espectro decodificado
       (ch000…ch255). Sralt, Sbaro y Stemp con sus valores originales.
+      Timestamp en formato OLE2 (columna DateTime).
 
   SPC_gamman_ready.csv  — para importar en GammAn:
       Idéntico al anterior pero con Sralt, Sbaro y Stemp reemplazados
       por sus versiones suavizadas (rolling median).
 
-Ambos archivos contienen el vuelo completo (no filtrado a líneas de
-producción) porque GammAn necesita todos los espectros para la
-estabilización espectral.
-
-Notas sobre el espectro:
-  El campo Sbin del SPC contiene 256 canales uint16 little-endian
-  (1024 hex chars antes del terminador ffffffffff). Cada canal es un
-  contador de fotones detectados en ese rango de energía. Se decodifican
-  en columnas ch000…ch255.
+Timestamp OLE2: float donde parte entera = días desde 30/12/1899
+y parte fraccionaria = fracción del día (1 segundo = 1/86400).
+GammAn requiere este formato según su documentación de "data headers".
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -29,9 +25,13 @@ import pandas as pd
 from src.m03_radiometry.read_spc import read_spc
 from src.m03_radiometry.smooth_env import smooth_env
 
+_OLE2_EPOCH = datetime(1899, 12, 30)
+
+# M2clk se reemplaza por DateTime (OLE2); Sdate y Stime se conservan
+# como referencia para verificación
 _SCALAR_COLS = [
     'flight_id',
-    'M2clk', 'Sdate', 'Stime', 'Swayp',
+    'DateTime', 'Sdate', 'Stime', 'Swayp',
     'Sxgps', 'Sygps', 'Szgps',
     'Sralt', 'Sbaro', 'Stemp', 'Shumd',
     'Sreal', 'Slive', 'Srate',
@@ -39,6 +39,33 @@ _SCALAR_COLS = [
     'Sa0', 'Sa1', 'Sa2',
 ]
 _CHANNEL_COLS = [f'ch{i:03d}' for i in range(256)]
+
+
+def _to_ole2(sdate: pd.Series, stime: pd.Series) -> pd.Series:
+    """
+    Convierte las columnas Sdate (YYYYMMDD) y Stime (HHMMSS.sss)
+    al timestamp OLE2 que requiere GammAn.
+
+    OLE2: float donde parte entera = días desde 30/12/1899,
+          parte fraccionaria = fracción del día.
+    """
+    result = []
+    for d, t in zip(sdate, stime):
+        # --- fecha ---
+        ds    = str(int(d))
+        year, month, day = int(ds[:4]), int(ds[4:6]), int(ds[6:8])
+        date  = datetime(year, month, day)
+        days  = (date - _OLE2_EPOCH).days
+
+        # --- hora: HHMMSS.sss ---
+        tf      = float(t)
+        hours   = int(tf / 10000)
+        minutes = int((tf % 10000) / 100)
+        seconds = tf % 100
+        frac    = (hours * 3600 + minutes * 60 + seconds) / 86400.0
+
+        result.append(days + frac)
+    return pd.Series(result, dtype=float)
 
 
 def export_gamman(
@@ -69,9 +96,11 @@ def export_gamman(
     if df.empty:
         raise ValueError(f'No data parsed from {spc_path.name}')
 
+    # Calcular DateTime OLE2 desde Sdate y Stime
+    df['DateTime'] = _to_ole2(df['Sdate'], df['Stime'])
+
     df_smooth = smooth_env(df, window_sralt, window_env)
 
-    # Only keep columns that exist (Sa2 present when decode_spectrum=True)
     cols = [c for c in _SCALAR_COLS + _CHANNEL_COLS if c in df.columns]
 
     def _clean(frame: pd.DataFrame) -> pd.DataFrame:
@@ -80,11 +109,11 @@ def export_gamman(
             out['Swayp'] = out['Swayp'].fillna('0').replace('', '0')
         return out
 
-    # ── SPC_decoded.csv — valores originales ─────────────────────────────────
+    # ── SPC_decoded.csv — valores originales ─────────────────────────
     decoded_path = out_dir / 'SPC_decoded.csv'
     _clean(df[cols]).to_csv(decoded_path, index=False)
 
-    # ── SPC_gamman_ready.csv — Sralt/Sbaro/Stemp suavizados ──────────────────
+    # ── SPC_gamman_ready.csv — Sralt/Sbaro/Stemp suavizados ──────────
     df_out = df[cols].copy()
     df_out['Sralt'] = df_smooth['Sralt_smooth'].values
     df_out['Sbaro'] = df_smooth['Sbaro_smooth'].values
