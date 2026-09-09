@@ -86,7 +86,6 @@ campaign:
   projection: "EPSG:32648"           # delivery CRS (WGS84 / UTM zone 48N)
 
 survey_design:                       # flight plan geometry
-  nominal_altitude_m: 100            # drape target in metres
   line_spacing_m: 250
   tieline_spacing_m: 1500
   line_direction_deg: 90             # 90 = E-W production lines

@@ -50,6 +50,8 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.m00_preparation.read_survey_nav import read_survey_thresholds
+
 
 def load_config() -> dict:
     with open(PROJECT_ROOT / 'config' / 'project.yaml') as f:
@@ -71,7 +73,7 @@ def _has_data(seg: pd.DataFrame, col: str) -> bool:
     return col in seg.columns and seg[col].notna().any()
 
 
-def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
+def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> None:
     """
     PNG de 4 paneles para una línea de vuelo: campo total, gradiente, actitud, altimetría.
 
@@ -165,8 +167,18 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
             ax.plot(dist, seg['Lalt'].values, color='darkorange', linewidth=0.8,
                     label='Lalt (laser)', alpha=0.9)
 
-    ax.axhline(nominal_alt, color='red', linewidth=0.8, linestyle='--',
-               label=f'Nominal {nominal_alt} m')
+    r_height = survey_thresholds.get('radar_height_m')
+    r_min    = survey_thresholds.get('radar_min_m')
+    r_max    = survey_thresholds.get('radar_max_m')
+    if r_height is not None:
+        ax.axhline(r_height, color='green', linewidth=0.9, linestyle='-',
+                   label=f'RadarHeight {r_height:.0f} m')
+    if r_min is not None:
+        ax.axhline(r_min, color='darkorange', linewidth=0.8, linestyle='--',
+                   label=f'RadarMin {r_min:.0f} m')
+    if r_max is not None:
+        ax.axhline(r_max, color='red', linewidth=0.8, linestyle='--',
+                   label=f'RadarMax {r_max:.0f} m')
     ax.set_ylabel('Altitude (m)')
     ax.set_xlabel('Cumulative distance (m)')
     ax.legend(fontsize=8, loc='upper right')
@@ -338,10 +350,12 @@ def exportar_geopackage(on_line: pd.DataFrame, flight_id: str, out_path: Path) -
 
 
 def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
-    cfg         = load_config()
-    campaign    = cfg['campaign']['name']
-    run_name    = cfg['campaign']['run_name']
-    nominal_alt = cfg['survey_design']['nominal_altitude_m']
+    cfg      = load_config()
+    campaign = cfg['campaign']['name']
+    run_name = cfg['campaign']['run_name']
+    nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
+
+    survey_thresholds = read_survey_thresholds(nav_path)
 
     parquet_path = (
         PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
@@ -349,8 +363,8 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
     )
     if not parquet_path.exists():
         raise FileNotFoundError(
-            f"Parquet no encontrado: {parquet_path}\n"
-            "Ejecutar prepare.py primero."
+            f"Parquet not found: {parquet_path}\n"
+            "Run prepare.py first."
         )
 
     df      = pd.read_parquet(parquet_path)
@@ -370,7 +384,7 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
 
     for lid, seg in on_line.groupby('line_id'):
         out_path = out_base / f"flight_{flight_id}_line_{int(lid)}.png"
-        plot_line(seg, nominal_alt, out_path)
+        plot_line(seg, survey_thresholds, out_path)
 
     if line_id is None:
         out_resumen = out_base / f"flight_{flight_id}_summary.png"

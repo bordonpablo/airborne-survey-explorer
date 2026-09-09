@@ -2,21 +2,21 @@
 Module 1 — QC entry point.
 
 Reads line_selection.csv, loads the prepared parquets for all selected
-(flight_id, line_id) segments, computes QC metrics, saves a report CSV,
-and opens a visualisation.
+(flight_id, line_id) segments, and computes the 3 TestSurveyNav-thresholded
+QC metrics (altitude, cross-track, speed).
 
 Modes
 -----
-No line_id  → summary: map of all tracks coloured by pass/fail + metric heatmap.
-With line_id → detail: interactive threshold slider for a specific segment.
+No line_id   → summary: pass/fail table printed to console + full CSV report.
+With line_id → detail: 4-panel profile snapshot (GPS track, altitude, attitude,
+               magnetics) for that one segment — saved as PNG and shown on screen.
 
 Usage
 -----
     python -m src.m01_qc.run                                   # all selected lines
     python -m src.m01_qc.run 22.04.2022                        # one day
     python -m src.m01_qc.run 22.04.2022 00427                  # one flight
-    python -m src.m01_qc.run 22.04.2022 00427 10010            # detail, Ralt
-    python -m src.m01_qc.run 22.04.2022 00427 10010 Roll       # detail, Roll
+    python -m src.m01_qc.run 22.04.2022 00427 10010            # detail snapshot
 """
 
 import sys
@@ -75,7 +75,6 @@ def main(
     run_name = cfg['campaign']['run_name']
     proj     = cfg['campaign']['projection']
     nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
-    raw_root = PROJECT_ROOT / cfg['campaign']['raw_data_path']
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
     out_root     = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm01'
 
@@ -114,7 +113,7 @@ def main(
     # -------------------------------------------------------------------------
     print("Computing QC metrics...")
     qc_df = run_qc(
-        selected, interim_root, raw_root,
+        selected, interim_root,
         survey_nav, survey_thresholds, proj,
     )
 

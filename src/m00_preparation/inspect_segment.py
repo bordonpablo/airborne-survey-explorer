@@ -23,6 +23,8 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.m00_preparation.read_survey_nav import read_survey_thresholds
+
 
 def load_config() -> dict:
     with open(PROJECT_ROOT / 'config' / 'project.yaml') as f:
@@ -80,13 +82,16 @@ def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
     print()
 
 
-def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
+def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> None:
     """
     Four-panel figure for one survey line:
       1. Radar altitude vs along-track distance
       2. Mag1 and Mag2 vs along-track distance
       3. Roll and Pitch (lateral and longitudinal tilt of the aircraft)
       4. Yaw (heading — rotation around the vertical axis)
+
+    Radar altitude reference lines (RadarHeight/RadarMin/RadarMax) come from
+    TestSurveyNav.csv, converted from feet to metres by read_survey_thresholds.
     """
     seg  = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps'])
     dist = along_track_km(seg)
@@ -103,8 +108,18 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     ax = axes[0]
     if 'Ralt' in seg.columns:
         ax.plot(dist, seg['Ralt'].values, color='steelblue', linewidth=0.8, label='Ralt')
-        ax.axhline(nominal_alt, color='red', linestyle='--', linewidth=0.8,
-                   label=f'Nominal {nominal_alt} m')
+        r_height = survey_thresholds.get('radar_height_m')
+        r_min    = survey_thresholds.get('radar_min_m')
+        r_max    = survey_thresholds.get('radar_max_m')
+        if r_height is not None:
+            ax.axhline(r_height, color='green', linestyle='-', linewidth=0.9,
+                       label=f'RadarHeight {r_height:.0f} m')
+        if r_min is not None:
+            ax.axhline(r_min, color='darkorange', linestyle='--', linewidth=0.8,
+                       label=f'RadarMin {r_min:.0f} m')
+        if r_max is not None:
+            ax.axhline(r_max, color='red', linestyle='--', linewidth=0.8,
+                       label=f'RadarMax {r_max:.0f} m')
     ax.set_ylabel('Radar altitude (m)')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
@@ -156,10 +171,12 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
 
 
 def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
-    cfg         = load_config()
-    campaign    = cfg['campaign']['name']
-    run_name    = cfg['campaign']['run_name']
-    nominal_alt = cfg['survey_design']['nominal_altitude_m']
+    cfg      = load_config()
+    campaign = cfg['campaign']['name']
+    run_name = cfg['campaign']['run_name']
+    nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
+
+    survey_thresholds = read_survey_thresholds(nav_path)
 
     parquet_path = (
         PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
@@ -181,7 +198,7 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
 
     for lid, seg in on_line.groupby('line_id'):
         out_path = out_base / f"flight_{flight_id}_line_{int(lid)}.png"
-        plot_line(seg, nominal_alt, out_path)
+        plot_line(seg, survey_thresholds, out_path)
 
 
 if __name__ == '__main__':

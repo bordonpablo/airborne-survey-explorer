@@ -1,73 +1,57 @@
 # Module 1 — Quality Control
 
-Reads all selected (flight_id, line_id) segments from `line_selection.csv`,
-computes QC metrics per segment, saves a report CSV, and opens a visualisation.
+Reads the selected lines from `line_selection.csv`, checks each one against the
+3 thresholds defined in `TestSurveyNav.csv`, and saves a pass/fail report. You
+then look closer at any line that failed before deciding what enters Module 2.
 
-## Scripts
-
-| Script | Role |
-|---|---|
-| `run.py` | **Main entry point.** Batch QC: summary map + metric heatmap, or detail view for one line. |
-| `viewer.py` | **Interactive viewer.** Click a flight line on the map to inspect live profile panels (altitude, Roll/Pitch, Yaw, magnetics). |
-| `metrics.py` | Internal — computes all QC metrics per segment. |
-| `viz.py` | Internal — summary figure (map + heatmap) and detail figure (multi-panel profiles). |
+**Prerequisite**: `line_selection.csv` must already exist (Module 0, step 3).
 
 ---
 
-## Metrics computed
+## Workflow
 
-| Metric | Variable | What it measures |
-|---|---|---|
-| `ralt_mean_m` | Ralt | Mean radar altitude |
-| `ralt_pct_outside` | Ralt | Fraction of points outside [RadarMin, RadarMax] |
-| `lalt_mean_m` | Lalt | Mean laser altitude (if available) |
-| `roll_max_deg` | Roll | Max \|Roll\| on the line |
-| `roll_pct_outside` | Roll | Fraction with \|Roll\| > threshold |
-| `pitch_max_deg` | Pitch | Max \|Pitch\| on the line |
-| `pitch_pct_outside` | Pitch | Fraction with \|Pitch\| > threshold |
-| `yaw_std_deg` | Yaw | Heading standard deviation (consistency) |
-| `cross_track_max_m` | GPS vs plan | Max perpendicular distance from planned line |
-| `cross_track_mean_m` | GPS vs plan | Mean perpendicular distance |
-| `speed_mean_kmh` | GPS | Mean ground speed (computed from GPS positions) |
-| `speed_pct_outside` | GPS | Fraction outside [SpeedMin, SpeedMax] |
-| `gap_max_m` | GPS | Largest gap between consecutive points |
-| `n_gaps` | GPS | Number of gaps exceeding threshold |
-| `mag_noise_nT` | Mag1 | Noise level: std(Δ²Mag) / √6 |
-| `mag_spike_count` | Mag1 | Number of isolated spikes above threshold |
-| `diurnal_range_nT` | Tagesgang | Base-station variation during the line |
-
-All pass/fail thresholds (`RadarMin`, `RadarMax`, `CrossTrack`, `GroundSpeedMin`, `GroundSpeedMax`) come exclusively from `TestSurveyNav.csv`. No thresholds for this module are defined in `config/project.yaml`.
-
-## Execution
-
-**Prerequisite**: `line_selection.csv` must exist. Run `build_line_selection.py` first.
-
-### Summary mode — all selected lines
+**1. Scan everything**
 
 ```powershell
-python -m src.m01_qc.run                          # all selected lines
-python -m src.m01_qc.run 22.04.2022               # one day
-python -m src.m01_qc.run 22.04.2022 00427         # one flight
+python -m src.m01_qc.run
 ```
 
-Produces:
-- Terminal table of pass/fail per metric per line
-- `outputs/<campaign>/<run_name>/m01/<scope>_qc_report.csv`
+Prints a pass/fail table to the console and saves the full report to
+`outputs/<campaign>/<run_name>/m01/qc_report.csv`. Narrow the scan with
+`python -m src.m01_qc.run 22.04.2022` (one day) or `... 22.04.2022 00427` (one flight).
 
-### Detail mode — one line
+**2. Look closer at a line that failed**
 
 ```powershell
 python -m src.m01_qc.run 22.04.2022 00427 10010
 ```
 
-### Interactive viewer
+Pops up and saves a 4-panel snapshot for that line: GPS track, altitude,
+Roll/Pitch/Yaw, and Mag1/Mag2. Those extra panels are just there so you can
+eyeball what's going on — only altitude, cross-track and speed drive pass/fail.
 
-```powershell
-python -m src.m01_qc.viewer                    # whole campaign
-python -m src.m01_qc.viewer 24.04.2022 00428   # one specific flight
-```
+**3. Decide**
 
-Requires `contextily` for the satellite basemap (`pip install contextily`).
+Edit `line_selection.csv` and set `selected = False` for lines that fail QC and
+shouldn't enter Module 2. A line that fails one metric but is the *only* flight
+covering that `line_id` can still be kept — just note why.
+
+---
+
+## What "pass/fail" means
+
+These are the only 3 metrics computed — the ones `TestSurveyNav.csv` actually
+defines a threshold for. Nothing else is checked automatically.
+
+| Flag | Passes when... |
+|---|---|
+| `pass_altitude` | mean radar altitude is within `[RadarMin, RadarMax]` |
+| `pass_cross_track` | max deviation from the planned line ≤ `CrossTrack` |
+| `pass_speed` | mean ground speed is within `[SpeedMin, SpeedMax]` |
+| `pass_all` | all three above pass |
+
+Thresholds come **only** from `TestSurveyNav.csv` — never from `config/project.yaml`.
+`pass_all` is what the console table and `line_selection.csv` decisions hinge on.
 
 ---
 
@@ -75,11 +59,5 @@ Requires `contextily` for the satellite basemap (`pip install contextily`).
 
 | Path | Contents |
 |---|---|
-| `outputs/<campaign>/<run_name>/m01/<scope>_qc_report.csv` | Per-line metrics and pass/fail |
-| `outputs/<campaign>/<run_name>/m01/<date>/flight_X_line_Y_detail.png` | Detail view snapshot |
-
-## After reviewing the report
-
-Edit `line_selection.csv` and set `selected = False` for lines that fail QC and
-should not enter Module 2. Lines that fail one metric but are the only option for
-that `line_id` may still be kept with a note.
+| `outputs/<campaign>/<run_name>/m01/qc_report.csv` (or `<date>_qc_report.csv` / `<date>_<flight>_qc_report.csv` for a narrower scan) | One row per line: `ralt_mean_m`, `cross_track_max_m`, `speed_mean_kmh`, and the 4 pass/fail flags |
+| `outputs/<campaign>/<run_name>/m01/<date>/flight_X_line_Y_detail.png` | Step-2 snapshot, generated automatically when you run detail mode |

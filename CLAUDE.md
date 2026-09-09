@@ -127,7 +127,7 @@ Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id 
 ### Module 1 — Quality control (QC)
 **Input**: prepared DataFrame from M0 (valid line data only).
 **Steps**:
-- Altitude deviation from the 100 m drape target
+- Altitude deviation from the drape target (RadarHeight/RadarMin/RadarMax, read from TestSurveyNav.csv)
 - Cross-track deviation from planned lines
 - Sample spacing and gap detection
 - Magnetic noise assessment per line
@@ -188,7 +188,6 @@ campaign:
   projection: "EPSG:32648"           # WGS84 / UTM zone 48N
 
 survey_design:                       # parameters from the flight plan (survey geometry)
-  nominal_altitude_m: 100
   line_spacing_m: 250
   tieline_spacing_m: 1500
   line_direction_deg: 90             # E-W

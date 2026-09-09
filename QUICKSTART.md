@@ -39,7 +39,7 @@ Open `data/interim/<campaign>/<run_name>/line_selection.csv` and set
 
 ```powershell
 python -m src.m01_qc.run                         # compute metrics for all selected lines
-python -m src.m01_qc.viewer                      # interactive viewer (click lines on map)
+python -m src.m01_qc.run 22.04.2022 00427 10010  # detail snapshot for one line
 ```
 
 After reviewing, update `selected` in `line_selection.csv` if needed.
