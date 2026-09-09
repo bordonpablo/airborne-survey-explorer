@@ -14,7 +14,7 @@ The reference campaign is **Mongolia 2022**. The pipeline is fully parametrised 
 | Module | Folder | Description |
 |--------|--------|-------------|
 | M0 — Preparation | `src/m00_preparation/` | File parsing, sensor synchronisation, line identification and trimming |
-| M1 — QC | `src/m01_qc/` | Quality control: altitude, attitude, cross-track, speed, spacing, magnetic noise, diurnal |
+| M1 — QC | `src/m01_qc/` | Pass/fail vs. TestSurveyNav thresholds (altitude, cross-track, speed); per-line detail view (magnetic noise, SPC/VLF presence) |
 | M2 — Magnetics | `src/m02_magnetics/` | GPS lag, diurnal, IGRF, heading, sensor average, levelling, micro-levelling → `Mag_Final` |
 | M3 — Radiometry | `src/m03_radiometry/` | FSA corrections: dead-time, background, radon, altitude; concentrations |
 | M4 — Gridding | `src/m04_gridding/` | Interpolation to 60 m grid; analytic signal, vertical derivative, tilt derivative → GeoTIFF |
@@ -89,9 +89,6 @@ survey_design:                       # flight plan geometry
   line_spacing_m: 250
   tieline_spacing_m: 1500
   line_direction_deg: 90             # 90 = E-W production lines
-
-m1:                                  # QC thresholds
-  line_tolerance_m: 300              # max cross-track deviation to accept a line
 
 magnetics:
   igrf_base_field_nT: 59150          # regional IGRF field at the survey area

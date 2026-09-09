@@ -125,16 +125,18 @@ DataFrame where every valid row has `flight_id` and `line_id` assigned and all s
 Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id = NaN`.
 
 ### Module 1 — Quality control (QC)
-**Input**: prepared DataFrame from M0 (valid line data only).
+**Input**: selected `(flight_id, line_id)` segments from `line_selection.csv` (M0, step 3).
 **Steps**:
-- Altitude deviation from the drape target (RadarHeight/RadarMin/RadarMax, read from TestSurveyNav.csv)
-- Cross-track deviation from planned lines
-- Sample spacing and gap detection
-- Magnetic noise assessment per line
-- Diurnal drift test against base station
+- Pass/fail against the 3 metrics `TestSurveyNav.csv` defines a threshold for:
+  altitude (`RadarHeight`/`RadarMin`/`RadarMax`), cross-track deviation (`CrossTrack`),
+  ground speed (`GroundSpeedMin`/`GroundSpeedMax`). No thresholds are ever read from
+  `config/project.yaml`.
+- On-demand per-line detail view (informational only, no threshold — not part of
+  pass/fail): magnetic noise/spike readout (Mag1/Mag2), and a radiometric (SPC)
+  and VLF presence check that flags a channel that looks flat or missing.
 
-**Output**: same DataFrame + flag columns (`flag_altitude`, `flag_spacing`, `flag_noise`)
-+ report in `outputs/reports/`.
+**Output**: `pass_altitude`, `pass_cross_track`, `pass_speed`, `pass_all` columns
++ `outputs/<campaign>/<run_name>/m01/qc_report.csv`.
 
 ### Module 2 — Magnetic processing
 **Input**: DataFrame with `line_id` and QC flags.
@@ -191,9 +193,6 @@ survey_design:                       # parameters from the flight plan (survey g
   line_spacing_m: 250
   tieline_spacing_m: 1500
   line_direction_deg: 90             # E-W
-
-m1:                                  # Module 1 — QC parameters
-  line_tolerance_m: 300              # max allowed cross-track deviation for a line to be considered acceptable
 
 magnetics:
   igrf_base_field_nT: 59150

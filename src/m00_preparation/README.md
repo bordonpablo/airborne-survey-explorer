@@ -92,18 +92,30 @@ Each file contains four layers:
 
 ### Step 2b — Inspect a segment (optional)
 
-Before committing to a selection, plot the sensor profiles for any flight or line:
+Before committing to a selection, check whether each line was actually flown the
+way it was planned:
 
 ```powershell
 python -m src.m00_preparation.inspect_segment 22.04.2022 00427         # all lines of a flight
 python -m src.m00_preparation.inspect_segment 22.04.2022 00427 10010   # one specific line
 ```
 
-Prints a summary table (n_points, mean altitude, altitude std, magnetic range) and
-saves one PNG per line with four panels: radar altitude, Mag1/Mag2, Roll/Pitch, Yaw.
-The title shows the flight heading (arrow + compass point + bearing) so it's clear
-which direction that pass was flown. No interactive window opens — figures are only
-saved to `outputs/<campaign>/<run_name>/inspection/<date>/`.
+Prints a summary table (n_points, mean altitude, altitude std) and saves one PNG
+per line with six panels, all flight-plan compliance — nothing about sensor signal
+quality, that's Module 1's job once a line is selected:
+
+1. Radar altitude vs `RadarHeight`/`RadarMin`/`RadarMax`
+2. Cross-track deviation vs `CrossTrack`
+3. Ground speed vs `GroundSpeedMin`/`GroundSpeedMax`
+4. Cross-angle deviation vs `CrossAngle`
+5. Roll / Pitch
+6. Yaw
+
+All four thresholds in panels 1-4 are read live from `TestSurveyNav.csv` for
+that line — nothing here comes from `config/project.yaml`. The title shows the
+flight heading (arrow + compass point + bearing) so it's clear which direction
+that pass was flown. No interactive window opens — figures are only saved to
+`outputs/<campaign>/<run_name>/inspection/<date>/`.
 
 ### Step 3 — Build line selection (M0 → M1 bridge)
 

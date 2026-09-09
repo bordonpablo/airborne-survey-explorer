@@ -30,7 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.m00_preparation.read_survey_nav import read_survey_nav, read_survey_thresholds
 from src.m01_qc.metrics import run_qc
-from src.m01_qc.viz import detail_figure
+from src.m01_qc.viz import detail_figure, _channel_status
 
 
 def load_config() -> dict:
@@ -104,6 +104,14 @@ def main(
         if seg.empty:
             print(f"No valid data for line {target_line}.")
             return
+
+        rad_ok, rad_msg = _channel_status(seg, ['Sk', 'Su', 'Sth'])
+        vlf_ok, vlf_msg = _channel_status(seg, ['Vlf1', 'Vlf2', 'Vlf3', 'Vlf4'])
+        if not rad_ok:
+            print(f"  Warning: radiometric (SPC) channel — {rad_msg}")
+        if not vlf_ok:
+            print(f"  Warning: VLF channel — {vlf_msg}")
+
         out_path = out_root / row['date'] / f"flight_{row['flight_id']}_line_{target_line}_detail.png"
         detail_figure(seg, survey_thresholds, out_path)
         return

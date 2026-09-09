@@ -26,9 +26,15 @@ Prints a pass/fail table to the console and saves the full report to
 python -m src.m01_qc.run 22.04.2022 00427 10010
 ```
 
-Pops up and saves a 4-panel snapshot for that line: GPS track, altitude,
-Roll/Pitch/Yaw, and Mag1/Mag2. Those extra panels are just there so you can
-eyeball what's going on — only altitude, cross-track and speed drive pass/fail.
+Pops up and saves a 6-panel snapshot for that line — this is the "is the
+recorded signal any good" view (M0's `inspect_segment` already answered "was
+it flown correctly"): GPS track, altitude (vs `RadarMin`/`RadarMax`),
+Roll/Pitch, Yaw, Mag1/Mag2 (with a noise/spike readout), and radiometric
+(Sk/Su/Sth) and VLF panels that flag in red when a channel looks flat or
+missing — usually a sign that sensor wasn't actually recording on this line.
+None of this drives pass/fail (no TestSurveyNav threshold exists for it) —
+it's here so you can eyeball what's going on. If SPC or VLF look dead, the
+same warning is also printed to the console, not just drawn on the panel.
 
 **3. Decide**
 

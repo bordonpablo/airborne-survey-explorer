@@ -2,16 +2,18 @@
 Module 0 — Static segment inspection.
 
 Loads a prepared parquet and prints a summary table plus one figure per survey
-line with seven panels: radar altitude, cross-track deviation, ground speed,
-cross-angle deviation, magnetometers, Roll/Pitch, and Yaw. Figures are saved
-as PNG — no interactive window opens.
+line with six panels: radar altitude, cross-track deviation, ground speed,
+cross-angle deviation, Roll/Pitch, and Yaw. Figures are saved as PNG — no
+interactive window opens.
 
-The first four panels plot the actual flown values against the thresholds
+This module answers one question only: was the line flown the way it was
+planned? All six panels plot the actual flown values against the thresholds
 TestSurveyNav.csv defines for that line (RadarHeight/Min/Max, CrossTrack,
-GroundSpeedMin/Max, CrossAngle) — so you can see directly, per line, how close
-the flight came to each spec instead of only getting a pass/fail flag.
-
-For QC pass/fail reporting across the whole campaign use Module 1: src.m01_qc.run.
+GroundSpeedMin/Max, CrossAngle) or are flight-attitude context (Roll/Pitch/Yaw).
+There is no magnetometer panel here on purpose — whether the *signal* that was
+recorded is any good is a different question, answered per selected line in
+Module 1 (src.m01_qc.run, detail mode) once line_selection.csv has settled
+which flight covers which line.
 
 Usage:
     python -m src.m00_preparation.inspect_segment 22.04.2022 00427
@@ -124,7 +126,6 @@ def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
             'n_points':   len(seg),
             'ralt_mean':  round(seg['Ralt'].mean(), 1) if 'Ralt' in seg.columns else None,
             'ralt_std':   round(seg['Ralt'].std(),  1) if 'Ralt' in seg.columns else None,
-            'mag1_range': round(seg['Mag1'].max() - seg['Mag1'].min(), 1) if 'Mag1' in seg.columns else None,
         })
     print(f"\nFlight {flight_id} — {date}  ({on_line['line_id'].nunique()} lines)\n")
     print(pd.DataFrame(rows).to_string(index=False))
@@ -139,14 +140,14 @@ def plot_line(
     out_path: Path,
 ) -> None:
     """
-    Seven-panel figure for one survey line:
+    Six-panel figure for one survey line — all navigation/flight-plan
+    compliance, nothing about sensor signal quality:
       1. Radar altitude vs along-track distance         (RadarHeight/Min/Max)
       2. Cross-track deviation vs along-track distance   (CrossTrack)
       3. Ground speed vs along-track distance             (GroundSpeedMin/Max)
       4. Cross-angle deviation vs along-track distance    (CrossAngle)
-      5. Mag1 and Mag2 vs along-track distance
-      6. Roll and Pitch (lateral and longitudinal tilt of the aircraft)
-      7. Yaw (heading — rotation around the vertical axis)
+      5. Roll and Pitch (lateral and longitudinal tilt of the aircraft)
+      6. Yaw (heading — rotation around the vertical axis)
 
     Panels 1-4 plot the flown value against the corresponding TestSurveyNav.csv
     threshold for this line, so a spec violation is visible directly on the
@@ -158,7 +159,7 @@ def plot_line(
     dist = along_track_km(seg)
     bearing, compass, arrow = flight_heading(seg)
 
-    fig, axes = plt.subplots(7, 1, figsize=(14, 18), sharex=True)
+    fig, axes = plt.subplots(6, 1, figsize=(14, 16), sharex=True)
     fig.suptitle(
         f"Flight {seg['flight_id'].iloc[0]}  —  Line {int(seg['line_id'].iloc[0])}  "
         f"[{arrow} flown {compass}, bearing ~{bearing:.0f}°]",
@@ -237,17 +238,8 @@ def plot_line(
     ax.legend(fontsize=7, loc='upper right')
     ax.grid(True, alpha=0.3)
 
-    # ---- Panel 5: Magnetometers ----------------------------------------------
+    # ---- Panel 5: Roll and Pitch (aircraft tilt) ------------------------------
     ax = axes[4]
-    for col, color in [('Mag1', 'navy'), ('Mag2', 'darkorange')]:
-        if col in seg.columns:
-            ax.plot(dist, seg[col].values, color=color, linewidth=0.8, label=col)
-    ax.set_ylabel('Magnetometer (nT)')
-    ax.legend(fontsize=8)
-    ax.grid(True, alpha=0.3)
-
-    # ---- Panel 6: Roll and Pitch (aircraft tilt) ------------------------------
-    ax = axes[5]
     for col, color in [('Roll', 'seagreen'), ('Pitch', 'mediumpurple')]:
         if col in seg.columns:
             ax.plot(dist, seg[col].values, color=color, linewidth=0.8, label=col)
@@ -256,8 +248,8 @@ def plot_line(
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
-    # ---- Panel 7: Yaw (heading) -----------------------------------------------
-    ax = axes[6]
+    # ---- Panel 6: Yaw (heading) -----------------------------------------------
+    ax = axes[5]
     if 'Yaw' in seg.columns:
         ax.plot(dist, seg['Yaw'].values, color='darkorange', linewidth=0.8, label='Yaw')
     ax.set_ylabel('Yaw / heading (°)')
