@@ -2,10 +2,16 @@
 Module 0 — Static segment inspection.
 
 Loads a prepared parquet and prints a summary table plus one figure per survey
-line with four panels: radar altitude, magnetometers, Roll/Pitch, and Yaw.
-Figures are saved as PNG — no interactive window opens.
+line with seven panels: radar altitude, cross-track deviation, ground speed,
+cross-angle deviation, magnetometers, Roll/Pitch, and Yaw. Figures are saved
+as PNG — no interactive window opens.
 
-For interactive QC exploration use Module 1: src.m01_qc.run.
+The first four panels plot the actual flown values against the thresholds
+TestSurveyNav.csv defines for that line (RadarHeight/Min/Max, CrossTrack,
+GroundSpeedMin/Max, CrossAngle) — so you can see directly, per line, how close
+the flight came to each spec instead of only getting a pass/fail flag.
+
+For QC pass/fail reporting across the whole campaign use Module 1: src.m01_qc.run.
 
 Usage:
     python -m src.m00_preparation.inspect_segment 22.04.2022 00427
@@ -19,16 +25,59 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import yaml
+from pyproj import Transformer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.m00_preparation.read_survey_nav import read_survey_thresholds
+from src.m00_preparation.read_survey_nav import read_survey_nav, read_survey_thresholds
+from src.m01_qc.metrics import _cross_track_m, _ground_speed_kmh
 
 
 def load_config() -> dict:
     with open(PROJECT_ROOT / 'config' / 'project.yaml') as f:
         return yaml.safe_load(f)
+
+
+def build_planned_index(survey_nav: pd.DataFrame) -> dict:
+    """
+    Build a lookup of planned line geometry: line_id -> (A, unit, bearing_deg).
+
+    A, unit  : origin point and unit direction vector (UTM metres), same
+               convention used by sync_sensors.clip_to_line_extent and
+               m01_qc.metrics for cross-track.
+    bearing_deg : compass bearing (0=N, 90=E) of the A→B axis, used to judge
+                  heading deviation regardless of which direction (A→B or
+                  B→A) the line was actually flown.
+    """
+    planned = {}
+    for _, row in survey_nav.iterrows():
+        lid = int(row['line_id'])
+        A  = np.array([row['E_start'], row['N_start']])
+        B  = np.array([row['E_end'],   row['N_end']])
+        AB = B - A
+        length = np.linalg.norm(AB)
+        unit = AB / length if length > 0 else AB
+        bearing = (np.degrees(np.arctan2(AB[0], AB[1])) + 360) % 360
+        planned[lid] = (A, unit, bearing)
+    return planned
+
+
+def cross_angle_deg(yaw: np.ndarray, bearing_deg: float) -> np.ndarray:
+    """
+    Angular deviation (degrees, signed) of the actual heading from the
+    planned line axis, allowing for either flight direction (A→B or B→A).
+
+    E.g. a line planned at bearing 90° (due east) accepts headings near both
+    90° and 270° as "on axis" — only the deviation from the nearer of the two
+    counts, matching TestSurveyNav's CrossAngle tolerance.
+    """
+    def _wrap(a: np.ndarray) -> np.ndarray:
+        return (a + 180) % 360 - 180
+
+    diff_fwd = _wrap(yaw - bearing_deg)
+    diff_rev = _wrap(yaw - ((bearing_deg + 180) % 360))
+    return np.where(np.abs(diff_fwd) <= np.abs(diff_rev), diff_fwd, diff_rev)
 
 
 def along_track_km(df: pd.DataFrame) -> np.ndarray:
@@ -82,29 +131,41 @@ def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
     print()
 
 
-def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> None:
+def plot_line(
+    seg: pd.DataFrame,
+    survey_thresholds: dict,
+    planned_geom: tuple | None,
+    transformer: Transformer,
+    out_path: Path,
+) -> None:
     """
-    Four-panel figure for one survey line:
-      1. Radar altitude vs along-track distance
-      2. Mag1 and Mag2 vs along-track distance
-      3. Roll and Pitch (lateral and longitudinal tilt of the aircraft)
-      4. Yaw (heading — rotation around the vertical axis)
+    Seven-panel figure for one survey line:
+      1. Radar altitude vs along-track distance         (RadarHeight/Min/Max)
+      2. Cross-track deviation vs along-track distance   (CrossTrack)
+      3. Ground speed vs along-track distance             (GroundSpeedMin/Max)
+      4. Cross-angle deviation vs along-track distance    (CrossAngle)
+      5. Mag1 and Mag2 vs along-track distance
+      6. Roll and Pitch (lateral and longitudinal tilt of the aircraft)
+      7. Yaw (heading — rotation around the vertical axis)
 
-    Radar altitude reference lines (RadarHeight/RadarMin/RadarMax) come from
-    TestSurveyNav.csv, converted from feet to metres by read_survey_thresholds.
+    Panels 1-4 plot the flown value against the corresponding TestSurveyNav.csv
+    threshold for this line, so a spec violation is visible directly on the
+    profile instead of only as a pass/fail flag. Panels 2 and 4 need the
+    planned line geometry (planned_geom); if the line isn't in TestSurveyNav
+    those two panels are left empty with a note.
     """
     seg  = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps'])
     dist = along_track_km(seg)
     bearing, compass, arrow = flight_heading(seg)
 
-    fig, axes = plt.subplots(4, 1, figsize=(14, 10), sharex=True)
+    fig, axes = plt.subplots(7, 1, figsize=(14, 18), sharex=True)
     fig.suptitle(
         f"Flight {seg['flight_id'].iloc[0]}  —  Line {int(seg['line_id'].iloc[0])}  "
         f"[{arrow} flown {compass}, bearing ~{bearing:.0f}°]",
         fontsize=13,
     )
 
-    # Radar altitude
+    # ---- Panel 1: Radar altitude (RadarHeight/RadarMin/RadarMax) -----------
     ax = axes[0]
     if 'Ralt' in seg.columns:
         ax.plot(dist, seg['Ralt'].values, color='steelblue', linewidth=0.8, label='Ralt')
@@ -121,11 +182,63 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
             ax.axhline(r_max, color='red', linestyle='--', linewidth=0.8,
                        label=f'RadarMax {r_max:.0f} m')
     ax.set_ylabel('Radar altitude (m)')
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=7, loc='upper right', ncol=2)
     ax.grid(True, alpha=0.3)
 
-    # Magnetometers
+    # ---- Panel 2: Cross-track deviation (CrossTrack) ------------------------
     ax = axes[1]
+    ct_limit = survey_thresholds.get('cross_track_m')
+    if planned_geom is not None:
+        A, unit, _ = planned_geom
+        ct = _cross_track_m(seg, A, unit, transformer)
+        ax.plot(dist, ct, color='steelblue', linewidth=0.8, label='Cross-track')
+        if ct_limit is not None:
+            ax.axhline(ct_limit, color='red', linestyle='--', linewidth=0.8,
+                       label=f'CrossTrack limit {ct_limit:.0f} m')
+    else:
+        ax.text(0.5, 0.5, 'Line not found in TestSurveyNav.csv — no planned axis to compare against',
+                transform=ax.transAxes, ha='center', va='center', fontsize=8, color='gray')
+    ax.set_ylabel('Cross-track (m)')
+    ax.legend(fontsize=7, loc='upper right')
+    ax.grid(True, alpha=0.3)
+
+    # ---- Panel 3: Ground speed (GroundSpeedMin/Max) --------------------------
+    ax = axes[2]
+    spd = _ground_speed_kmh(seg)
+    spd_min = survey_thresholds.get('speed_min_kmh')
+    spd_max = survey_thresholds.get('speed_max_kmh')
+    ax.plot(dist[1:], spd, color='steelblue', linewidth=0.8, label='Ground speed')
+    if spd_min is not None:
+        ax.axhline(spd_min, color='darkorange', linestyle='--', linewidth=0.8,
+                   label=f'SpeedMin {spd_min:.0f} km/h')
+    if spd_max is not None:
+        ax.axhline(spd_max, color='red', linestyle='--', linewidth=0.8,
+                   label=f'SpeedMax {spd_max:.0f} km/h')
+    ax.set_ylabel('Ground speed (km/h)')
+    ax.legend(fontsize=7, loc='upper right', ncol=3)
+    ax.grid(True, alpha=0.3)
+
+    # ---- Panel 4: Cross-angle deviation (CrossAngle) -------------------------
+    ax = axes[3]
+    ca_limit = survey_thresholds.get('cross_angle_deg')
+    if planned_geom is not None and 'Yaw' in seg.columns:
+        _, _, plan_bearing = planned_geom
+        ca = cross_angle_deg(seg['Yaw'].values, plan_bearing)
+        ax.plot(dist, ca, color='steelblue', linewidth=0.8, label='Cross-angle')
+        if ca_limit is not None:
+            ax.axhline(ca_limit, color='red', linestyle='--', linewidth=0.8,
+                       label=f'CrossAngle limit ±{ca_limit:.0f}°')
+            ax.axhline(-ca_limit, color='red', linestyle='--', linewidth=0.8)
+        ax.axhline(0, color='gray', linewidth=0.5)
+    else:
+        ax.text(0.5, 0.5, 'Line not found in TestSurveyNav.csv — no planned axis to compare against',
+                transform=ax.transAxes, ha='center', va='center', fontsize=8, color='gray')
+    ax.set_ylabel('Cross-angle (°)')
+    ax.legend(fontsize=7, loc='upper right')
+    ax.grid(True, alpha=0.3)
+
+    # ---- Panel 5: Magnetometers ----------------------------------------------
+    ax = axes[4]
     for col, color in [('Mag1', 'navy'), ('Mag2', 'darkorange')]:
         if col in seg.columns:
             ax.plot(dist, seg[col].values, color=color, linewidth=0.8, label=col)
@@ -133,8 +246,8 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
-    # Roll and Pitch (aircraft tilt)
-    ax = axes[2]
+    # ---- Panel 6: Roll and Pitch (aircraft tilt) ------------------------------
+    ax = axes[5]
     for col, color in [('Roll', 'seagreen'), ('Pitch', 'mediumpurple')]:
         if col in seg.columns:
             ax.plot(dist, seg[col].values, color=color, linewidth=0.8, label=col)
@@ -143,8 +256,8 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
-    # Yaw (heading)
-    ax = axes[3]
+    # ---- Panel 7: Yaw (heading) -----------------------------------------------
+    ax = axes[6]
     if 'Yaw' in seg.columns:
         ax.plot(dist, seg['Yaw'].values, color='darkorange', linewidth=0.8, label='Yaw')
     ax.set_ylabel('Yaw / heading (°)')
@@ -171,12 +284,15 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
 
 
 def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
-    cfg      = load_config()
-    campaign = cfg['campaign']['name']
-    run_name = cfg['campaign']['run_name']
-    nav_path = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
+    cfg        = load_config()
+    campaign   = cfg['campaign']['name']
+    run_name   = cfg['campaign']['run_name']
+    nav_path   = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
+    projection = cfg['campaign']['projection']
 
     survey_thresholds = read_survey_thresholds(nav_path)
+    planned           = build_planned_index(read_survey_nav(nav_path))
+    transformer       = Transformer.from_crs('EPSG:4326', projection, always_xy=True)
 
     parquet_path = (
         PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
@@ -198,7 +314,7 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
 
     for lid, seg in on_line.groupby('line_id'):
         out_path = out_base / f"flight_{flight_id}_line_{int(lid)}.png"
-        plot_line(seg, survey_thresholds, out_path)
+        plot_line(seg, survey_thresholds, planned.get(int(lid)), transformer, out_path)
 
 
 if __name__ == '__main__':
