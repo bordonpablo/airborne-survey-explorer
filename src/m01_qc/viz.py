@@ -19,9 +19,9 @@ from pathlib import Path
 # Only the three metrics with thresholds from TestSurveyNav get pass/fail columns.
 # All other metrics are informative values shown in the report CSV but not here.
 HEATMAP_COLS = [
-    ('pass_altitude',    'Altitud'),
-    ('pass_cross_track', 'Desvío transv.'),
-    ('pass_speed',       'Velocidad'),
+    ('pass_altitude',    'Altitude'),
+    ('pass_cross_track', 'Cross-track'),
+    ('pass_speed',       'Speed'),
 ]
 
 VALUE_COLS = {

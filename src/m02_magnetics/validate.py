@@ -67,21 +67,21 @@ def read_specialist_data(path_dat: str | Path, path_ddf: str | Path) -> pd.DataF
     path_ddf = Path(path_ddf)
 
     if not path_dat.exists():
-        raise FileNotFoundError(f"Archivo .dat no encontrado: {path_dat}")
+        raise FileNotFoundError(f".dat file not found: {path_dat}")
     if not path_ddf.exists():
-        raise FileNotFoundError(f"Archivo .ddf no encontrado: {path_ddf}")
+        raise FileNotFoundError(f".ddf file not found: {path_ddf}")
 
-    print(f"[M2 VALIDATE] Leyendo definición de columnas: {path_ddf.name}")
+    print(f"[M2 VALIDATE] Reading column definitions: {path_ddf.name}")
     columnas = _parsear_ddf(path_ddf)
 
     if not columnas:
-        raise ValueError(f"No se encontraron columnas válidas en {path_ddf}")
+        raise ValueError(f"No valid columns found in {path_ddf}")
 
     nombres   = [c['nombre']     for c in columnas]
     col_specs = [(c['byte_start'], c['byte_end']) for c in columnas]
 
-    print(f"[M2 VALIDATE] Columnas encontradas: {nombres}")
-    print(f"[M2 VALIDATE] Leyendo datos: {path_dat.name}")
+    print(f"[M2 VALIDATE] Columns found: {nombres}")
+    print(f"[M2 VALIDATE] Reading data: {path_dat.name}")
 
     df = pd.read_fwf(
         path_dat,
@@ -107,7 +107,7 @@ def read_specialist_data(path_dat: str | Path, path_ddf: str | Path) -> pd.DataF
             df = df.rename(columns={col_fid: 'fid'}).set_index('fid')
             break
 
-    print(f"[M2 VALIDATE] Filas leídas: {len(df):,}  |  Columnas: {len(df.columns)}")
+    print(f"[M2 VALIDATE] Rows read: {len(df):,}  |  Columns: {len(df.columns)}")
     return df
 
 
@@ -137,13 +137,13 @@ def compare_columns(
     dict con claves: mean_diff, std_diff, max_abs_diff, rmse, n_points
     """
     if col_ours not in df_ours.columns:
-        raise KeyError(f"Columna '{col_ours}' no encontrada en df_ours.")
+        raise KeyError(f"Column '{col_ours}' not found in df_ours.")
     if col_ref not in df_ref.columns:
-        raise KeyError(f"Columna '{col_ref}' no encontrada en df_ref.")
+        raise KeyError(f"Column '{col_ref}' not found in df_ref.")
 
     idx_comun = df_ours.index.intersection(df_ref.index)
     if len(idx_comun) == 0:
-        print(f"[M2 VALIDATE] {label}: sin índices en común, no se puede comparar.")
+        print(f"[M2 VALIDATE] {label}: no shared indices, cannot compare.")
         return {
             'mean_diff': np.nan, 'std_diff': np.nan,
             'max_abs_diff': np.nan, 'rmse': np.nan, 'n_points': 0,
@@ -155,7 +155,7 @@ def compare_columns(
     n = len(diff)
 
     if n == 0:
-        print(f"[M2 VALIDATE] {label}: todos los valores son NaN tras alinear.")
+        print(f"[M2 VALIDATE] {label}: all values are NaN after alignment.")
         return {
             'mean_diff': np.nan, 'std_diff': np.nan,
             'max_abs_diff': np.nan, 'rmse': np.nan, 'n_points': 0,
@@ -168,13 +168,13 @@ def compare_columns(
 
     sep = '─' * 55
     print(f"\n[M2 VALIDATE] {sep}")
-    print(f"[M2 VALIDATE] Comparación : {label}")
-    print(f"[M2 VALIDATE]   Nuestro   : {col_ours}")
-    print(f"[M2 VALIDATE]   Referencia: {col_ref}")
-    print(f"[M2 VALIDATE]   Puntos alineados : {n:,}")
-    print(f"[M2 VALIDATE]   Diferencia media : {mean_diff:+.3f} nT")
-    print(f"[M2 VALIDATE]   Desv. estándar   : {std_diff:.3f} nT")
-    print(f"[M2 VALIDATE]   Máx |diferencia| : {max_abs_diff:.3f} nT")
+    print(f"[M2 VALIDATE] Comparison : {label}")
+    print(f"[M2 VALIDATE]   Ours      : {col_ours}")
+    print(f"[M2 VALIDATE]   Reference : {col_ref}")
+    print(f"[M2 VALIDATE]   Aligned points   : {n:,}")
+    print(f"[M2 VALIDATE]   Mean difference  : {mean_diff:+.3f} nT")
+    print(f"[M2 VALIDATE]   Std deviation    : {std_diff:.3f} nT")
+    print(f"[M2 VALIDATE]   Max |difference| : {max_abs_diff:.3f} nT")
     print(f"[M2 VALIDATE]   RMSE             : {rmse:.3f} nT")
     print(f"[M2 VALIDATE] {sep}\n")
 

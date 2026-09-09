@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 # Utilidades internas
 # ---------------------------------------------------------------------------
 
-def _distancia_acumulada_m(df: pd.DataFrame) -> np.ndarray:
+def _cumulative_distance_m(df: pd.DataFrame) -> np.ndarray:
     """Distancia haversine acumulada (metros), asumiendo filas ya ordenadas por timestamp."""
     lon = np.radians(df['Xgps'].values)
     lat = np.radians(df['Ygps'].values)
@@ -99,7 +99,7 @@ def _perfil_weste_este(seg: pd.DataFrame, paso_m: float) -> np.ndarray | None:
     if len(seg) < 10:
         return None
 
-    dist = _distancia_acumulada_m(seg)
+    dist = _cumulative_distance_m(seg)
     mag  = seg['Mag1C'].values.copy()
 
     # Si la línea va de E→O, invertir para obtener perfil W→E
@@ -279,11 +279,11 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
     dt_nominal_s = 0.1  # ~10 Hz
     paso_m = vel_ms * dt_nominal_s
 
-    print(f"[M2 LAG] Velocidad media     : {vel_ms:.1f} m/s")
-    print(f"[M2 LAG] Paso espacial       : {paso_m:.1f} m")
+    print(f"[M2 LAG] Mean velocity       : {vel_ms:.1f} m/s")
+    print(f"[M2 LAG] Spatial step        : {paso_m:.1f} m")
 
     pares = _identificar_pares(df_all_lines, line_spacing_m)
-    print(f"[M2 LAG] Pares E/O encontrados: {len(pares)}")
+    print(f"[M2 LAG] E/W pairs found     : {len(pares)}")
 
     resultado_vacio = {
         'lag_median_s':      0.0,
@@ -295,7 +295,7 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
     }
 
     if not pares:
-        print("[M2 LAG] Sin pares disponibles para cross-correlación.")
+        print("[M2 LAG] No pairs available for cross-correlation.")
         return resultado_vacio
 
     lags = []
@@ -317,10 +317,10 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
         lag_s = _estimar_lag_par(seg_e, seg_o, paso_m, vel_ms)
         if lag_s is not None:
             lags.append(lag_s)
-            print(f"[M2 LAG]   Par línea {k_e[1]} (E) vs {k_o[1]} (O): lag = {lag_s:+.3f} s")
+            print(f"[M2 LAG]   Pair line {k_e[1]} (E) vs {k_o[1]} (W): lag = {lag_s:+.3f} s")
 
     if not lags:
-        print("[M2 LAG] Cross-correlación sin resultados válidos.")
+        print("[M2 LAG] Cross-correlation returned no valid results.")
         return resultado_vacio
 
     lag_median     = float(np.median(lags))
@@ -330,11 +330,11 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
 
     sep = '─' * 50
     print(f"\n[M2 LAG] {sep}")
-    print(f"[M2 LAG] Lag mediano   : {lag_median:+.3f} s")
+    print(f"[M2 LAG] Median lag    : {lag_median:+.3f} s")
     print(f"[M2 LAG] Lag std       : {lag_std:.3f} s")
-    print(f"[M2 LAG] Lag tolerable : {lag_tolerable:.3f} s  (= spacing/4 / v)")
-    print(f"[M2 LAG] Pares usados  : {len(lags)}")
-    print(f"[M2 LAG] Decisión      : {decision}")
+    print(f"[M2 LAG] Lag tolerance : {lag_tolerable:.3f} s  (= spacing/4 / v)")
+    print(f"[M2 LAG] Pairs used    : {len(lags)}")
+    print(f"[M2 LAG] Decision      : {decision}")
     print(f"[M2 LAG] {sep}\n")
 
     return {
@@ -372,17 +372,17 @@ def apply_lag(df: pd.DataFrame, lag_s: float) -> pd.DataFrame:
 
     dt_medio_s = df['M3clk'].diff().median() / 1000.0
     if not np.isfinite(dt_medio_s) or dt_medio_s <= 0:
-        print("[M2 LAG] No se pudo calcular dt_medio. Corrección no aplicada.")
+        print("[M2 LAG] Could not compute dt_medio. Correction not applied.")
         df['lag_applied'] = False
         return df
 
     lag_samples = int(round(lag_s / dt_medio_s))
 
-    print(f"[M2 LAG] Corrección: lag = {lag_s:.3f} s  →  {lag_samples} muestras  "
+    print(f"[M2 LAG] Correction: lag = {lag_s:.3f} s  →  {lag_samples} samples  "
           f"(dt = {dt_medio_s * 1000:.1f} ms)")
 
     if lag_samples == 0:
-        print("[M2 LAG] lag_samples = 0, sin corrección necesaria.")
+        print("[M2 LAG] lag_samples = 0, no correction needed.")
         df['lag_applied'] = True
         return df
 
@@ -408,8 +408,8 @@ def apply_lag(df: pd.DataFrame, lag_s: float) -> pd.DataFrame:
         df.loc[df.index[:n_inv], 'line_valid'] = False
 
     df['lag_applied'] = True
-    print(f"[M2 LAG] Columnas GPS ajustadas  : {col_gps}")
-    print(f"[M2 LAG] Muestras marcadas NaN   : {n_inv}")
+    print(f"[M2 LAG] GPS columns adjusted    : {col_gps}")
+    print(f"[M2 LAG] Samples marked NaN      : {n_inv}")
     return df
 
 
@@ -442,7 +442,7 @@ def plot_lag_diagnosis(
     p_o = _perfil_weste_este(seg_o, paso_m)
 
     if p_e is None or p_o is None:
-        print("[M2 LAG] No hay datos suficientes para el diagnóstico.")
+        print("[M2 LAG] Not enough data for diagnosis.")
         return
 
     n = min(len(p_e), len(p_o))
@@ -460,28 +460,28 @@ def plot_lag_diagnosis(
 
     fig, axes = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
     fig.suptitle(
-        f"Diagnóstico de lag  |  Línea {lid_e} (E→) vs Línea {lid_o} (←O)  "
+        f"Lag diagnosis  |  Line {lid_e} (E→) vs Line {lid_o} (←W)  "
         f"|  lag = {lag_s:+.3f} s",
         fontsize=12,
     )
 
-    # --- Panel 1: sin corrección ---
+    # --- Panel 1: before correction ---
     ax = axes[0]
-    ax.set_title("Antes de corrección (desplazamiento visible entre anomalías)")
-    ax.plot(dist, p_e, color='steelblue',  linewidth=0.9, label=f'Línea {lid_e} (E→)')
-    ax.plot(dist, p_o, color='darkorange', linewidth=0.9, label=f'Línea {lid_o} (←O invertida W→E)')
-    ax.set_ylabel('Mag1C (nT, centrada)')
+    ax.set_title("Before correction (visible offset between anomalies)")
+    ax.plot(dist, p_e, color='steelblue',  linewidth=0.9, label=f'Line {lid_e} (E→)')
+    ax.plot(dist, p_o, color='darkorange', linewidth=0.9, label=f'Line {lid_o} (←W reversed to W→E)')
+    ax.set_ylabel('Mag1C (nT, centered)')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
     desplaz_m = abs(lag_peak_samples) * paso_m
     ax.annotate(
-        f'Desplazamiento observado ≈ {desplaz_m:.0f} m ({lag_peak_samples} muestras)',
+        f'Observed offset ≈ {desplaz_m:.0f} m ({lag_peak_samples} samples)',
         xy=(0.02, 0.97), xycoords='axes fraction', va='top', fontsize=8,
     )
 
-    # --- Panel 2: con corrección (alineación por shift de correlación) ---
+    # --- Panel 2: after correction (aligned via correlation shift) ---
     ax = axes[1]
-    ax.set_title("Después de corrección (perfil O alineado con E)")
+    ax.set_title("After correction (W profile aligned to E)")
 
     ls = lag_peak_samples
     if ls > 0:
@@ -497,10 +497,10 @@ def plot_lag_diagnosis(
     else:
         p_o_alin = p_o.copy()
 
-    ax.plot(dist, p_e,      color='steelblue',  linewidth=0.9, label=f'Línea {lid_e} (E→)')
-    ax.plot(dist, p_o_alin, color='darkorange', linewidth=0.9, label=f'Línea {lid_o} (alineada)')
-    ax.set_ylabel('Mag1C (nT, centrada)')
-    ax.set_xlabel('Distancia acumulada (m)')
+    ax.plot(dist, p_e,      color='steelblue',  linewidth=0.9, label=f'Line {lid_e} (E→)')
+    ax.plot(dist, p_o_alin, color='darkorange', linewidth=0.9, label=f'Line {lid_o} (aligned)')
+    ax.set_ylabel('Mag1C (nT, centered)')
+    ax.set_xlabel('Cumulative distance (m)')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
@@ -509,4 +509,4 @@ def plot_lag_diagnosis(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
-    print(f"  [M2 LAG] Diagnóstico guardado: {output_path}")
+    print(f"  [M2 LAG] Diagnosis saved: {output_path}")

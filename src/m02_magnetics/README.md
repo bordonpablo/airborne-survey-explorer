@@ -18,7 +18,7 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
 | `validate.py` | **Specialist comparison.** Reads Geosoft .dat/.ddf files and compares columns. |
 | `validate.py` — see also `data/reference/` | Reads Geosoft .dat/.ddf and compares specialist columns against ours. |
-| `diurnal.py` | Diurnal correction (base station subtraction). [pendiente] |
+| `diurnal.py` | Diurnal correction (base station subtraction). [pending] |
 | `igrf.py` | **IGRF-13 removal.** Computes and subtracts IGRF total field at each sample point using ppigrf. |
 | `heading.py` | **Heading correction.** Empirical DC offset per heading direction (E/W). No calibration flight required. |
 | `average_sensors.py` | **Sensor average.** Combines Mag1 and Mag2 using fourth-difference noise criterion. |
@@ -109,8 +109,8 @@ for pq in interim.rglob('flight_*_prepared.parquet'):
 df = pd.concat(frames, ignore_index=True)
 df = df[df['line_valid'] & df['line_id'].notna()]
 
-resultado = estimate_lag(df, config)
-print(resultado)
+result = estimate_lag(df, config)
+print(result)
 ```
 
 Terminal output example:
@@ -131,7 +131,7 @@ Terminal output example:
 ```python
 from src.m02_magnetics.lag import apply_lag
 
-df_corregido = apply_lag(df_vuelo, lag_s=resultado['lag_median_s'])
+df_corrected = apply_lag(df_flight, lag_s=result['lag_median_s'])
 ```
 
 ### Validate against specialist data
@@ -143,7 +143,7 @@ df_ref = read_specialist_data(
     'data/reference/Mongolia_2022.dat',
     'data/reference/Mongolia_2022.ddf',
 )
-stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compensado')
+stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compensated')
 ```
 
 ---

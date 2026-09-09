@@ -63,8 +63,8 @@ python -m src.m01_qc.run 22.04.2022 00427 10010
 ### Interactive viewer
 
 ```powershell
-python -m src.m01_qc.viewer                    # toda la campaña
-python -m src.m01_qc.viewer 24.04.2022 00428   # un vuelo específico
+python -m src.m01_qc.viewer                    # whole campaign
+python -m src.m01_qc.viewer 24.04.2022 00428   # one specific flight
 ```
 
 Requires `contextily` for the satellite basemap (`pip install contextily`).

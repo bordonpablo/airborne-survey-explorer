@@ -3,37 +3,37 @@ Module 3 — SPC inspection: QC visualization before GammAn import.
 
 Generates one multi-panel figure per flight with five panels:
 
-  ① Altimetría (Sralt) — perfil de altura del vuelo y calidad del suavizado.
-     Marca el umbral máximo de radiometría; los tramos por encima producirán
-     concentraciones degradadas después de FSA.
+  ① Altimetry (Sralt) — flight altitude profile and smoothing quality.
+     Marks the maximum radiometry threshold; segments above it will produce
+     degraded concentrations after FSA.
 
-  ② Presión y temperatura (Sbaro, Stemp) — suavizado pre-GammAn.
-     GammAn usa estos valores para la corrección de altura (HSTP).
-     Un suavizado insuficiente migra ruido a las concentraciones finales.
+  ② Pressure and temperature (Sbaro, Stemp) — pre-GammAn smoothing.
+     GammAn uses these values for the altitude correction (HSTP).
+     Insufficient smoothing lets noise migrate into the final concentrations.
 
-  ③ Fracción de live time (Slive / Sreal) — indicador de dead-time del detector.
-     Valores < 0.99 significan que el detector perdió pulsos por alta tasa de
-     conteo. GammAn no puede recuperar pulsos perdidos → concentraciones
-     subestimadas en esas zonas.
+  ③ Live-time fraction (Slive / Sreal) — detector dead-time indicator.
+     Values < 0.99 mean the detector lost pulses due to a high count rate.
+     GammAn cannot recover lost pulses → underestimated concentrations in
+     those stretches.
 
-  ④ Estabilidad de ganancia (Sa0, Sa1) — parámetros de calibración espectral.
-     Una deriva sostenida indica inestabilidad de ganancia del cristal CsI
-     (típicamente por cambios de temperatura). GammAn compensa esto durante
-     la estabilización espectral, pero una deriva grande dificulta el proceso.
+  ④ Gain stability (Sa0, Sa1) — spectral calibration parameters.
+     A sustained drift indicates gain instability in the CsI crystal
+     (typically from temperature changes). GammAn compensates for this
+     during spectral stabilisation, but a large drift makes the process harder.
 
-  ⑤ Cuentas brutas por ventana IAEA (Sk, Su, Sth) — primera vista geológica.
-     No son concentraciones FSA: son cuentas de ventana simples aplicadas en
-     tiempo real, ruidosas y sin corrección de altura ni radón. Sirven para
-     verificar que el detector registró señal y para una inspección visual
-     de la variabilidad geológica antes de entrar a GammAn.
+  ⑤ Raw counts per IAEA window (Sk, Su, Sth) — first geological look.
+     These are not FSA concentrations: they're simple window counts applied
+     in real time, noisy and without altitude or radon correction. Useful to
+     verify the detector registered signal and for a visual inspection of
+     geological variability before entering GammAn.
 
-También genera un mapa de campaña con la tasa de conteo total (Srate).
+Also generates a campaign map with the total count rate (Srate).
 
 Usage
 -----
-    python -m src.m03_radiometry.inspect_spc                  # toda la campaña
-    python -m src.m03_radiometry.inspect_spc 02.05.2022       # un día
-    python -m src.m03_radiometry.inspect_spc 02.05.2022 00447 # un vuelo
+    python -m src.m03_radiometry.inspect_spc                  # whole campaign
+    python -m src.m03_radiometry.inspect_spc 02.05.2022       # one day
+    python -m src.m03_radiometry.inspect_spc 02.05.2022 00447 # one flight
 """
 
 import argparse
@@ -131,48 +131,48 @@ def plot_flight(
     ax_sa0 = fig.add_subplot(gs[1, 1])
     ax_win = fig.add_subplot(gs[2, :])
 
-    # ── ① Altimetría ──────────────────────────────────────────────────────────
-    ax_alt.plot(t, df['Sralt'],        color='0.50', lw=1.0, label='Sralt crudo')
+    # ── ① Altimetry ────────────────────────────────────────────────────────────
+    ax_alt.plot(t, df['Sralt'],        color='0.50', lw=1.0, label='Sralt raw')
     ax_alt.plot(t, df['Sralt_smooth'], color='tab:blue', lw=1.3,
-                label=f'Sralt suavizado  (ventana {window_sralt} s)')
+                label=f'Sralt smoothed  (window {window_sralt} s)')
     ax_alt.axhline(max_alt_m, color='tab:red', ls='--', lw=1.1,
-                   label=f'Umbral máximo radiometría  ({max_alt_m:.0f} m)')
+                   label=f'Max radiometry threshold  ({max_alt_m:.0f} m)')
     above = df['Sralt_smooth'] > max_alt_m
     ax_alt.fill_between(t, df['Sralt_smooth'], max_alt_m,
                         where=above, color='tab:red', alpha=0.18, lw=0,
-                        label=f'{above.mean()*100:.1f}% por encima del umbral')
+                        label=f'{above.mean()*100:.1f}% above threshold')
     _shade_on_line(ax_alt, t, on)
     ax_alt.set_xlim(0, t_max)
-    ax_alt.set_xlabel('Tiempo desde inicio (min)', fontsize=8)
-    ax_alt.set_ylabel('Altura AGL  (m)', fontsize=8)
+    ax_alt.set_xlabel('Time from start (min)', fontsize=8)
+    ax_alt.set_ylabel('Height AGL  (m)', fontsize=8)
     ax_alt.set_title(
-        '① Altimetría — Sralt crudo vs. suavizado\n'
-        'Rojo = tramos sobre umbral → FSA menos confiable en esas zonas.',
+        '① Altimetry — Sralt raw vs. smoothed\n'
+        'Red = segments above threshold → FSA less reliable there.',
         fontsize=8, loc='left',
     )
     ax_alt.legend(fontsize=6.5, loc='upper right')
     ax_alt.grid(alpha=0.3)
     ax_alt.tick_params(labelsize=7)
 
-    # ── ② Presión y temperatura ───────────────────────────────────────────────
+    # ── ② Pressure and temperature ────────────────────────────────────────────
     ax2b = ax_env.twinx()
-    ax_env.plot(t, df['Sbaro'],        color='tab:blue', alpha=0.60, lw=1.0, label='Sbaro crudo')
+    ax_env.plot(t, df['Sbaro'],        color='tab:blue', alpha=0.60, lw=1.0, label='Sbaro raw')
     ax_env.plot(t, df['Sbaro_smooth'], color='tab:blue', lw=2.2,
-                label=f'Sbaro suavizado  ({window_env} s)')
-    ax2b.plot(t, df['Stemp'],          color='tab:orange', alpha=0.60, lw=1.0, label='Stemp crudo')
+                label=f'Sbaro smoothed  ({window_env} s)')
+    ax2b.plot(t, df['Stemp'],          color='tab:orange', alpha=0.60, lw=1.0, label='Stemp raw')
     ax2b.plot(t, df['Stemp_smooth'],   color='tab:orange', lw=2.2,
-              label=f'Stemp suavizado  ({window_env} s)')
+              label=f'Stemp smoothed  ({window_env} s)')
     _shade_on_line(ax_env, t, on)
     ax_env.set_xlim(0, t_max)
-    ax_env.set_xlabel('Tiempo desde inicio (min)', fontsize=8)
-    ax_env.set_ylabel('Presión  (mBar)', fontsize=8, color='tab:blue')
-    ax2b.set_ylabel('Temperatura  (°C)', fontsize=8, color='tab:orange')
+    ax_env.set_xlabel('Time from start (min)', fontsize=8)
+    ax_env.set_ylabel('Pressure  (mBar)', fontsize=8, color='tab:blue')
+    ax2b.set_ylabel('Temperature  (°C)', fontsize=8, color='tab:orange')
     ax_env.tick_params(axis='y', labelcolor='tab:blue', labelsize=7)
     ax2b.tick_params(axis='y', labelcolor='tab:orange', labelsize=7)
     ax_env.tick_params(axis='x', labelsize=7)
     ax_env.set_title(
-        '② Presión (Sbaro) y temperatura (Stemp) — suavizado pre-GammAn\n'
-        'GammAn los usa para la corrección de altura y HSTP.',
+        '② Pressure (Sbaro) and temperature (Stemp) — pre-GammAn smoothing\n'
+        'GammAn uses these for the altitude correction and HSTP.',
         fontsize=8, loc='left',
     )
     # combined legend
@@ -181,31 +181,31 @@ def plot_flight(
     ax_env.legend(lines_a + lines_b, labs_a + labs_b, fontsize=6.5, loc='lower right')
     ax_env.grid(alpha=0.3)
 
-    # ── ③ Fracción de live time ───────────────────────────────────────────────
+    # ── ③ Live-time fraction ──────────────────────────────────────────────────
     lt = df['livetime_frac'].clip(0, 1)
     ax_lt.plot(t, lt, color='tab:green', lw=0.8)
     ax_lt.axhline(0.99, color='tab:red', ls='--', lw=1.1,
-                  label='Umbral mínimo  (0.99)')
+                  label='Minimum threshold  (0.99)')
     ax_lt.fill_between(t, lt, 0.99, where=(lt < 0.99),
                        color='tab:red', alpha=0.30, lw=0,
-                       label='Dead-time elevado')
+                       label='High dead-time')
     _shade_on_line(ax_lt, t, on)
     lo = max(0.90, lt.min() - 0.005)
     ax_lt.set_ylim(lo, 1.005)
     ax_lt.set_xlim(0, t_max)
-    ax_lt.set_xlabel('Tiempo desde inicio (min)', fontsize=8)
+    ax_lt.set_xlabel('Time from start (min)', fontsize=8)
     ax_lt.set_ylabel('Slive / Sreal', fontsize=8)
     ax_lt.set_title(
-        '③ Fracción de live time  (Slive / Sreal)\n'
-        'Caídas bajo 0.99 = pulsos perdidos → concentraciones subestimadas.',
+        '③ Live-time fraction  (Slive / Sreal)\n'
+        'Drops below 0.99 = lost pulses → underestimated concentrations.',
         fontsize=8, loc='left',
     )
     ax_lt.legend(fontsize=6.5)
     ax_lt.grid(alpha=0.3)
     ax_lt.tick_params(labelsize=7)
 
-    # ── ④ Estabilidad de ganancia ─────────────────────────────────────────────
-    ax_sa0.plot(t, df['Sa0'], color='tab:purple', lw=0.8, label='Sa0 (ganancia)')
+    # ── ④ Gain stability ──────────────────────────────────────────────────────
+    ax_sa0.plot(t, df['Sa0'], color='tab:purple', lw=0.8, label='Sa0 (gain)')
     ax_sa0.plot(t, df['Sa1'], color='tab:cyan',   lw=0.8, alpha=0.8, label='Sa1 (offset)')
     mean0, std0 = df['Sa0'].mean(), df['Sa0'].std()
     ax_sa0.axhline(mean0, color='tab:purple', ls='--', lw=0.8, alpha=0.5)
@@ -214,44 +214,44 @@ def plot_flight(
                         alpha=0.12, color='tab:purple', label='±2σ  Sa0')
     _shade_on_line(ax_sa0, t, on)
     ax_sa0.set_xlim(0, t_max)
-    ax_sa0.set_xlabel('Tiempo desde inicio (min)', fontsize=8)
-    ax_sa0.set_ylabel('Coef. estabilización espectral', fontsize=8)
+    ax_sa0.set_xlabel('Time from start (min)', fontsize=8)
+    ax_sa0.set_ylabel('Spectral stabilisation coef.', fontsize=8)
     ax_sa0.set_title(
-        '④ Estabilidad de ganancia  (Sa0, Sa1)\n'
-        'Deriva indica cambio de ganancia del CsI; GammAn deberá compensarla.',
+        '④ Gain stability  (Sa0, Sa1)\n'
+        'Drift indicates a CsI gain shift; GammAn will need to compensate for it.',
         fontsize=8, loc='left',
     )
     ax_sa0.legend(fontsize=6.5)
     ax_sa0.grid(alpha=0.3)
     ax_sa0.tick_params(labelsize=7)
 
-    # ── ⑤ Cuentas brutas por ventana IAEA ─────────────────────────────────────
+    # ── ⑤ Raw counts per IAEA window ──────────────────────────────────────────
     ax_win.plot(t, df['Sk'],  color='tab:blue',   lw=0.9, label='K   (Sk, cps)')
     ax_win.plot(t, df['Su'],  color='tab:orange',  lw=0.9, label='U   (Su, cps)')
     ax_win.plot(t, df['Sth'], color='tab:green',   lw=0.9, label='Th  (Sth, cps)')
     _shade_on_line(ax_win, t, on)
     ax_win.set_xlim(0, t_max)
-    ax_win.set_xlabel('Tiempo desde inicio (min)', fontsize=8)
-    ax_win.set_ylabel('Cuentas por ventana IAEA  (cps)', fontsize=8)
+    ax_win.set_xlabel('Time from start (min)', fontsize=8)
+    ax_win.set_ylabel('Counts per IAEA window  (cps)', fontsize=8)
     ax_win.set_title(
-        '⑤ Cuentas brutas — Sk (K), Su (U), Sth (Th)\n'
-        'NO son concentraciones FSA. Primera vista del señal geológico, sin corrección de altura ni radón.\n'
-        'Verde sombreado = tramos en línea de producción.',
+        '⑤ Raw counts — Sk (K), Su (U), Sth (Th)\n'
+        'NOT FSA concentrations. First look at the geological signal, without altitude or radon correction.\n'
+        'Green shading = production-line segments.',
         fontsize=8, loc='left',
     )
     ax_win.legend(fontsize=8)
     ax_win.grid(alpha=0.3)
     ax_win.tick_params(labelsize=7)
 
-    # ── Suptitle con estadísticas del vuelo ───────────────────────────────────
+    # ── Suptitle with flight statistics ───────────────────────────────────────
     pct_above = (df['Sralt_smooth'] > max_alt_m).mean() * 100
     lt_min    = lt.min()
     fig.suptitle(
-        f'SPC — Vuelo {flight_id}  |  {date}\n'
-        f'{len(df):,} muestras  ·  {t_max:.1f} min  ·  '
-        f'Srate media: {df["Srate"].mean():.0f} cps  ·  '
-        f'{pct_above:.1f}% sobre umbral altimétrico ({max_alt_m:.0f} m)  ·  '
-        f'Live time mín: {lt_min:.4f}',
+        f'SPC — Flight {flight_id}  |  {date}\n'
+        f'{len(df):,} samples  ·  {t_max:.1f} min  ·  '
+        f'Mean Srate: {df["Srate"].mean():.0f} cps  ·  '
+        f'{pct_above:.1f}% above altimetry threshold ({max_alt_m:.0f} m)  ·  '
+        f'Min live time: {lt_min:.4f}',
         fontsize=9.5, weight='bold',
     )
 
@@ -292,13 +292,13 @@ def plot_campaign_map(
 
     lat_mean = valid['Sygps'].mean()
     ax.set_aspect(1.0 / np.cos(np.radians(lat_mean)))
-    ax.set_xlabel('Longitud  (°)', fontsize=9)
-    ax.set_ylabel('Latitud  (°)', fontsize=9)
+    ax.set_xlabel('Longitude  (°)', fontsize=9)
+    ax.set_ylabel('Latitude  (°)', fontsize=9)
     ax.set_title(
-        f'Mapa de campaña — Tasa de conteo total  Srate  (cps)\n'
-        f'{len(all_data)} vuelos  ·  {len(valid):,} muestras  ·  '
-        f'rango P2–P98: {p2:.0f}–{p98:.0f} cps\n'
-        'Primera vista espacial: cobertura y actividad del detector antes de FSA.',
+        f'Campaign map — Total count rate  Srate  (cps)\n'
+        f'{len(all_data)} flights  ·  {len(valid):,} samples  ·  '
+        f'P2–P98 range: {p2:.0f}–{p98:.0f} cps\n'
+        'First spatial look: coverage and detector activity before FSA.',
         fontsize=9,
     )
     ax.grid(alpha=0.3)
@@ -345,11 +345,11 @@ def plot_smoothing_qc(
     on_win = on[mask].reset_index(drop=True)
 
     VARS = [
-        ('Sralt', 'Sralt_smooth', 'Altímetro de radar  (Sralt)',
-         'm  — altura sobre terreno', 'tab:blue',   window_sralt),
-        ('Sbaro', 'Sbaro_smooth', 'Presión barométrica  (Sbaro)',
+        ('Sralt', 'Sralt_smooth', 'Radar altimeter  (Sralt)',
+         'm  — height above ground', 'tab:blue',   window_sralt),
+        ('Sbaro', 'Sbaro_smooth', 'Barometric pressure  (Sbaro)',
          'mBar', 'tab:cyan',    window_env),
-        ('Stemp', 'Stemp_smooth', 'Temperatura del aire  (Stemp)',
+        ('Stemp', 'Stemp_smooth', 'Air temperature  (Stemp)',
          '°C',   'tab:orange',  window_env),
     ]
 
@@ -369,9 +369,9 @@ def plot_smoothing_qc(
         ax.set_ylim(y_lo - margin, y_hi + margin)
 
         ax.plot(t_win, raw, color='0.55', lw=1.0, alpha=1.0,
-                label='crudo', zorder=1)
+                label='raw', zorder=1)
         ax.plot(t_win, sm,  color=color,  lw=2.5, alpha=1.0,
-                label=f'suavizado  (ventana {win} s)', zorder=2)
+                label=f'smoothed  (window {win} s)', zorder=2)
 
         _shade_on_line(ax, t_win, on_win)
 
@@ -381,14 +381,14 @@ def plot_smoothing_qc(
         ax.grid(alpha=0.3)
         ax.tick_params(labelsize=8)
 
-    axes[-1].set_xlabel('Tiempo desde inicio del vuelo  (min)', fontsize=9)
+    axes[-1].set_xlabel('Time from flight start  (min)', fontsize=9)
     axes[-1].set_xlim(x_lo, x_hi)
 
     fig.suptitle(
-        f'QC suavizado pre-GammAn — Vuelo {flight_id}  |  {date}\n'
-        f'Ventanas: Sralt={window_sralt} s  ·  Sbaro/Stemp={window_env} s  ·  '
-        f'Región: {x_lo:.0f}–{x_hi:.0f} min  ·  '
-        f'Verde = tramos en línea de producción',
+        f'Pre-GammAn smoothing QC — Flight {flight_id}  |  {date}\n'
+        f'Windows: Sralt={window_sralt} s  ·  Sbaro/Stemp={window_env} s  ·  '
+        f'Region: {x_lo:.0f}–{x_hi:.0f} min  ·  '
+        f'Green = production-line segments',
         fontsize=10, weight='bold',
     )
 
@@ -410,13 +410,13 @@ def save_spc_csvs(
     Save raw and smoothed SPC scalar data as CSV files.
 
     Two files per flight:
-      _spc_raw.csv    : columnas escalares tal como salen de read_spc
-      _spc_smooth.csv : ídem más Sralt_smooth, Sbaro_smooth, Stemp_smooth
+      _spc_raw.csv    : scalar columns as they come out of read_spc
+      _spc_smooth.csv : same, plus Sralt_smooth, Sbaro_smooth, Stemp_smooth
 
-    Permiten comparar visualmente qué entra a GammAn antes y después del
-    suavizado, y verificar que la ventana elegida es apropiada.
-    Nota: no son los archivos de input de GammAn (ese requiere también el
-    espectro Sbin — lo hará export_gamman.py).
+    Let you visually compare what goes into GammAn before and after
+    smoothing, and check that the chosen window is appropriate.
+    Note: these are not GammAn's input files (that also needs the
+    Sbin spectrum — handled by export_gamman.py).
     """
     out_dir = interim_root / 'm03_gamman' / 'input' / date
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -493,12 +493,12 @@ def main(
             plot_flight(df, flight_id, date, out_path,
                         window_sralt, window_env, max_alt_m)
 
-            # Figura 2 — QC del suavizado (Sralt, Sbaro, Stemp)
+            # Figure 2 — smoothing QC (Sralt, Sbaro, Stemp)
             smooth_path = out_root / date / f'flight_{flight_id}_smooth_qc.png'
             plot_smoothing_qc(df, flight_id, date, smooth_path,
                               window_sralt, window_env)
 
-            # CSVs — crudo y suavizado para comparación
+            # CSVs — raw and smoothed for comparison
             save_spc_csvs(df, flight_id, date, interim_root,
                           window_sralt, window_env)
 

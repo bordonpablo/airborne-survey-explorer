@@ -95,13 +95,15 @@ Each file contains four layers:
 Before committing to a selection, plot the sensor profiles for any flight or line:
 
 ```powershell
-python -m src.m00_preparation.inspect_segment 22.04.2022 00447         # all lines of a flight
-python -m src.m00_preparation.inspect_segment 22.04.2022 00447 1001    # one specific line
+python -m src.m00_preparation.inspect_segment 22.04.2022 00427         # all lines of a flight
+python -m src.m00_preparation.inspect_segment 22.04.2022 00427 10010   # one specific line
 ```
 
 Prints a summary table (n_points, mean altitude, altitude std, magnetic range) and
-opens one figure per line with three panels: radar altitude, Mag1/Mag2, Roll/Pitch.
-Figures are also saved as PNG to `outputs/<campaign>/<run_name>/inspection/<date>/`.
+saves one PNG per line with four panels: radar altitude, Mag1/Mag2, Roll/Pitch, Yaw.
+The title shows the flight heading (arrow + compass point + bearing) so it's clear
+which direction that pass was flown. No interactive window opens — figures are only
+saved to `outputs/<campaign>/<run_name>/inspection/<date>/`.
 
 ### Step 3 — Build line selection (M0 → M1 bridge)
 

@@ -252,7 +252,7 @@ class QCViewer:
         rmin = self.sth.get('radar_min_m')
         rmax = self.sth.get('radar_max_m')
         cbar.set_label(
-            f"Altitud: desviación del target {nom:.0f} m  (m)",
+            f"Altitude: deviation from {nom:.0f} m target  (m)",
             fontsize=8,
         )
         cbar.ax.tick_params(labelsize=7)
@@ -267,8 +267,8 @@ class QCViewer:
         ax.tick_params(left=False, bottom=False,
                        labelleft=False, labelbottom=False)
         ax.set_title(
-            'Heatmap altitud  (verde = target · rojo = lejos del target)\n'
-            'Click en una línea para ver los perfiles',
+            'Altitude heatmap  (green = on target · red = far from target)\n'
+            'Click a line to view profiles',
             fontsize=8, pad=4,
         )
 
@@ -306,14 +306,14 @@ class QCViewer:
     def _refresh_title(self) -> None:
         sel_str = ''
         if self._selected is not None:
-            sel_str = f"  ·  Línea {int(self._selected)}"
+            sel_str = f"  ·  Line {int(self._selected)}"
             if self._selected in self.segment_meta:
                 fid, date = self.segment_meta[self._selected]
-                sel_str += f"  ·  Vuelo {fid}  ·  {date}"
+                sel_str += f"  ·  Flight {fid}  ·  {date}"
         self.fig.suptitle(
             f"M1 QC  —  {self.title}"
-            f"  ({len(self.line_ids)} líneas){sel_str}"
-            f"     ←  →  para navegar",
+            f"  ({len(self.line_ids)} lines){sel_str}"
+            f"     ←  →  to navigate",
             fontsize=11, fontweight='bold',
         )
 
@@ -431,15 +431,15 @@ class QCViewer:
             if mean is not None and not (isinstance(mean, float) and np.isnan(mean)):
                 c = self._C_GOOD if pa else self._C_BAD
                 self._panel_metric(ax,
-                    f"media={mean:.0f} m  |  fuera de banda={pct:.0%}", c)
+                    f"mean={mean:.0f} m  |  outside band={pct:.0%}", c)
 
-        ax.set_ylabel('Altitud (m)', fontsize=8)
+        ax.set_ylabel('Altitude (m)', fontsize=8)
         ax.legend(fontsize=7, loc='upper left', ncol=3,
                   framealpha=0.6, labelspacing=0.15, borderpad=0.4)
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
 
-        # ==== Panel 2 — Roll + Pitch (informativo — sin umbral) =============
+        # ==== Panel 2 — Roll + Pitch (informational — no threshold) =========
         ax = self.ax_att
         ax.axhline(0, color='#aaa', lw=0.5, zorder=1)
         for col, color in [('Roll', '#27ae60'), ('Pitch', '#8e44ad')]:
@@ -462,7 +462,7 @@ class QCViewer:
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
 
-        # ==== Panel 3 — Yaw (informativo — sin umbral) ======================
+        # ==== Panel 3 — Yaw (informational — no threshold) ===================
         ax = self.ax_yaw
         if 'Yaw' in seg.columns:
             ax.plot(dist, seg['Yaw'].values, color='#e67e22',
@@ -479,7 +479,7 @@ class QCViewer:
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
 
-        # ==== Panel 4 — Magnéticos (picos informativos, ruido informativo) ==
+        # ==== Panel 4 — Magnetics (informational spikes, informational noise) ==
         ax = self.ax_mag
         from src.m01_qc.metrics import _SPIKE_DETECTION_NT
 
@@ -495,23 +495,23 @@ class QCViewer:
                     if n_spikes > 0:
                         ax.scatter(dist[mask], vals[mask],
                                    color='#f39c12', s=40, zorder=5,
-                                   label=f'Picos >{_SPIKE_DETECTION_NT:.0f} nT ({n_spikes})')
+                                   label=f'Spikes >{_SPIKE_DETECTION_NT:.0f} nT ({n_spikes})')
 
                     noise = _mag_noise_nT(vals)
                     ann_items = []
                     if not np.isnan(noise):
-                        ann_items.append(f"ruido={noise:.2f} nT")
-                    ann_items.append(f"picos={n_spikes}")
+                        ann_items.append(f"noise={noise:.2f} nT")
+                    ann_items.append(f"spikes={n_spikes}")
                     self._panel_metric(ax, '   |   '.join(ann_items), self._C_NEUT)
 
-        # Cross-track (con umbral de TestSurveyNav) + gaps informativos
+        # Cross-track (thresholded from TestSurveyNav) + informational gaps
         if qr is not None:
             extra = []
             ct  = qr.get('cross_track_max_m')
             ct_limit = sth.get('cross_track_m', 50.0)
             if ct is not None and not (isinstance(ct, float) and np.isnan(ct)):
                 c = self._C_BAD if ct > ct_limit else self._C_GOOD
-                extra.append((f"desvío transv. max={ct:.0f} m  (lím={ct_limit:.0f} m)", c))
+                extra.append((f"max cross-track={ct:.0f} m  (limit={ct_limit:.0f} m)", c))
             ng = qr.get('n_gaps')
             if ng is not None and not (isinstance(ng, float) and np.isnan(ng)):
                 c = self._C_BAD if int(ng) > 0 else self._C_GOOD
@@ -521,8 +521,8 @@ class QCViewer:
                         transform=ax.transAxes, fontsize=7.5,
                         va='top', color=color)
 
-        ax.set_ylabel('Magnetómetro (nT)', fontsize=8)
-        ax.set_xlabel('Distancia a lo largo de la traza (km)', fontsize=8)
+        ax.set_ylabel('Magnetometer (nT)', fontsize=8)
+        ax.set_xlabel('Along-track distance (km)', fontsize=8)
         ax.legend(fontsize=7, loc='upper right', framealpha=0.6)
         ax.grid(True, alpha=0.25, linewidth=0.5)
         ax.tick_params(labelsize=7)
@@ -565,13 +565,13 @@ def view(date: str | None = None, flight_id: str | None = None) -> None:
         pq_path = interim_root / 'm00' / date / f'flight_{flight_id}_prepared.parquet'
         if not pq_path.exists():
             raise FileNotFoundError(
-                f"Parquet no encontrado: {pq_path}\n"
-                "Ejecutá primero:  python -m src.m00_preparation.prepare"
+                f"Parquet not found: {pq_path}\n"
+                "Run first:  python -m src.m00_preparation.prepare"
             )
         df = pd.read_parquet(pq_path)
         on_line = df[df['line_id'].notna() & df['line_valid']]
         segment_meta = {int(lid): (flight_id, date) for lid in on_line['line_id'].unique()}
-        title    = f"Vuelo {flight_id}  ·  {date}"
+        title    = f"Flight {flight_id}  ·  {date}"
         rpt_path = _find_qc_report(out_qc, date, flight_id)
         qc_report = None
         if rpt_path:
@@ -579,15 +579,15 @@ def view(date: str | None = None, flight_id: str | None = None) -> None:
                 qc_report = pd.read_csv(rpt_path, dtype={'flight_id': str, 'line_id': int})
                 qc_report = qc_report[qc_report['flight_id'] == flight_id].reset_index(drop=True)
             except Exception as e:
-                print(f"  Advertencia: no se pudo cargar el reporte QC: {e}")
+                print(f"  Warning: could not load QC report: {e}")
 
     else:
         # --- Whole campaign mode ---
         sel_path = interim_root / 'line_selection.csv'
         if not sel_path.exists():
             raise FileNotFoundError(
-                "line_selection.csv no encontrado.\n"
-                "Ejecutá primero:  python -m src.m00_preparation.build_line_selection"
+                "line_selection.csv not found.\n"
+                "Run first:  python -m src.m00_preparation.build_line_selection"
             )
         sel = pd.read_csv(sel_path, dtype={'flight_id': str, 'line_id': int})
         sel = sel[sel['selected'] == True]
@@ -609,9 +609,9 @@ def view(date: str | None = None, flight_id: str | None = None) -> None:
                 segment_meta[lid_int] = (str(row['flight_id']), row['date'])
 
         if not parts:
-            raise FileNotFoundError("No hay segmentos seleccionados. Revisá line_selection.csv.")
+            raise FileNotFoundError("No selected segments. Check line_selection.csv.")
         df    = pd.concat(parts, ignore_index=True)
-        title = f"Campaña completa"
+        title = f"Whole campaign"
 
         qc_report = None
         rpt_path  = out_qc / 'qc_report.csv'
@@ -619,14 +619,14 @@ def view(date: str | None = None, flight_id: str | None = None) -> None:
             try:
                 qc_report = pd.read_csv(rpt_path, dtype={'flight_id': str, 'line_id': int})
             except Exception as e:
-                print(f"  Advertencia: no se pudo cargar el reporte QC: {e}")
+                print(f"  Warning: could not load QC report: {e}")
 
     if df[df['line_id'].notna()].empty:
-        print("No hay datos válidos de líneas.")
+        print("No valid line data.")
         return
 
     n_lines = len(segment_meta)
-    print(f"{title}  —  {n_lines} líneas.  Click en una línea para inspeccionar.")
+    print(f"{title}  —  {n_lines} lines.  Click a line to inspect.")
 
     QCViewer(df, survey_thresholds, nominal_alt, title, segment_meta, qc_report)
 

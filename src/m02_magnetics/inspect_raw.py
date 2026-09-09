@@ -56,7 +56,7 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def _distancia_acumulada_m(df: pd.DataFrame) -> np.ndarray:
+def _cumulative_distance_m(df: pd.DataFrame) -> np.ndarray:
     """Distancia haversine acumulada a lo largo de la línea (metros)."""
     lon = np.radians(df['Xgps'].values)
     lat = np.radians(df['Ygps'].values)
@@ -67,11 +67,11 @@ def _distancia_acumulada_m(df: pd.DataFrame) -> np.ndarray:
     return np.concatenate([[0.0], np.cumsum(d)])
 
 
-def _tiene_datos(seg: pd.DataFrame, col: str) -> bool:
+def _has_data(seg: pd.DataFrame, col: str) -> bool:
     return col in seg.columns and seg[col].notna().any()
 
 
-def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
+def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     """
     PNG de 4 paneles para una línea de vuelo: campo total, gradiente, actitud, altimetría.
 
@@ -79,7 +79,7 @@ def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> Non
     real antes de aplicar correcciones adicionales.
     """
     seg = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps'])
-    dist = _distancia_acumulada_m(seg)
+    dist = _cumulative_distance_m(seg)
     flight_id = seg['flight_id'].iloc[0]
     line_id = int(seg['line_id'].iloc[0])
 
@@ -91,20 +91,20 @@ def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> Non
 
     # --- Panel 1: Total field ---
     ax = axes[0]
-    if _tiene_datos(seg, 'Mag1'):
+    if _has_data(seg, 'Mag1'):
         ax.plot(dist, seg['Mag1'].values, color='#c0c0c0', linewidth=0.7, label='Mag1 raw')
-    if _tiene_datos(seg, 'Mag1C'):
+    if _has_data(seg, 'Mag1C'):
         ax.plot(dist, seg['Mag1C'].values, color='steelblue', linewidth=0.9, label='Mag1C compensated')
-    if _tiene_datos(seg, 'Mag2'):
+    if _has_data(seg, 'Mag2'):
         ax.plot(dist, seg['Mag2'].values, color='#d8d8d8', linewidth=0.7, label='Mag2 raw')
-    if _tiene_datos(seg, 'Mag2C'):
+    if _has_data(seg, 'Mag2C'):
         ax.plot(dist, seg['Mag2C'].values, color='darkorange', linewidth=0.9, label='Mag2C compensated')
 
     notes = []
-    if _tiene_datos(seg, 'Mag1') and _tiene_datos(seg, 'Mag1C'):
+    if _has_data(seg, 'Mag1') and _has_data(seg, 'Mag1C'):
         d1 = seg['Mag1C'].mean() - seg['Mag1'].mean()
         notes.append(f'ΔMag1C−Mag1 = {d1:+.1f} nT')
-    if _tiene_datos(seg, 'Mag2') and _tiene_datos(seg, 'Mag2C'):
+    if _has_data(seg, 'Mag2') and _has_data(seg, 'Mag2C'):
         d2 = seg['Mag2C'].mean() - seg['Mag2'].mean()
         notes.append(f'ΔMag2C−Mag2 = {d2:+.1f} nT')
     if notes:
@@ -117,13 +117,13 @@ def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> Non
 
     # --- Panel 2: Vertical gradient ---
     ax = axes[1]
-    if _tiene_datos(seg, 'MagL'):
+    if _has_data(seg, 'MagL'):
         ax.plot(dist, seg['MagL'].values, color='#bbbbbb', linewidth=0.7, label='MagL raw (Mag1−Mag2)')
-    if _tiene_datos(seg, 'MagLC'):
+    if _has_data(seg, 'MagLC'):
         ax.plot(dist, seg['MagLC'].values, color='seagreen', linewidth=0.9, label='MagLC compensated')
     ax.axhline(0, color='gray', linewidth=0.5, linestyle='--')
 
-    if _tiene_datos(seg, 'MagLC'):
+    if _has_data(seg, 'MagLC'):
         std_lc = seg['MagLC'].std()
         ax.annotate(f'std(MagLC) = {std_lc:.2f} nT', xy=(0.02, 0.97),
                     xycoords='axes fraction', va='top', fontsize=8, color='seagreen')
@@ -136,14 +136,14 @@ def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> Non
     ax = axes[2]
     ax_yaw = ax.twinx()
 
-    if _tiene_datos(seg, 'Roll'):
+    if _has_data(seg, 'Roll'):
         ax.plot(dist, seg['Roll'].values, color='steelblue', linewidth=0.8, label='Roll')
-    if _tiene_datos(seg, 'Pitch'):
+    if _has_data(seg, 'Pitch'):
         ax.plot(dist, seg['Pitch'].values, color='darkorange', linewidth=0.8, label='Pitch')
     ax.axhline(0, color='gray', linewidth=0.5, linestyle='--')
     ax.set_ylabel('Roll / Pitch (°)')
 
-    if _tiene_datos(seg, 'Yaw'):
+    if _has_data(seg, 'Yaw'):
         ax_yaw.plot(dist, seg['Yaw'].values, color='seagreen', linewidth=0.8,
                     label='Yaw', alpha=0.7)
     ax_yaw.set_ylabel('Yaw (°)', color='seagreen')
@@ -156,7 +156,7 @@ def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> Non
 
     # --- Panel 4: Altimetry ---
     ax = axes[3]
-    if _tiene_datos(seg, 'Ralt'):
+    if _has_data(seg, 'Ralt'):
         ax.plot(dist, seg['Ralt'].values, color='steelblue', linewidth=0.8, label='Ralt (radar)')
 
     if 'Lalt' in seg.columns:
@@ -176,10 +176,10 @@ def graficar_linea(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> Non
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
-    print(f"  [M2] Guardado: {out_path}")
+    print(f"  [M2] Saved: {out_path}")
 
 
-def graficar_resumen(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
+def plot_summary(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
     """
     PNG resumen por vuelo: Panel 1 (campo total) en miniatura para cada línea.
 
@@ -203,15 +203,15 @@ def graficar_resumen(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> N
         seg = on_line[on_line['line_id'] == lid].sort_values('M3clk').dropna(
             subset=['Xgps', 'Ygps']
         )
-        dist = _distancia_acumulada_m(seg)
+        dist = _cumulative_distance_m(seg)
 
-        if _tiene_datos(seg, 'Mag1'):
+        if _has_data(seg, 'Mag1'):
             ax.plot(dist, seg['Mag1'].values, color='#c0c0c0', linewidth=0.5)
-        if _tiene_datos(seg, 'Mag1C'):
+        if _has_data(seg, 'Mag1C'):
             ax.plot(dist, seg['Mag1C'].values, color='steelblue', linewidth=0.7)
-        if _tiene_datos(seg, 'Mag2'):
+        if _has_data(seg, 'Mag2'):
             ax.plot(dist, seg['Mag2'].values, color='#d8d8d8', linewidth=0.5)
-        if _tiene_datos(seg, 'Mag2C'):
+        if _has_data(seg, 'Mag2C'):
             ax.plot(dist, seg['Mag2C'].values, color='darkorange', linewidth=0.7)
 
         ax.set_title(f"Line {int(lid)}", fontsize=8)
@@ -227,22 +227,22 @@ def graficar_resumen(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> N
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=120, bbox_inches='tight')
     plt.close(fig)
-    print(f"  [M2] Resumen guardado: {out_path}")
+    print(f"  [M2] Summary saved: {out_path}")
 
 
-def imprimir_resumen(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
-    filas = []
+def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
+    rows = []
     for lid, seg in on_line.groupby('line_id'):
-        fila = {'line_id': int(lid), 'n_puntos': len(seg)}
-        if _tiene_datos(seg, 'Mag1'):
-            fila['mag1_rango_nT'] = round(seg['Mag1'].max() - seg['Mag1'].min(), 1)
-        if _tiene_datos(seg, 'Mag1C'):
-            fila['mag1c_std_nT'] = round(seg['Mag1C'].std(), 2)
-        if _tiene_datos(seg, 'MagLC'):
-            fila['maglc_std_nT'] = round(seg['MagLC'].std(), 2)
-        filas.append(fila)
+        row = {'line_id': int(lid), 'n_points': len(seg)}
+        if _has_data(seg, 'Mag1'):
+            row['mag1_range_nT'] = round(seg['Mag1'].max() - seg['Mag1'].min(), 1)
+        if _has_data(seg, 'Mag1C'):
+            row['mag1c_std_nT'] = round(seg['Mag1C'].std(), 2)
+        if _has_data(seg, 'MagLC'):
+            row['maglc_std_nT'] = round(seg['MagLC'].std(), 2)
+        rows.append(row)
     print(f"\n[M2] Flight {flight_id} — {date}  ({on_line['line_id'].nunique()} lines)\n")
-    print(pd.DataFrame(filas).to_string(index=False))
+    print(pd.DataFrame(rows).to_string(index=False))
     print()
 
 
@@ -359,22 +359,22 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
     if line_id is not None:
         on_line = on_line[on_line['line_id'] == line_id]
         if on_line.empty:
-            raise ValueError(f"Sin datos válidos para la línea {line_id} en el vuelo {flight_id}.")
+            raise ValueError(f"No valid data for line {line_id} in flight {flight_id}.")
 
     out_base = (
         PROJECT_ROOT / 'outputs' / campaign / run_name
         / 'm02' / 'inspection' / date
     )
 
-    imprimir_resumen(on_line, flight_id, date)
+    print_summary(on_line, flight_id, date)
 
     for lid, seg in on_line.groupby('line_id'):
         out_path = out_base / f"flight_{flight_id}_line_{int(lid)}.png"
-        graficar_linea(seg, nominal_alt, out_path)
+        plot_line(seg, nominal_alt, out_path)
 
     if line_id is None:
         out_resumen = out_base / f"flight_{flight_id}_summary.png"
-        graficar_resumen(on_line, flight_id, out_resumen)
+        plot_summary(on_line, flight_id, out_resumen)
 
 
 def inspect_all() -> None:

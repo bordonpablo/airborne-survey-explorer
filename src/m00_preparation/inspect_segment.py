@@ -39,6 +39,32 @@ def along_track_km(df: pd.DataFrame) -> np.ndarray:
     return np.concatenate([[0.0], np.cumsum(d)])
 
 
+_COMPASS_POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+_COMPASS_ARROWS = {'N': '↑', 'NE': '↗', 'E': '→', 'SE': '↘',
+                    'S': '↓', 'SW': '↙', 'W': '←', 'NW': '↖'}
+
+
+def flight_heading(seg: pd.DataFrame) -> tuple[float, str, str]:
+    """
+    Initial great-circle bearing from the first to the last point of a line.
+
+    The along-track x-axis always runs left-to-right in time order, but since
+    consecutive production lines are flown in opposite directions (turn at
+    each end), the same x-axis can mean East on one line and West on the
+    next. This gives the compass direction so plots aren't ambiguous.
+
+    Returns (bearing_deg, compass_point, arrow_glyph).
+    """
+    lon0, lat0 = np.radians(seg['Xgps'].iloc[0]), np.radians(seg['Ygps'].iloc[0])
+    lon1, lat1 = np.radians(seg['Xgps'].iloc[-1]), np.radians(seg['Ygps'].iloc[-1])
+    dlon = lon1 - lon0
+    x = np.sin(dlon) * np.cos(lat1)
+    y = np.cos(lat0) * np.sin(lat1) - np.sin(lat0) * np.cos(lat1) * np.cos(dlon)
+    bearing = (np.degrees(np.arctan2(x, y)) + 360) % 360
+    point = _COMPASS_POINTS[int((bearing + 22.5) // 45) % 8]
+    return bearing, point, _COMPASS_ARROWS[point]
+
+
 def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
     rows = []
     for lid, seg in on_line.groupby('line_id'):
@@ -64,10 +90,12 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     """
     seg  = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps'])
     dist = along_track_km(seg)
+    bearing, compass, arrow = flight_heading(seg)
 
     fig, axes = plt.subplots(4, 1, figsize=(14, 10), sharex=True)
     fig.suptitle(
-        f"Flight {seg['flight_id'].iloc[0]}  —  Line {int(seg['line_id'].iloc[0])}",
+        f"Flight {seg['flight_id'].iloc[0]}  —  Line {int(seg['line_id'].iloc[0])}  "
+        f"[{arrow} flown {compass}, bearing ~{bearing:.0f}°]",
         fontsize=13,
     )
 
@@ -105,9 +133,20 @@ def plot_line(seg: pd.DataFrame, nominal_alt: float, out_path: Path) -> None:
     if 'Yaw' in seg.columns:
         ax.plot(dist, seg['Yaw'].values, color='darkorange', linewidth=0.8, label='Yaw')
     ax.set_ylabel('Yaw / heading (°)')
-    ax.set_xlabel('Along-track distance (km)')
+    ax.set_xlabel(f'Along-track distance (km)   —   {arrow} start → end, flying {compass}')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
+
+    start = seg.iloc[0]
+    end   = seg.iloc[-1]
+    ax.annotate(f"start\n{start['Ygps']:.4f}, {start['Xgps']:.4f}",
+                xy=(0, 0), xycoords=('data', 'axes fraction'),
+                xytext=(3, -38), textcoords='offset points',
+                fontsize=7, color='dimgray', ha='left')
+    ax.annotate(f"end\n{end['Ygps']:.4f}, {end['Xgps']:.4f}",
+                xy=(dist[-1], 0), xycoords=('data', 'axes fraction'),
+                xytext=(-3, -38), textcoords='offset points',
+                fontsize=7, color='dimgray', ha='right')
 
     plt.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
