@@ -21,7 +21,7 @@ gridding:
   method: "minimum_curvature"
 
 line_editing:                        # manual, independent of TestSurveyNav's CrossTrack (M1 QC)
-  turn_filter_m: 500                 # max lateral distance (m) from the planned line for a
+  turn_filter_m: 600                 # max lateral distance (m) from the planned line for a
                                       # point to stay 'line_valid'; only meant to catch gross
                                       # outliers (e.g. Wayp armed near the airport), not to
                                       # enforce flight-quality tolerance

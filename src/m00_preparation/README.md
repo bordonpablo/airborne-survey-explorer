@@ -12,6 +12,7 @@ table that feeds into M1.
 | `prepare.py` | **Main entry point.** Processes one or all flights. |
 | `export_qgis.py` | **Visual verification.** Generates a GeoPackage for QGIS. |
 | `build_line_selection.py` | **M0 → M1 bridge.** Builds `line_selection.csv` from processed parquets. |
+| `export_selected.py` | **Deliverable export.** GeoPackage, CSV and Oasis Montaj-ready XYZ for the selected lines. |
 | `inspect_segment.py` | **Segment inspection.** Plots altitude, magnetics and attitude for a flight or line. |
 | `read_mag.py` | Internal — parses MAG files (~10 Hz, magnetometer + attitude) |
 | `read_gga.py` | Internal — parses GGA files (~10 Hz, differential GPS) |
@@ -155,6 +156,57 @@ the one with the most valid points. **Edit `selected` manually** in the CSV to
 override any automatic choice. Re-running the script after adding new flights
 preserves existing manual edits.
 
+### Step 4 — Export selected lines (optional)
+
+Once `line_selection.csv` looks right, export the `selected=True` rows (valid
+points only) as deliverables usable outside this pipeline:
+
+```powershell
+python -m src.m00_preparation.export_selected
+```
+
+Output, in `outputs/<campaign>/<run_name>/m00/selected_export/`:
+
+| File | Contents |
+|---|---|
+| `<campaign>_selected.gpkg` | `selected_points` (every valid sample, all columns) + `selected_lines` (one polyline per line), both with a `line_id` field |
+| `<campaign>_selected.csv` | Same rows, every column from the prepared parquet |
+| `<campaign>_selected.xyz` | Same data as plain-text ASCII, `Line,<line_id>` tag before each line's rows |
+
+The `.xyz` is meant for Oasis Montaj: `File > Import > Data > ASCII`, delimiter
+comma, line tag `Line`, map `Xgps`/`Ygps` (or `Xdgps`/`Ydgps`) as X/Y. It's a
+text stand-in for Geosoft's native binary `.gdb` — writing that directly needs
+the proprietary Geosoft GX API (`geosoft.gxpy`), which in turn needs an Oasis
+Montaj installation/license, and isn't available in this environment.
+
+### Mixing flights from different run_names (manual)
+
+Everything in M0/M1 resolves paths from a single `run_name` (`config/project.yaml`)
+— `build_line_selection.py` and `m01_qc/run.py` only ever look inside that one
+run's `m00/` folder. There's no built-in way to pull one flight's parquet from a
+different run.
+
+If a specific flight needs different parameters (e.g. a different
+`line_editing.turn_filter_m`) than the rest of the campaign — because its real
+navigation deviation doesn't fit the campaign-wide value and no other flight
+covers that line more cleanly — the manual workaround is:
+
+1. Temporarily set the parameter you need in `config/project.yaml` under a
+   throwaway `run_name` (e.g. `test_002`) and run `prepare.py` for just that
+   flight: `python -m src.m00_preparation.prepare <date> <flight_id>`.
+2. Copy the resulting parquet into the real run's folder, overwriting the one
+   generated with the campaign-wide config:
+   `data/interim/<campaign>/<real_run_name>/m00/<date>/flight_<flight_id>_prepared.parquet`
+3. **Leave a note in that run's interim folder** recording which flight was
+   swapped in, from which throwaway run, with which parameter value, and why —
+   otherwise the flight silently stops matching the `config.yaml` snapshot
+   already saved there, and there's no other record of the exception. `data/interim/`
+   isn't tracked by git, so this note only lives locally; write it anyway, it's
+   for future-you.
+4. Re-running `prepare.py` for the whole campaign on the real run will
+   overwrite your manual copy back to the campaign-wide config — redo the copy
+   afterwards if that happens.
+
 ### Viewing a parquet without QGIS
 
 ```powershell
@@ -174,3 +226,4 @@ The **Parquet Explorer** extension in VS Code can also browse `.parquet` files d
 | `data/interim/<campaign>/<run_name>/line_selection.csv` | Line selection table — input for M1 |
 | `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.gpkg` | GeoPackage for QGIS verification |
 | `outputs/<campaign>/<run_name>/m00/<date>/inspection/flight_X_line_Y.png` | Sensor profile plots per line |
+| `outputs/<campaign>/<run_name>/m00/selected_export/<campaign>_selected.{gpkg,csv,xyz}` | Selected-lines deliverables (GIS, CSV, Oasis Montaj) |
