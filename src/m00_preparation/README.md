@@ -66,7 +66,16 @@ For each processed flight the script:
 2. Synchronises the three sensors onto the GGA time axis (`merge_asof`)
 3. Clips each survey line to its planned A→B extent using along-track projection
    (points outside the planned start/end are flagged `line_valid = False`)
-4. Saves to `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet`
+4. Filters points farther than `line_editing.turn_filter_m` (manual, `project.yaml`)
+   from the planned line axis, also flagging them `line_valid = False`. This catches
+   points where Wayp was armed too early/late — e.g. still near the airport, far off
+   to the side of the line — that step 3 alone would miss because their along-track
+   position still falls inside the planned extent. This is deliberately a separate,
+   looser number from `CrossTrack` in `TestSurveyNav.csv` (M1's QC tolerance) — it
+   only exists to drop gross outliers, not to enforce line-quality tolerance, so it
+   won't discard points that are still legitimately part of the line but exceed the
+   QC tolerance. Leave `turn_filter_m` unset in `project.yaml` to disable this step.
+5. Saves to `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet`
 
 A snapshot of the active `project.yaml` is saved to `data/interim/<campaign>/<run_name>/config.yaml`
 at the start of each run so that results are always reproducible.
@@ -96,8 +105,9 @@ Before committing to a selection, check whether each line was actually flown the
 way it was planned:
 
 ```powershell
-python -m src.m00_preparation.inspect_segment 22.04.2022 00427         # all lines of a flight
-python -m src.m00_preparation.inspect_segment 22.04.2022 00427 10010   # one specific line
+python -m src.m00_preparation.inspect_segment 22.04.2022                # every flight prepared for that day
+python -m src.m00_preparation.inspect_segment 22.04.2022 00427          # all lines of one flight
+python -m src.m00_preparation.inspect_segment 22.04.2022 00427 10010    # one specific line
 ```
 
 Prints a summary table (n_points, mean altitude, altitude std) and saves one PNG
@@ -115,7 +125,9 @@ All four thresholds in panels 1-4 are read live from `TestSurveyNav.csv` for
 that line — nothing here comes from `config/project.yaml`. The title shows the
 flight heading (arrow + compass point + bearing) so it's clear which direction
 that pass was flown. No interactive window opens — figures are only saved to
-`outputs/<campaign>/<run_name>/inspection/<date>/`.
+`outputs/<campaign>/<run_name>/m00/<date>/inspection/` — a subfolder inside that
+day's folder, so it doesn't mix with the `.gpkg`/`.qgs` files `export_qgis.py`
+saves alongside it under `outputs/<campaign>/<run_name>/m00/<date>/`.
 
 ### Step 3 — Build line selection (M0 → M1 bridge)
 
@@ -161,4 +173,4 @@ The **Parquet Explorer** extension in VS Code can also browse `.parquet` files d
 | `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, one per flight |
 | `data/interim/<campaign>/<run_name>/line_selection.csv` | Line selection table — input for M1 |
 | `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.gpkg` | GeoPackage for QGIS verification |
-| `outputs/<campaign>/<run_name>/inspection/<date>/flight_X_line_Y.png` | Sensor profile plots per line |
+| `outputs/<campaign>/<run_name>/m00/<date>/inspection/flight_X_line_Y.png` | Sensor profile plots per line |

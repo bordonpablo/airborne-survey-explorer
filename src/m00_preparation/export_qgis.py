@@ -156,6 +156,12 @@ def build_flight_lines(df: pd.DataFrame) -> gpd.GeoDataFrame:
             'ralt_mean': seg_sorted['Ralt'].mean() if 'Ralt' in seg_sorted.columns else None,
             'geometry': LineString(coords),
         })
+    if not rows:
+        return gpd.GeoDataFrame(
+            columns=['flight_id', 'line_id', 'date', 'n_points',
+                     'mag1_mean', 'ralt_mean', 'geometry'],
+            geometry='geometry', crs=CRS_WGS84,
+        )
     return gpd.GeoDataFrame(rows, crs=CRS_WGS84)
 
 

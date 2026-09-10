@@ -29,7 +29,7 @@ from src.m00_preparation.read_gga import read_gga
 from src.m00_preparation.read_spc import read_spc
 from src.m00_preparation.read_survey_nav import read_survey_nav
 from src.m00_preparation.sync_sensors import (
-    sync_sensors, clip_to_line_extent, save_prepared
+    sync_sensors, clip_to_line_extent, filter_by_cross_track, save_prepared
 )
 
 
@@ -60,6 +60,7 @@ def prepare_flight(
     interim_dir: Path,
     survey_nav,
     projection: str,
+    turn_filter_m: float | None,
 ) -> None:
     date_str = day_dir.name
 
@@ -84,6 +85,11 @@ def prepare_flight(
 
     print(f"  Clipping to planned line extents...")
     filtered = clip_to_line_extent(merged, survey_nav, projection)
+
+    if turn_filter_m:
+        print(f"  Filtering points beyond {turn_filter_m:.0f} m from the line axis "
+              f"(catches Wayp armed early/late, e.g. near the airport)...")
+        filtered = filter_by_cross_track(filtered, survey_nav, turn_filter_m, projection)
 
     n_lines = filtered.loc[filtered['line_valid'], 'line_id'].nunique()
     n_valid = filtered['line_valid'].sum()
@@ -111,6 +117,12 @@ def main(target_date: str | None = None, target_flight: str | None = None) -> No
     survey_nav = read_survey_nav(nav_path)
     print(f"  {len(survey_nav)} planned lines")
 
+    turn_filter_m = cfg.get('line_editing', {}).get('turn_filter_m')
+    if turn_filter_m:
+        print(f"Turn filter (manual, project.yaml): {turn_filter_m:.0f} m")
+    else:
+        print("Turn filter: disabled (set line_editing.turn_filter_m in project.yaml to enable)")
+
     if target_date:
         day_dirs = [raw_root / target_date]
     else:
@@ -131,7 +143,7 @@ def main(target_date: str | None = None, target_flight: str | None = None) -> No
         for fid in flights:
             prepare_flight(
                 day_dir, fid, interim_root,
-                survey_nav, projection,
+                survey_nav, projection, turn_filter_m,
             )
 
 

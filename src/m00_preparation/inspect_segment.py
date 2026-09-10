@@ -275,17 +275,16 @@ def plot_line(
     print(f"  Saved: {out_path}")
 
 
-def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
-    cfg        = load_config()
-    campaign   = cfg['campaign']['name']
-    run_name   = cfg['campaign']['run_name']
-    nav_path   = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
-    projection = cfg['campaign']['projection']
-
-    survey_thresholds = read_survey_thresholds(nav_path)
-    planned           = build_planned_index(read_survey_nav(nav_path))
-    transformer       = Transformer.from_crs('EPSG:4326', projection, always_xy=True)
-
+def _inspect_flight(
+    date: str,
+    flight_id: str,
+    line_id: int | None,
+    campaign: str,
+    run_name: str,
+    survey_thresholds: dict,
+    planned: dict,
+    transformer: Transformer,
+) -> None:
     parquet_path = (
         PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
         / 'm00' / date / f'flight_{flight_id}_prepared.parquet'
@@ -301,7 +300,7 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
         if on_line.empty:
             raise ValueError(f"No valid data for line {line_id} in flight {flight_id}.")
 
-    out_base = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm00' / date
+    out_base = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm00' / date / 'inspection'
     print_summary(on_line, flight_id, date)
 
     for lid, seg in on_line.groupby('line_id'):
@@ -309,11 +308,44 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
         plot_line(seg, survey_thresholds, planned.get(int(lid)), transformer, out_path)
 
 
+def inspect(date: str, flight_id: str | None = None, line_id: int | None = None) -> None:
+    """
+    Inspect one flight, or every flight prepared for that day if flight_id is
+    omitted (mirrors the no-flight-id convention of prepare.py / export_qgis.py).
+    """
+    cfg        = load_config()
+    campaign   = cfg['campaign']['name']
+    run_name   = cfg['campaign']['run_name']
+    nav_path   = PROJECT_ROOT / cfg['campaign']['survey_nav_path']
+    projection = cfg['campaign']['projection']
+
+    survey_thresholds = read_survey_thresholds(nav_path)
+    planned           = build_planned_index(read_survey_nav(nav_path))
+    transformer       = Transformer.from_crs('EPSG:4326', projection, always_xy=True)
+
+    if flight_id is not None:
+        flight_ids = [flight_id]
+    else:
+        day_dir = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name / 'm00' / date
+        flight_ids = sorted(
+            p.stem.replace('flight_', '').replace('_prepared', '')
+            for p in day_dir.glob('flight_*_prepared.parquet')
+        )
+        if not flight_ids:
+            print(f"No prepared parquets found for {date} under {day_dir}")
+            return
+        print(f"Found {len(flight_ids)} flight(s) for {date}: {', '.join(flight_ids)}")
+
+    for fid in flight_ids:
+        _inspect_flight(date, fid, line_id, campaign, run_name,
+                        survey_thresholds, planned, transformer)
+
+
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("Usage: python -m src.m00_preparation.inspect_segment <date> <flight_id> [line_id]")
+    if len(sys.argv) < 2:
+        print("Usage: python -m src.m00_preparation.inspect_segment <date> [flight_id] [line_id]")
         sys.exit(1)
     date_arg   = sys.argv[1]
-    flight_arg = sys.argv[2].zfill(5)
+    flight_arg = sys.argv[2].zfill(5) if len(sys.argv) > 2 else None
     line_arg   = int(sys.argv[3]) if len(sys.argv) > 3 else None
     inspect(date_arg, flight_arg, line_arg)

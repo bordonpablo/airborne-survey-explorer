@@ -33,10 +33,31 @@ def _cross_track_m(df: pd.DataFrame, A: np.ndarray, unit: np.ndarray,
     return np.sqrt(np.sum((P - proj) ** 2, axis=1))
 
 
+SPEED_SMOOTH_WINDOW = 7   # samples (~0.7 s at 10 Hz); odd rolling-median window
+
+
 def _ground_speed_kmh(df: pd.DataFrame) -> np.ndarray:
-    """Ground speed in km/h from consecutive GPS points and M3clk timestamps."""
-    lon = np.radians(df['Xgps'].values)
-    lat = np.radians(df['Ygps'].values)
+    """
+    Ground speed in km/h from consecutive GPS points and M3clk timestamps.
+
+    Uses the differential GPS position (Xdgps/Ydgps, from GGA) when available,
+    falling back to the standard GPS carried in MAG (Xgps/Ygps). Differencing
+    position over a ~0.1 s step amplifies any position noise into speed —
+    differential GPS has far less noise (dm-level vs metre-level), so it
+    produces far fewer spurious spikes to begin with.
+
+    The result is then passed through a short rolling median (odd window,
+    SPEED_SMOOTH_WINDOW samples) to remove any remaining single-sample spikes.
+    A median (not a mean) is used because it isn't pulled by an isolated
+    outlier, while still tracking real speed changes, which unfold over
+    several seconds (turns, throttle) rather than one sample to the next.
+    """
+    if 'Xdgps' in df.columns and 'Ydgps' in df.columns and df['Xdgps'].notna().any():
+        lon = np.radians(df['Xdgps'].values)
+        lat = np.radians(df['Ydgps'].values)
+    else:
+        lon = np.radians(df['Xgps'].values)
+        lat = np.radians(df['Ygps'].values)
     dt_s = np.diff(df['M3clk'].values) / 1000.0
     dlat = np.diff(lat)
     dlon = np.diff(lon)
@@ -45,6 +66,11 @@ def _ground_speed_kmh(df: pd.DataFrame) -> np.ndarray:
     valid = dt_s > 0.05           # ignore sub-50 ms intervals (duplicate timestamps)
     speed = np.full(len(dist_m), np.nan)
     speed[valid] = dist_m[valid] / dt_s[valid] * 3.6
+
+    speed = pd.Series(speed).rolling(
+        SPEED_SMOOTH_WINDOW, center=True, min_periods=1
+    ).median().to_numpy()
+
     return speed
 
 

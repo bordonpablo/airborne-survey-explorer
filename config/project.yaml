@@ -1,6 +1,6 @@
 campaign:
-  name: "Mongolia_2022_ABM+Mithun"
-  run_name: "test_Module01_001"            # identifies the processing variant; used for interim/ and outputs/ subfolders
+  name: "Mongolia_2022_full_campaign_Ground_Truth"
+  run_name: "test_001"            # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-24"
@@ -19,3 +19,9 @@ magnetics:
 gridding:
   cell_size_m: 60
   method: "minimum_curvature"
+
+line_editing:                        # manual, independent of TestSurveyNav's CrossTrack (M1 QC)
+  turn_filter_m: 500                 # max lateral distance (m) from the planned line for a
+                                      # point to stay 'line_valid'; only meant to catch gross
+                                      # outliers (e.g. Wayp armed near the airport), not to
+                                      # enforce flight-quality tolerance
