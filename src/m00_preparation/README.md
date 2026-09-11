@@ -158,26 +158,12 @@ preserves existing manual edits.
 
 ### Step 4 — Export selected lines (optional)
 
-Once `line_selection.csv` looks right, export the `selected=True` rows (valid
-points only) as deliverables usable outside this pipeline:
+Exports the `selected=True` rows to `outputs/<campaign>/<run_name>/m00/selected_export/`:
+a GeoPackage, a CSV, and a Line-tagged `.xyz` importable in Oasis Montaj.
 
 ```powershell
 python -m src.m00_preparation.export_selected
 ```
-
-Output, in `outputs/<campaign>/<run_name>/m00/selected_export/`:
-
-| File | Contents |
-|---|---|
-| `<campaign>_selected.gpkg` | `selected_points` (every valid sample, all columns) + `selected_lines` (one polyline per line), both with a `line_id` field |
-| `<campaign>_selected.csv` | Same rows, every column from the prepared parquet |
-| `<campaign>_selected.xyz` | Same data as plain-text ASCII, `Line,<line_id>` tag before each line's rows |
-
-The `.xyz` is meant for Oasis Montaj: `File > Import > Data > ASCII`, delimiter
-comma, line tag `Line`, map `Xgps`/`Ygps` (or `Xdgps`/`Ydgps`) as X/Y. It's a
-text stand-in for Geosoft's native binary `.gdb` — writing that directly needs
-the proprietary Geosoft GX API (`geosoft.gxpy`), which in turn needs an Oasis
-Montaj installation/license, and isn't available in this environment.
 
 ### Mixing flights from different run_names (manual)
 

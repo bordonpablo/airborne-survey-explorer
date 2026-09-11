@@ -91,8 +91,15 @@ def _sanitise_for_gpkg(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.columns:
         if col == 'line_id':
             continue
-        if pd.api.types.is_extension_array_dtype(df[col].dtype):
+        dtype = df[col].dtype
+        if not pd.api.types.is_extension_array_dtype(dtype):
+            continue
+        if pd.api.types.is_numeric_dtype(dtype) or pd.api.types.is_bool_dtype(dtype):
+            # nullable numeric/boolean (Int64, boolean, ...) -> plain float64
             df[col] = df[col].astype('float64')
+        else:
+            # text extension dtypes (e.g. string[pyarrow]) -> plain object/str
+            df[col] = df[col].astype(object)
     return df
 
 
