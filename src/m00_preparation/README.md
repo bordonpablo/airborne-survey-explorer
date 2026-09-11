@@ -76,7 +76,7 @@ For each processed flight the script:
    only exists to drop gross outliers, not to enforce line-quality tolerance, so it
    won't discard points that are still legitimately part of the line but exceed the
    QC tolerance. Leave `turn_filter_m` unset in `project.yaml` to disable this step.
-5. Saves to `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet`
+5. Saves to `data/interim/<campaign>/<run_name>/m00/<date>/flight_XXXXX_prepared.parquet`
 
 A snapshot of the active `project.yaml` is saved to `data/interim/<campaign>/<run_name>/config.yaml`
 at the start of each run so that results are always reproducible.
@@ -162,8 +162,13 @@ Exports the `selected=True` rows to `outputs/<campaign>/<run_name>/m00/selected_
 a GeoPackage, a CSV, and a Line-tagged `.xyz` importable in Oasis Montaj.
 
 ```powershell
-python -m src.m00_preparation.export_selected
+python -m src.m00_preparation.export_selected              # everything
+python -m src.m00_preparation.export_selected production   # line_id 1xxxx only
+python -m src.m00_preparation.export_selected tielines      # line_id 3xxxx only
 ```
+
+Filtered runs get a filename suffix (`..._production.gpkg`, `..._tielines.gpkg`, ...)
+so they don't overwrite the full export.
 
 ### Mixing flights from different run_names (manual)
 
@@ -196,7 +201,7 @@ covers that line more cleanly — the manual workaround is:
 ### Viewing a parquet without QGIS
 
 ```powershell
-python -c "import pandas as pd; df = pd.read_parquet('data/interim/Mongolia_2022/full_campaign/22.04.2022/flight_00447_prepared.parquet'); print(df.shape); print(df.head(10))"
+python -c "import pandas as pd; df = pd.read_parquet('data/interim/Mongolia_2022/full_campaign/m00/22.04.2022/flight_00447_prepared.parquet'); print(df.shape); print(df.head(10))"
 ```
 
 The **Parquet Explorer** extension in VS Code can also browse `.parquet` files directly.
@@ -208,7 +213,7 @@ The **Parquet Explorer** extension in VS Code can also browse `.parquet` files d
 | Path | Contents |
 |---|---|
 | `data/interim/<campaign>/<run_name>/config.yaml` | Config snapshot for reproducibility |
-| `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, one per flight |
+| `data/interim/<campaign>/<run_name>/m00/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, one per flight |
 | `data/interim/<campaign>/<run_name>/line_selection.csv` | Line selection table — input for M1 |
 | `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.gpkg` | GeoPackage for QGIS verification |
 | `outputs/<campaign>/<run_name>/m00/<date>/inspection/flight_X_line_Y.png` | Sensor profile plots per line |

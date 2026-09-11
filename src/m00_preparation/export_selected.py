@@ -20,7 +20,9 @@ in three formats for use outside this pipeline:
      reads natively, no plugin required on either side.
 
 Usage:
-    python -m src.m00_preparation.export_selected
+    python -m src.m00_preparation.export_selected              # everything
+    python -m src.m00_preparation.export_selected production   # line_id 1xxxx only
+    python -m src.m00_preparation.export_selected tielines      # line_id 3xxxx only
 """
 
 import sys
@@ -42,10 +44,15 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def load_selected_data(interim_root: Path) -> pd.DataFrame:
+def load_selected_data(interim_root: Path, line_type: str | None = None) -> pd.DataFrame:
     """
     Load valid rows for every (flight_id, line_id) marked selected=True in
     line_selection.csv, from the prepared parquets.
+
+    line_type : None (everything), 'production' (line_id 1xxxx) or
+                'tielines' (line_id 3xxxx) — matches TestSurveyNav.csv's own
+                numbering convention (production lines E-W spaced 250 m,
+                tie lines N-S spaced 1500 m).
     """
     sel_path = interim_root / 'line_selection.csv'
     if not sel_path.exists():
@@ -55,8 +62,13 @@ def load_selected_data(interim_root: Path) -> pd.DataFrame:
         )
     selection = pd.read_csv(sel_path, dtype={'flight_id': str, 'line_id': int})
     selection = selection[selection['selected'] == True]
+    if line_type == 'production':
+        selection = selection[selection['line_id'] // 10000 == 1]
+    elif line_type == 'tielines':
+        selection = selection[selection['line_id'] // 10000 == 3]
     if selection.empty:
-        raise ValueError("No rows are marked selected=True in line_selection.csv")
+        raise ValueError("No rows are marked selected=True in line_selection.csv"
+                          + (f" for line_type={line_type!r}" if line_type else ""))
 
     parts = []
     for _, row in selection.iterrows():
@@ -153,22 +165,29 @@ def write_xyz(df: pd.DataFrame, out_path: Path) -> None:
     print(f"Saved: {out_path}")
 
 
-def export_selected() -> None:
+def export_selected(line_type: str | None = None) -> None:
+    """
+    line_type : None (default, everything), 'production' or 'tielines' — see
+                load_selected_data(). Filtered runs get a filename suffix so
+                they never overwrite the full export.
+    """
     cfg = load_config()
     campaign = cfg['campaign']['name']
     run_name = cfg['campaign']['run_name']
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
     out_dir = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm00' / 'selected_export'
     out_dir.mkdir(parents=True, exist_ok=True)
+    suffix = f'_{line_type}' if line_type else ''
 
-    print(f"Campaign : {campaign}")
-    print(f"Run      : {run_name}")
+    print(f"Campaign  : {campaign}")
+    print(f"Run       : {run_name}")
+    print(f"Line type : {line_type or 'all (production + tielines)'}")
     print("Loading selected lines...")
-    df = load_selected_data(interim_root)
+    df = load_selected_data(interim_root, line_type)
     print(f"  {len(df):,} total valid rows across {df['line_id'].nunique()} lines")
 
     # ---- 1. GeoPackage -----------------------------------------------------
-    gpkg_path = out_dir / f'{campaign}_selected.gpkg'
+    gpkg_path = out_dir / f'{campaign}_selected{suffix}.gpkg'
     print("Building GeoPackage layers...")
     points = build_points(df)
     lines  = build_lines(df)
@@ -177,14 +196,18 @@ def export_selected() -> None:
     print(f"Saved: {gpkg_path}  (layers: selected_points, selected_lines)")
 
     # ---- 2. CSV --------------------------------------------------------------
-    csv_path = out_dir / f'{campaign}_selected.csv'
+    csv_path = out_dir / f'{campaign}_selected{suffix}.csv'
     df.to_csv(csv_path, index=False)
     print(f"Saved: {csv_path}  ({len(df):,} rows)")
 
     # ---- 3. Oasis Montaj-compatible XYZ ---------------------------------------
-    xyz_path = out_dir / f'{campaign}_selected.xyz'
+    xyz_path = out_dir / f'{campaign}_selected{suffix}.xyz'
     write_xyz(df, xyz_path)
 
 
 if __name__ == '__main__':
-    export_selected()
+    arg = sys.argv[1] if len(sys.argv) > 1 else None
+    if arg not in (None, 'production', 'tielines'):
+        print("Usage: python -m src.m00_preparation.export_selected [production|tielines]")
+        sys.exit(1)
+    export_selected(arg)

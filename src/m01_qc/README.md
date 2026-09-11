@@ -6,6 +6,11 @@ then look closer at any line that failed before deciding what enters Module 2.
 
 **Prerequisite**: `line_selection.csv` must already exist (Module 0, step 3).
 
+Like M0, everything here resolves paths from a single `run_name`
+(`config/project.yaml`) — see `src/m00_preparation/README.md` ("Mixing flights
+from different run_names") if a flight you need was prepared under a
+different run.
+
 ---
 
 ## Workflow
@@ -58,6 +63,15 @@ defines a threshold for. Nothing else is checked automatically.
 
 Thresholds come **only** from `TestSurveyNav.csv` — never from `config/project.yaml`.
 `pass_all` is what the console table and `line_selection.csv` decisions hinge on.
+
+**Not the same check as M0's `turn_filter_m`.** Module 0 (`config/project.yaml`,
+`line_editing.turn_filter_m`) only screens gross outliers — points hundreds/
+thousands of metres off the planned line (e.g. Wayp armed near the airport) —
+so a point can pass M0 and still fail here. `pass_cross_track` is the real,
+much stricter campaign spec (`CrossTrack` in `TestSurveyNav.csv`, e.g. 25 m),
+checked against the *whole selected line*, not per point. A line can have
+every point `line_valid=True` in M0 and still fail `pass_cross_track` in M1 —
+that's expected, it's what this module is for.
 
 ---
 
