@@ -172,31 +172,10 @@ so they don't overwrite the full export.
 
 ### Mixing flights from different run_names (manual)
 
-Everything in M0/M1 resolves paths from a single `run_name` (`config/project.yaml`)
-— `build_line_selection.py` and `m01_qc/run.py` only ever look inside that one
-run's `m00/` folder. There's no built-in way to pull one flight's parquet from a
-different run.
-
-If a specific flight needs different parameters (e.g. a different
-`line_editing.turn_filter_m`) than the rest of the campaign — because its real
-navigation deviation doesn't fit the campaign-wide value and no other flight
-covers that line more cleanly — the manual workaround is:
-
-1. Temporarily set the parameter you need in `config/project.yaml` under a
-   throwaway `run_name` (e.g. `test_002`) and run `prepare.py` for just that
-   flight: `python -m src.m00_preparation.prepare <date> <flight_id>`.
-2. Copy the resulting parquet into the real run's folder, overwriting the one
-   generated with the campaign-wide config:
-   `data/interim/<campaign>/<real_run_name>/m00/<date>/flight_<flight_id>_prepared.parquet`
-3. **Leave a note in that run's interim folder** recording which flight was
-   swapped in, from which throwaway run, with which parameter value, and why —
-   otherwise the flight silently stops matching the `config.yaml` snapshot
-   already saved there, and there's no other record of the exception. `data/interim/`
-   isn't tracked by git, so this note only lives locally; write it anyway, it's
-   for future-you.
-4. Re-running `prepare.py` for the whole campaign on the real run will
-   overwrite your manual copy back to the campaign-wide config — redo the copy
-   afterwards if that happens.
+Everything resolves paths from a single `run_name` — no built-in way to pull
+one flight's parquet from a different run. Workaround: generate it under a
+throwaway `run_name`, copy the parquet over manually, and leave a note in that
+run's interim folder saying which flight/parameter it came from.
 
 ### Viewing a parquet without QGIS
 
