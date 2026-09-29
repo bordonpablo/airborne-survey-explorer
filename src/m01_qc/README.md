@@ -66,12 +66,16 @@ Thresholds come **only** from `TestSurveyNav.csv` — never from `config/project
 
 **Not the same check as M0's `turn_filter_m`.** Module 0 (`config/project.yaml`,
 `line_editing.turn_filter_m`) only screens gross outliers — points hundreds/
-thousands of metres off the planned line (e.g. Wayp armed near the airport) —
-so a point can pass M0 and still fail here. `pass_cross_track` is the real,
+thousands of metres off the planned line (e.g. Wayp armed near the airport, or
+a turn that briefly re-arms mid-line) — so its job is just to decide whether a
+point belongs to the line segment at all, not how well-flown that segment is.
+A point can pass M0 and still fail here. `pass_cross_track` is the real,
 much stricter campaign spec (`CrossTrack` in `TestSurveyNav.csv`, e.g. 25 m),
-checked against the *whole selected line*, not per point. A line can have
-every point `line_valid=True` in M0 and still fail `pass_cross_track` in M1 —
-that's expected, it's what this module is for.
+checked against the *whole selected line*, not per point — one bad excursion
+anywhere on the line is enough to fail it. A line can have every point
+`line_valid=True` in M0 and still fail `pass_cross_track` in M1 — that's
+expected, it's what this module is for: M0 answers "does this point belong to
+the line," M1 answers "was the line flown well enough to use."
 
 ---
 
