@@ -143,9 +143,9 @@ Rows with blank `Wayp` (transits, turns) are retained but flagged with `line_id 
 **Sequence**:
 1. GNSS lag correction
 2. Diurnal correction (Tagesgang)
-3. Heading correction
-4. Average of the two magnetometers
-5. IGRF removal (IGRF-13 model)
+3. IGRF removal (IGRF-13 model)
+4. Heading correction
+5. Average of the two magnetometers
 6. Levelling with tie lines
 7. Micro-levelling (decorrugation)
 

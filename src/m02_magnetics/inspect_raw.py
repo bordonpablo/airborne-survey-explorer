@@ -15,9 +15,9 @@ Column reference
 Mag1, Mag2   : raw total-field readings from the two scalar magnetometers (nT)
 Mag1C, Mag2C : compensated field — aircraft interference removed by the onboard
                FOM/compensation system during flight (nT)
-MagL         : raw gradient between the two sensors: (Mag1 − Mag2) / 10.56 exactly
-               (checked on two flights); unit not documented
-MagLC        : compensated gradient; close to (Mag1C − Mag2C) / 12.9, not exact
+MagL         : raw gradient between the two sensors (nT/m): (Mag1 − Mag2) / 10.56
+               exactly (checked on two flights). Specialist name: Mag_Grad
+MagLC        : compensated gradient (nT/m). Specialist name: Mag_Grad_C
 Mag1D, Mag2D : 4th difference of Mag1 / Mag2 as recorded by the system (noise of
                each sensor); plotted as recorded, not recomputed
 Ralt         : radar altimeter — height above ground, in FEET in the raw data
@@ -139,7 +139,7 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
         ax.annotate(f'std(MagLC) = {std_lc:.2f} nT', xy=(0.02, 0.97),
                     xycoords='axes fraction', va='top', fontsize=8, color='seagreen')
 
-    ax.set_ylabel('Gradient (as recorded)')
+    ax.set_ylabel('Gradient (nT/m)')
     ax.legend(fontsize=8, loc='upper right')
     ax.grid(True, alpha=0.3)
 
@@ -292,8 +292,8 @@ _MAP_COLS = [
     ('Mag1C', 'Mag1C — Compensated total field (nT)',       False),
     ('Mag2',  'Mag2 — Raw total field (nT)',                False),
     ('Mag2C', 'Mag2C — Compensated total field (nT)',       False),
-    ('MagL',  'MagL — Raw gradient (as recorded)',          True),
-    ('MagLC', 'MagLC — Compensated gradient (as recorded)', True),
+    ('MagL',  'MagL — Raw gradient (nT/m)',          True),
+    ('MagLC', 'MagLC — Compensated gradient (nT/m)', True),
     ('Mag1D', 'Mag1D — 4th difference of Mag1 (as recorded)', True),
     ('Mag2D', 'Mag2D — 4th difference of Mag2 (as recorded)', True),
 ]
@@ -349,7 +349,7 @@ def graficar_mapas_campo(on_line: pd.DataFrame, flight_id: str, out_path: Path) 
             sc = ax.scatter(valid['Xgps'], valid['Ygps'], c=valid[col],
                             s=0.5, cmap=cmap, vmin=vmin, vmax=vmax, rasterized=True)
             cb = plt.colorbar(sc, ax=ax, shrink=0.8)
-            cb.set_label('nT' if r == 0 else 'as recorded', fontsize=7)
+            cb.set_label({'Mag1': 'nT', 'MagL': 'nT/m'}.get(cols[0], 'as recorded'), fontsize=7)
             cb.ax.tick_params(labelsize=6)
             ax.set_aspect(aspect)
             ax.set_title(titles[col], fontsize=8, pad=4)

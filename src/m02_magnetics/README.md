@@ -29,17 +29,21 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 
 ## Correction order
 
-| Step | Script | Description |
-|---|---|---|
-| 0 | `inspect_raw.py` | Visual inspection of raw vs compensated signal before any correction |
-| 1 | `lag.py` | Estimate GPS–magnetometer lag by cross-correlation of E/W line pairs |
-| 2 | `lag.py` | Apply lag correction (only if decision = LAG_SIGNIFICANT) |
-| 3 | `diurnal.py` | Subtract base-station diurnal variation interpolated to flight time |
-| 4 | `igrf.py` | ✅ Remove IGRF-13 reference field (ppigrf, input: lon, lat, alt km, UTC date) |
-| 5 | `heading.py` | ✅ Empirical heading correction — DC offset estimated from mean difference between E and W lines |
-| 6 | `average_sensors.py` | ✅ Combine Mag1 and Mag2 — fourth-difference noise test; discard if one sensor > 2× noisier |
-| 7 | `levelling.py` | ✅ Crossover DC offset per production line (tie lines as reference). Eastern edge limited by 5 missing ties — see specialist report. |
-| 8 | `microlevelling.py` | ✅ Along-line minus across-line smooth — corrugation removed, produces `Mag_Final` |
+Column names follow the specialist's delivery (`data/reference/magnetics.ddf`); the
+mapping to the aircraft's names is in [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
+The chain starts from `Mag1C` / `Mag2C` (compensated in flight). Step 0 is only an inspection, not a correction.
+
+| Step | Script | Description | Output column(s) |
+|---|---|---|---|
+| 0 | `inspect_raw.py` | Visual inspection of the columns the aircraft delivers, before any correction | — |
+| 1 | `lag.py` | Estimate GPS–magnetometer lag by cross-correlation of E/W line pairs | — (report only) |
+| 2 | `lag.py` | Apply lag correction (only if decision = LAG_SIGNIFICANT). Shifts the GPS positions; no magnetic column changes | `Xgps`, `Ygps`, `Zgps` (shifted), `lag_applied` |
+| 3 | `diurnal.py` | Subtract base-station diurnal variation interpolated to flight time | `Mag1_Diurnal`, `Mag2_Diurnal` |
+| 4 | `igrf.py` | ✅ Remove IGRF-13 reference field (ppigrf, input: lon, lat, alt km, UTC date) | `Mag1_IGRF`, `Mag2_IGRF` |
+| 5 | `heading.py` | ✅ Empirical heading correction — DC offset estimated from mean difference between E and W lines | `Mag1_IGRF_head`, `Mag2_IGRF_head` |
+| 6 | `average_sensors.py` | ✅ Combine Mag1 and Mag2 — plain average; only the quieter sensor if the other is > 2× noisier (4th-difference noise test) | `Mag_IGRF_head`, `sensor_used` |
+| 7 | `levelling.py` | ✅ Crossover DC offset per production line (tie lines as reference). Eastern edge limited by 5 missing ties — see specialist report. | `Mag_IGRF_head_level` |
+| 8 | `microlevelling.py` | ✅ Along-line minus across-line smooth — corrugation removed | `Mag_Final` |
 
 ---
 
@@ -80,7 +84,7 @@ The consolidated map and GeoPackage are only generated when running without argu
 | Panel | Columns | Description |
 |---|---|---|
 | 1 — Total field | `Mag1`, `Mag1C`, `Mag2`, `Mag2C` | Raw vs compensated for each sensor. `Mag1C`/`Mag2C` = aircraft interference removed by the onboard compensation system during flight. |
-| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two sensors. `MagLC` = compensated gradient. Unit and the meaning of 10.56 are not documented. |
+| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two sensors (specialist: `Mag_Grad`, nT/m). `MagLC` = compensated gradient (specialist: `Mag_Grad_C`, nT/m). |
 | 3 — 4th difference | `Mag1D`, `Mag2D` | 4th difference of `Mag1` and `Mag2` as recorded by the system: the noise of each sensor along the line. Plotted as recorded, not recomputed. |
 | 4 — Attitude | `Roll`, `Pitch`, `Yaw` | Aircraft orientation. Used to diagnose heading-dependent noise. |
 | 5 — Altimetry | `Ralt`, `Lalt` | Radar altimeter (feet in the raw data, converted to m) and laser altimeter (m). Compared against the nominal drape altitude. |
@@ -150,7 +154,7 @@ df_ref = read_specialist_data(
     'data/reference/Mongolia_2022.dat',
     'data/reference/Mongolia_2022.ddf',
 )
-stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compensated')
+stats = compare_columns(df_ours, 'Mag1C', df_ref, 'Mag1_C', label='Mag1C compensated')
 ```
 
 ---
