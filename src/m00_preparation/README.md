@@ -186,6 +186,20 @@ The **Parquet Explorer** extension in VS Code can also browse `.parquet` files d
 
 ---
 
+## What matters and what is temporary
+
+**Important (used by the next modules):**
+- `m00/<date>/flight_XXXXX_prepared.parquet` — the processed data.
+- `line_selection.csv` — which line of which flight enters M1.
+- `config.yaml` — snapshot of the settings used.
+
+**Temporary, for visualisation only (nothing reads them):**
+- `<date>.gpkg` and `<date>_light.gpkg` (`export_qgis`) — to check in QGIS.
+- `inspection/*.png` (`inspect_segment`) — to check how each line was flown.
+- `selected_export/` (`export_selected`) — copy for Oasis Montaj or QGIS.
+
+The temporary files can be regenerated from the parquets and `line_selection.csv`.
+
 ## Outputs
 
 | Path | Contents | Script |
