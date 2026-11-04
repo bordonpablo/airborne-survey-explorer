@@ -1,6 +1,6 @@
 campaign:
-  name: "Mongolia_2022_full_campaign_Ground_Truth"
-  run_name: "test_001"            # identifies the processing variant; used for interim/ and outputs/ subfolders
+  name: "Mongolia_2022_full_campaign_Ground_Truth_for_students"
+  run_name: "Mithun_ABM"            # identifies the processing variant; used for interim/ and outputs/ subfolders
   raw_data_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022"
   survey_nav_path: "data/raw/Mongolia_2022/Daten_Nisleg_2022/TestSurveyNav.csv"
   start_date: "2022-04-24"

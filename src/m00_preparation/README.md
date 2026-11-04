@@ -65,17 +65,16 @@ The flight ID is the 5-digit number from the corresponding MAG file
 For each processed flight the script:
 1. Reads MAG, GGA and SPC files
 2. Synchronises the three sensors onto the GGA time axis (`merge_asof`)
-3. Clips each survey line to its planned A→B extent using along-track projection
-   (points outside the planned start/end are flagged `line_valid = False`)
-4. Filters points farther than `line_editing.turn_filter_m` (manual, `project.yaml`)
-   from the planned line axis, also flagging them `line_valid = False`. This catches
-   points where Wayp was armed too early/late — e.g. still near the airport, far off
-   to the side of the line — that step 3 alone would miss because their along-track
-   position still falls inside the planned extent. This is deliberately a separate,
-   looser number from `CrossTrack` in `TestSurveyNav.csv` (M1's QC tolerance) — it
-   only exists to drop gross outliers, not to enforce line-quality tolerance, so it
-   won't discard points that are still legitimately part of the line but exceed the
-   QC tolerance. Leave `turn_filter_m` unset in `project.yaml` to disable this step.
+3. Clips each survey line to its planned A→B extent. It only looks *along* the line:
+   a point is kept if its position falls between the start (A) and the end (B).
+   Points outside that range are flagged `line_valid = False`.
+4. Flags as `line_valid = False` the points that are too far to the *side* of the planned
+   line. This happens when Wayp was switched on too early or too late, for example near
+   the airport. Step 3 cannot catch these: a point far to the side can still fall between
+   A and B along the line. The maximum distance is `line_editing.turn_filter_m` in
+   `project.yaml`. It is looser than `CrossTrack` (M1): it only removes clearly wrong
+   points, the fine quality check is done in M1. If `turn_filter_m` is empty, this step
+   is skipped.
 5. Saves to `data/interim/<campaign>/<run_name>/m00/<date>/flight_XXXXX_prepared.parquet`
 
 A snapshot of the active `project.yaml` is saved to `data/interim/<campaign>/<run_name>/config.yaml`
@@ -189,11 +188,11 @@ The **Parquet Explorer** extension in VS Code can also browse `.parquet` files d
 
 ## Outputs
 
-| Path | Contents |
-|---|---|
-| `data/interim/<campaign>/<run_name>/config.yaml` | Config snapshot for reproducibility |
-| `data/interim/<campaign>/<run_name>/m00/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, one per flight |
-| `data/interim/<campaign>/<run_name>/line_selection.csv` | Line selection table — input for M1 |
-| `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.gpkg` | GeoPackage for QGIS verification |
-| `outputs/<campaign>/<run_name>/m00/<date>/inspection/flight_X_line_Y.png` | Sensor profile plots per line |
-| `outputs/<campaign>/<run_name>/m00/selected_export/<campaign>_selected.{gpkg,csv,xyz}` | Selected-lines deliverables (GIS, CSV, Oasis Montaj) |
+| Path | Contents | Script |
+|---|---|---|
+| `data/interim/<campaign>/<run_name>/config.yaml` | Config snapshot for reproducibility | `prepare.py` |
+| `data/interim/<campaign>/<run_name>/m00/<date>/flight_XXXXX_prepared.parquet` | Synchronised DataFrame, one per flight | `prepare.py` |
+| `data/interim/<campaign>/<run_name>/line_selection.csv` | Line selection table — input for M1 | `build_line_selection.py` |
+| `outputs/<campaign>/[<date>/[<flight_id>/]]<run_name>/<scope>.gpkg` | GeoPackage for QGIS verification | `export_qgis.py` |
+| `outputs/<campaign>/<run_name>/m00/<date>/inspection/flight_X_line_Y.png` | Sensor profile plots per line | `inspect_segment.py` |
+| `outputs/<campaign>/<run_name>/m00/selected_export/<campaign>_selected.{gpkg,csv,xyz}` | Selected-lines deliverables (GIS, CSV, Oasis Montaj) | `export_selected.py` |
