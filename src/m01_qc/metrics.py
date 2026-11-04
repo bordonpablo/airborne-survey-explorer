@@ -22,6 +22,8 @@ import pandas as pd
 from pathlib import Path
 from pyproj import Transformer
 
+from src.m00_preparation.read_survey_nav import RALT_TO_M
+
 
 def _cross_track_m(df: pd.DataFrame, A: np.ndarray, unit: np.ndarray,
                    transformer: Transformer) -> np.ndarray:
@@ -111,7 +113,7 @@ def compute_segment_metrics(
 
     # ---- Altitude (pass/fail: mean within TestSurveyNav band) --------------
     if 'Ralt' in seg.columns:
-        ralt = seg['Ralt'].dropna().values
+        ralt = seg['Ralt'].dropna().values * RALT_TO_M   # Ralt is in feet
         m['ralt_mean_m']    = round(float(np.mean(ralt)), 1)
         m['pass_altitude']  = ralt_min <= m['ralt_mean_m'] <= ralt_max
     else:

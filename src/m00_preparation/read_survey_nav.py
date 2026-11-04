@@ -15,6 +15,7 @@ import pandas as pd
 from pathlib import Path
 
 _FT_TO_M = 0.3048
+RALT_TO_M = _FT_TO_M   # MAG's Ralt/Raltr are in feet (Ralt/Lalt ≈ 3.28 in the data); Lalt is in metres
 
 
 def read_survey_thresholds(path: Path | str) -> dict:

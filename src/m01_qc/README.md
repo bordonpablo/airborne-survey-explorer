@@ -1,87 +1,54 @@
 # Module 1 — Quality Control
 
-Reads the selected lines from `line_selection.csv`, checks each one against the
-3 thresholds defined in `TestSurveyNav.csv`, and saves a pass/fail report. You
-then look closer at any line that failed before deciding what enters Module 2.
+Checks **how the aircraft flew** each selected line against the thresholds in
+`TestSurveyNav.csv` (altitude, distance off line, speed). It does not judge the
+geophysical sensors: magnetometer and spectrometer quality is looked at in
+Module 2 / 3.
 
-**Prerequisite**: `line_selection.csv` must already exist (Module 0, step 3).
-
-Like M0, everything here resolves paths from a single `run_name`
-(`config/project.yaml`) — see `src/m00_preparation/README.md` ("Mixing flights
-from different run_names") if a flight you need was prepared under a
-different run.
-
----
+Prerequisite: `line_selection.csv` (Module 0, step 3).
 
 ## Workflow
 
-**1. Scan everything**
+1. Scan everything:
 
-```powershell
-python -m src.m01_qc.run
-```
+   ```powershell
+   python -m src.m01_qc.run
+   ```
 
-Prints a pass/fail table to the console and saves the full report to
-`outputs/<campaign>/<run_name>/m01/qc_report.csv`. Narrow the scan with
-`python -m src.m01_qc.run 22.04.2022` (one day) or `... 22.04.2022 00427` (one flight).
+   One day: `... run 22.04.2022`; one flight: `... run 22.04.2022 00427`.
+   Prints a pass/fail table and saves `outputs/<campaign>/<run_name>/m01/qc_report.csv`.
 
-**2. Look closer at a line that failed**
+2. Look closer at a failed line:
 
-```powershell
-python -m src.m01_qc.run 22.04.2022 00427 10010
-```
+   ```powershell
+   python -m src.m01_qc.run 22.04.2022 00427 10010
+   ```
 
-Pops up and saves a 6-panel snapshot for that line — this is the "is the
-recorded signal any good" view (M0's `inspect_segment` already answered "was
-it flown correctly"): GPS track, altitude (vs `RadarMin`/`RadarMax`),
-Roll/Pitch, Yaw, Mag1/Mag2 (with a noise/spike readout), and radiometric
-(Sk/Su/Sth) and VLF panels that flag in red when a channel looks flat or
-missing — usually a sign that sensor wasn't actually recording on this line.
-None of this drives pass/fail (no TestSurveyNav threshold exists for it) —
-it's here so you can eyeball what's going on. If SPC or VLF look dead, the
-same warning is also printed to the console, not just drawn on the panel.
+   6-panel snapshot: GPS track, altitude, Roll/Pitch, Yaw, Mag1/Mag2 (noise/spike
+   readout), SPC and VLF (red when a channel looks flat or missing). Informational
+   only: it does not affect pass/fail.
 
-**3. Decide**
+3. Decide: set `selected = False` in `line_selection.csv` for lines that should
+   not enter Module 2. A failed line that is the only flight for its `line_id`
+   can be kept; note why.
 
-Edit `line_selection.csv` and set `selected = False` for lines that fail QC and
-shouldn't enter Module 2. A line that fails one metric but is the *only* flight
-covering that `line_id` can still be kept — just note why.
+## Pass/fail
 
----
+| Flag | Data used | Passes when... | Threshold |
+|---|---|---|---|
+| `pass_altitude` | `Ralt` (in feet in the raw data, converted to m) | mean within `[RadarMin, RadarMax]` | 82.3 – 100.6 m |
+| `pass_cross_track` | `Xgps`, `Ygps` | max deviation from planned line ≤ `CrossTrack` | 25 m |
+| `pass_speed` | `Xgps`, `Ygps`, `M3clk` | mean within `[GroundSpeedMin, GroundSpeedMax]` | 110 – 130 km/h |
+| `pass_all` | | all three pass | |
 
-## What "pass/fail" means
+Thresholds come only from `TestSurveyNav.csv`, never from `project.yaml`.
 
-These are the only 3 metrics computed — the ones `TestSurveyNav.csv` actually
-defines a threshold for. Nothing else is checked automatically.
-
-| Flag | Passes when... |
-|---|---|
-| `pass_altitude` | mean radar altitude is within `[RadarMin, RadarMax]` |
-| `pass_cross_track` | max deviation from the planned line ≤ `CrossTrack` |
-| `pass_speed` | mean ground speed is within `[SpeedMin, SpeedMax]` |
-| `pass_all` | all three above pass |
-
-Thresholds come **only** from `TestSurveyNav.csv` — never from `config/project.yaml`.
-`pass_all` is what the console table and `line_selection.csv` decisions hinge on.
-
-**Not the same check as M0's `turn_filter_m`.** Module 0 (`config/project.yaml`,
-`line_editing.turn_filter_m`) only screens gross outliers — points hundreds/
-thousands of metres off the planned line (e.g. Wayp armed near the airport, or
-a turn that briefly re-arms mid-line) — so its job is just to decide whether a
-point belongs to the line segment at all, not how well-flown that segment is.
-A point can pass M0 and still fail here. `pass_cross_track` is the real,
-much stricter campaign spec (`CrossTrack` in `TestSurveyNav.csv`, e.g. 25 m),
-checked against the *whole selected line*, not per point — one bad excursion
-anywhere on the line is enough to fail it. A line can have every point
-`line_valid=True` in M0 and still fail `pass_cross_track` in M1 — that's
-expected, it's what this module is for: M0 answers "does this point belong to
-the line," M1 answers "was the line flown well enough to use."
-
----
+M0's `turn_filter_m` is a different, looser check: it only decides whether a point
+belongs to the line. `pass_cross_track` is the real tolerance, applied to the whole line.
 
 ## Outputs
 
 | Path | Contents |
 |---|---|
 | `outputs/<campaign>/<run_name>/m01/qc_report.csv` (or `<date>_qc_report.csv` / `<date>_<flight>_qc_report.csv` for a narrower scan) | One row per line: `ralt_mean_m`, `cross_track_max_m`, `speed_mean_kmh`, and the 4 pass/fail flags |
-| `outputs/<campaign>/<run_name>/m01/<date>/flight_X_line_Y_detail.png` | Step-2 snapshot, generated automatically when you run detail mode |
+| `outputs/<campaign>/<run_name>/m01/<date>/flight_X_line_Y_detail.png` | Detail snapshot from step 2 |

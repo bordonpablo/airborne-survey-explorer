@@ -32,7 +32,7 @@ from pyproj import Transformer
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.m00_preparation.read_survey_nav import read_survey_nav, read_survey_thresholds
+from src.m00_preparation.read_survey_nav import read_survey_nav, read_survey_thresholds, RALT_TO_M
 from src.m01_qc.metrics import _cross_track_m, _ground_speed_kmh
 
 
@@ -124,8 +124,8 @@ def print_summary(on_line: pd.DataFrame, flight_id: str, date: str) -> None:
         rows.append({
             'line_id':    int(lid),
             'n_points':   len(seg),
-            'ralt_mean':  round(seg['Ralt'].mean(), 1) if 'Ralt' in seg.columns else None,
-            'ralt_std':   round(seg['Ralt'].std(),  1) if 'Ralt' in seg.columns else None,
+            'ralt_mean':  round(seg['Ralt'].mean() * RALT_TO_M, 1) if 'Ralt' in seg.columns else None,
+            'ralt_std':   round(seg['Ralt'].std() * RALT_TO_M,  1) if 'Ralt' in seg.columns else None,
         })
     print(f"\nFlight {flight_id} — {date}  ({on_line['line_id'].nunique()} lines)\n")
     print(pd.DataFrame(rows).to_string(index=False))
@@ -169,7 +169,7 @@ def plot_line(
     # ---- Panel 1: Radar altitude (RadarHeight/RadarMin/RadarMax) -----------
     ax = axes[0]
     if 'Ralt' in seg.columns:
-        ax.plot(dist, seg['Ralt'].values, color='steelblue', linewidth=0.8, label='Ralt')
+        ax.plot(dist, seg['Ralt'].values * RALT_TO_M, color='steelblue', linewidth=0.8, label='Ralt')
         r_height = survey_thresholds.get('radar_height_m')
         r_min    = survey_thresholds.get('radar_min_m')
         r_max    = survey_thresholds.get('radar_max_m')

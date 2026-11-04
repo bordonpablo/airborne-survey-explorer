@@ -15,6 +15,8 @@ import matplotlib.gridspec as gridspec
 from matplotlib.lines import Line2D
 from pathlib import Path
 
+from src.m00_preparation.read_survey_nav import RALT_TO_M
+
 
 # Only the three metrics with thresholds from TestSurveyNav get pass/fail columns.
 # All other metrics are informative values shown in the report CSV but not here.
@@ -223,7 +225,7 @@ def detail_figure(
 
     # ---- Radar altitude ----------------------------------------------------
     if 'Ralt' in seg.columns:
-        ax_ralt.plot(dist, seg['Ralt'].values, color='steelblue',
+        ax_ralt.plot(dist, seg['Ralt'].values * RALT_TO_M, color='steelblue',
                      linewidth=0.8, label='Ralt')
     if 'Lalt' in seg.columns:
         ax_ralt.plot(dist, seg['Lalt'].values, color='teal',
