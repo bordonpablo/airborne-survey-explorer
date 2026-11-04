@@ -16,8 +16,8 @@ Mag1, Mag2   : raw total-field readings from the two scalar magnetometers (nT)
 Mag1C, Mag2C : compensated field — aircraft interference removed by the onboard
                FOM/compensation system during flight (nT)
 MagL         : raw gradient between the two sensors (nT/m): (Mag1 − Mag2) / 10.56
-               exactly (checked on two flights). Specialist name: Mag_Grad
-MagLC        : compensated gradient (nT/m). Specialist name: Mag_Grad_C
+               exactly (checked on two flights)
+MagLC        : compensated gradient (nT/m)
 Mag1D, Mag2D : 4th difference of Mag1 / Mag2 as recorded by the system (noise of
                each sensor); plotted as recorded, not recomputed
 Ralt         : radar altimeter — height above ground, in FEET in the raw data

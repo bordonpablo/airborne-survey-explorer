@@ -5,32 +5,23 @@ The order is fixed: each correction assumes the previous one has already been ap
 
 ---
 
-## Two sets of names
+## Columns delivered by the aircraft
 
-- **Aircraft names**: the columns of the MAG file, as they arrive in the M0 parquet
-  (`Mag1C`, `MagL`, ...).
-- **Specialist names**: the columns of the specialist's delivery
-  (`data/reference/magnetics.ddf`: `Mag1_C`, `Mag_Grad`, ...). Every column the chain
-  creates (`Mag1_Diurnal`, ..., `Mag_Final`) uses these names, so our results can be
-  compared one-to-one with `data/reference/`.
+These come from the MAG file and keep the aircraft's names; they arrive as they are in
+the M0 parquet. Every column the chain creates later has its own name (next section).
 
-Where a column exists in both, it is the same data (checked on flight 00456, 51,585
-matched samples: median difference 0.000 nT, ratio 1.000).
-
-| Aircraft (MAG file / M0 parquet) | Specialist (`magnetics.ddf`) | What it is |
-|---|---|---|
-| `Mag1`, `Mag2` | `Mag1_raw`, `Mag2_raw` | Raw total field of sensor 1 and 2 (nT) |
-| `Mag1C`, `Mag2C` | `Mag1_C`, `Mag2_C` | Same field after the in-flight compensation (**C = compensated**) |
-| `MagL` | `Mag_Grad` | Raw gradient between the two sensors (nT/m) |
-| `MagLC` | `Mag_Grad_C` | Compensated gradient (nT/m) |
-| `Mag1D`, `Mag2D` | — | 4th difference of `Mag1` / `Mag2` as recorded; noise of each sensor. Not in the specialist delivery |
+| Column | What it is |
+|---|---|
+| `Mag1`, `Mag2` | Raw total field of sensor 1 and 2 (nT), before compensation |
+| `Mag1C`, `Mag2C` | Same field after the in-flight compensation (**C = compensated**). **The chain starts from these** |
+| `MagL` | Raw gradient between the two sensors (nT/m): exactly `(Mag1 − Mag2) / 10.56` (checked on two flights); 10.56 is probably the sensor separation in metres |
+| `MagLC` | Compensated gradient (nT/m) |
+| `Mag1D`, `Mag2D` | 4th difference of `Mag1` / `Mag2` as recorded by the system: noise of each sensor |
 
 Notes:
 
 - `C` always means compensated. The lag correction does not touch any magnetic
   column: it shifts the GPS positions (see step 1–2).
-- `MagL` is exactly `(Mag1 − Mag2) / 10.56` (checked on two flights); 10.56 is probably the
-  separation between the sensors in metres (inference). `MagLC` has no such simple formula.
 - `MagL`, `MagLC`, `Mag1D` and `Mag2D` are not used by any correction step.
   `average_sensors.py` computes its own 4th-difference noise.
 
@@ -52,14 +43,13 @@ Plotting them: [src/m02_magnetics/README.md](../src/m02_magnetics/README.md), St
 
 Both sensors go through the chain in parallel (`Mag1_…` and `Mag2_…`) until step 6
 combines them. The in-flight compensation already happened in the aircraft (`Mag1C` /
-`Mag2C`); the chain starts from those. In code, the input of step 3 is read with the
-aircraft names. Step numbers match the table in
+`Mag2C`); the chain starts from those. Step numbers match the table in
 [src/m02_magnetics/README.md](../src/m02_magnetics/README.md), where step 0 is only the visual inspection.
 
 | Step | Input | Output column | What is removed |
 |------|-------|---------------|-----------------|
 | 1–2 | `Xgps`, `Ygps`, `Zgps` | same columns, shifted in time (+ `lag_applied`) | GPS–magnetometer timing lag. No magnetic column changes |
-| 3 | `Mag1C`, `Mag2C` (specialist: `Mag1_C`, `Mag2_C`) | **Mag1_Diurnal**, **Mag2_Diurnal** | Diurnal variation (ionospheric/magnetospheric noise, measured at base station) |
+| 3 | `Mag1C`, `Mag2C` | **Mag1_Diurnal**, **Mag2_Diurnal** | Diurnal variation (ionospheric/magnetospheric noise, measured at base station) |
 | 4 | Mag1_Diurnal, Mag2_Diurnal | **Mag1_IGRF**, **Mag2_IGRF** | Earth's main field (IGRF-13 model). **First time the result is a small anomaly (~±tens of nT)** |
 | 5 | Mag1_IGRF, Mag2_IGRF | **Mag1_IGRF_head**, **Mag2_IGRF_head** | Residual heading-dependent aircraft interference left by the in-flight compensation |
 | 6 | Mag1_IGRF_head, Mag2_IGRF_head | **Mag_IGRF_head** (+ `sensor_used`) | — (plain average of both sensors; only the quieter one if the other is more than 2× noisier) |

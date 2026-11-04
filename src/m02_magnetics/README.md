@@ -29,8 +29,8 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 
 ## Correction order
 
-Column names follow the specialist's delivery (`data/reference/magnetics.ddf`); the
-mapping to the aircraft's names is in [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
+The columns each step creates are listed below and explained in
+[docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 The chain starts from `Mag1C` / `Mag2C` (compensated in flight). Step 0 is only an inspection, not a correction.
 
 | Step | Script | Description | Output column(s) |
@@ -84,7 +84,7 @@ The consolidated map and GeoPackage are only generated when running without argu
 | Panel | Columns | Description |
 |---|---|---|
 | 1 — Total field | `Mag1`, `Mag1C`, `Mag2`, `Mag2C` | Raw vs compensated for each sensor. `Mag1C`/`Mag2C` = aircraft interference removed by the onboard compensation system during flight. |
-| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two sensors (specialist: `Mag_Grad`, nT/m). `MagLC` = compensated gradient (specialist: `Mag_Grad_C`, nT/m). |
+| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two sensors (nT/m). `MagLC` = compensated gradient (nT/m). |
 | 3 — 4th difference | `Mag1D`, `Mag2D` | 4th difference of `Mag1` and `Mag2` as recorded by the system: the noise of each sensor along the line. Plotted as recorded, not recomputed. |
 | 4 — Attitude | `Roll`, `Pitch`, `Yaw` | Aircraft orientation. Used to diagnose heading-dependent noise. |
 | 5 — Altimetry | `Ralt`, `Lalt` | Radar altimeter (feet in the raw data, converted to m) and laser altimeter (m). Compared against the nominal drape altitude. |
