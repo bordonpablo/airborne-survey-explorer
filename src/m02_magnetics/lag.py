@@ -408,6 +408,26 @@ def apply_lag(df: pd.DataFrame, lag_s: float) -> pd.DataFrame:
     return df
 
 
+def lag_effect(df: pd.DataFrame, lag_s: float,
+               cols: tuple[str, ...] = ('Mag1C', 'Mag2C')) -> tuple[pd.DataFrame, int]:
+    """
+    Cambio que produciría apply_lag en el valor magnético de cada punto (después − antes).
+
+    apply_lag asigna a la muestra i la posición de la muestra i+k, así que en la posición
+    original j el valor pasa a ser el de la muestra j−k. No modifica df.
+
+    Retorna (efecto, k): las filas de df ordenadas por M3clk, con sus posiciones originales
+    y una columna 'd_<col>' por columna magnética (nT), y el desplazamiento k en muestras.
+    """
+    df = df.sort_values('M3clk').reset_index(drop=True)
+    dt_s = df['M3clk'].diff().median() / 1000.0
+    k = int(round(lag_s / dt_s)) if np.isfinite(dt_s) and dt_s > 0 else 0
+    out = df[['flight_id', 'line_id', 'line_valid', 'Xgps', 'Ygps']].copy()
+    for c in cols:
+        out[f'd_{c}'] = df[c].shift(k) - df[c]
+    return out, k
+
+
 def plot_lag_diagnosis(
     seg_e: pd.DataFrame,
     seg_o: pd.DataFrame,

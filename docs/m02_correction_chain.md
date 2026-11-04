@@ -58,6 +58,46 @@ combines them. The in-flight compensation already happened in the aircraft (`Mag
 
 ---
 
+## Steps 1–2: GPS–magnetometer lag
+
+**What it is.** The magnetometer reports each value slightly late, so every reading is
+assigned to a position a little ahead along the flight direction. The same anomaly then
+appears shifted in opposite directions on lines flown in opposite directions.
+
+**How it is measured.** Only a line flown twice in opposite directions (same track, east
+and west) shows the effect without the geology getting in the way: neighbouring lines
+(250 m apart) differ because of the geology, not because of the lag. For each such line,
+the profile of both passes (mean of `Mag1C` and `Mag2C`) is put on the same easting grid
+and cross-correlated:
+
+    lag_s = k × step_m / (2 × v)
+
+`k` is the shift in samples that best aligns the two passes (searched within ±2 s),
+`step_m` the grid step (v × 0.1 s) and `v` the median ground speed (m/s). The two passes are
+displaced 2 × lag × v from each other, hence the 2. The magnetometers sit on the wingtips,
+10.56 m apart and on each side of the GPS: using the mean of the two cancels the lateral
+offset. The lag of the campaign is the median over all such lines.
+
+**Decision.** The tolerance is `(line_spacing_m / 4) / v`, with `line_spacing_m` from
+`project.yaml` (250 m → 62.5 m of position error, 1.64 s at 38 m/s):
+
+- `|lag| < tolerance` → `LAG_NEGLIGIBLE`: nothing is changed (`lag_applied = False`).
+- `|lag| ≥ tolerance` → `LAG_SIGNIFICANT`: the GPS positions are shifted by
+  `round(lag / 0.1 s)` samples; the last samples of each flight lose their position and are
+  marked `line_valid = False`.
+- No line flown in both directions → `LAG_UNKNOWN`: nothing is changed.
+
+**Result for Mongolia 2022 (`test_001`).** 5 lines were flown in both directions (4 with
+enough common track). Lags: +0.25, +0.20, +0.20 and 0.00 s; median 0.20 s, far below the
+1.64 s tolerance → `LAG_NEGLIGIBLE`. If applied (0.2 s ≈ 7.6 m), the value at a point would
+change by a median of 0.07 nT, below 0.9 nT in 95 % of the points, and 18 nT at most.
+
+**Limits.** Only 4 pairs, with a resolution of 0.05 s. It assumes east–west lines. A fixed
+offset between the sensors and the GPS along the flight direction cannot be told apart from
+a timing lag.
+
+---
+
 ## Why this order
 
 - **Diurnal before IGRF**: the diurnal signal can be tens of nT — if not removed first, it biases the IGRF residual.

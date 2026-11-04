@@ -52,7 +52,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.m02_magnetics.lag import estimate_lag, apply_lag, plot_lag_diagnosis
+from src.m02_magnetics.lag import estimate_lag, apply_lag, plot_lag_diagnosis, lag_effect
 from src.m02_magnetics.diurnal import find_tagesgang, apply_diurnal
 from src.m02_magnetics.igrf import apply_igrf
 from src.m02_magnetics.heading import estimate_heading_bias, apply_heading
@@ -195,6 +195,88 @@ def plot_lag_diagnostic(
 
     out_path = out_root / f"lag_diagnosis_line{int(fe['line_id'])}_line{int(fo['line_id'])}.png"
     plot_lag_diagnosis(seg_e, seg_o, lag_result['lag_median_s'], out_path, paso_m)
+
+
+def plot_lag_effect(
+    selected: pd.DataFrame,
+    interim_root: Path,
+    lag_result: dict,
+    out_root: Path,
+) -> None:
+    """
+    Map of how much the lag correction would change the magnetic value at each point
+    (after − before, nT) for Mag1C and Mag2C, and the percentiles of that change.
+
+    It uses the estimated lag even when the decision is LAG_NEGLIGIBLE, so the size of
+    the effect can be judged; the data are not modified. The percentiles are added to
+    lag_report.json.
+    """
+    lag_s = lag_result.get('lag_median_s', 0.0)
+    cols  = ['Mag1C', 'Mag2C']
+    need  = ['flight_id', 'line_id', 'line_valid', 'M3clk', 'Xgps', 'Ygps'] + cols
+
+    parts, k = [], 0
+    for (date, fid), rows in selected.groupby(['date', 'flight_id']):
+        pq = interim_root / 'm00' / date / f"flight_{fid}_prepared.parquet"
+        if not pq.exists():
+            continue
+        eff, k = lag_effect(pd.read_parquet(pq, columns=need), lag_s, tuple(cols))
+        eff = eff[eff['line_id'].isin(rows['line_id']) & eff['line_valid']]
+        parts.append(eff.dropna(subset=['Xgps', 'Ygps']))
+    if not parts:
+        return
+
+    if k == 0:
+        print(f"  Lag effect: {lag_s:+.3f} s is below one sample (0.1 s); nothing would change.")
+        return
+    eff = pd.concat(parts, ignore_index=True)
+
+    stats = {}
+    print(f"\n  Effect of shifting {k} samples ({lag_s:+.3f} s), |after − before| per point:")
+    for c in cols:
+        a = eff[f'd_{c}'].abs().dropna()
+        stats[c] = {
+            'median_nT': float(a.median()),
+            'p95_nT':    float(a.quantile(0.95)),
+            'p99_nT':    float(a.quantile(0.99)),
+            'max_nT':    float(a.max()),
+        }
+        print(f"    {c}: median {stats[c]['median_nT']:.2f} nT | p95 {stats[c]['p95_nT']:.2f} "
+              f"| p99 {stats[c]['p99_nT']:.2f} | max {stats[c]['max_nT']:.1f}")
+
+    report_path = out_root / 'lag_report.json'
+    if report_path.exists():
+        with open(report_path) as f:
+            report = json.load(f)
+        report['effect_k_samples'] = k
+        report['effect_nT'] = stats
+        with open(report_path, 'w') as f:
+            json.dump(report, f, indent=2)
+
+    vmax   = float(np.nanmax([eff[f'd_{c}'].abs().quantile(0.99) for c in cols]))
+    aspect = 1.0 / np.cos(np.radians(eff['Ygps'].mean()))
+    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
+    for ax, c in zip(axes, cols):
+        valid = eff[['Xgps', 'Ygps', f'd_{c}']].dropna()
+        valid = valid.iloc[np.argsort(valid[f'd_{c}'].abs().values)]   # largest changes on top
+        sc = ax.scatter(valid['Xgps'], valid['Ygps'], c=valid[f'd_{c}'], s=0.5,
+                        cmap='RdBu_r', vmin=-vmax, vmax=vmax, rasterized=True)
+        cb = plt.colorbar(sc, ax=ax, shrink=0.8)
+        cb.set_label('nT (after − before)', fontsize=8)
+        ax.set_aspect(aspect)
+        ax.set_title(f"{c}: median {stats[c]['median_nT']:.2f} nT, "
+                     f"max {stats[c]['max_nT']:.1f} nT", fontsize=10)
+        ax.set_xlabel('Longitude (°)', fontsize=8)
+        ax.set_ylabel('Latitude (°)', fontsize=8)
+        ax.grid(alpha=0.3)
+    fig.suptitle(f"Change in the magnetic value at each point if the lag were applied "
+                 f"({lag_s:+.3f} s = {k} samples; colour scale clipped at the 99th percentile)",
+                 fontsize=11)
+    plt.tight_layout()
+    out_path = out_root / 'lag_effect_map.png'
+    fig.savefig(out_path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print(f"  Lag effect map: {out_path.relative_to(PROJECT_ROOT)}")
 
 
 def export_step_output(
@@ -442,6 +524,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
         print(f"  Lag value    : {lag_result['lag_median_s']:+.3f} s")
 
         plot_lag_diagnostic(df_all, lag_result, out_root)
+        plot_lag_effect(selected, interim_root, lag_result, out_root)
         export_step_output(selected, interim_root, out_root,
                            '02_lag', ['Mag1C', 'Mag2C'])
     else:
