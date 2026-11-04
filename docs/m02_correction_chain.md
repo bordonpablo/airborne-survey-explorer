@@ -14,7 +14,7 @@ the M0 parquet. Every column the chain creates later has its own name (next sect
 |---|---|
 | `Mag1`, `Mag2` | Raw total field of sensor 1 and 2 (nT), before compensation |
 | `Mag1C`, `Mag2C` | Same field after the in-flight compensation (**C = compensated**). **The chain starts from these** |
-| `MagL` | Raw gradient between the two sensors (nT/m): exactly `(Mag1 − Mag2) / 10.56` (checked on two flights); 10.56 is probably the sensor separation in metres |
+| `MagL` | Raw gradient between the two sensors (nT/m): exactly `(Mag1 − Mag2) / 10.56` (checked on two flights); 10.56 m is the separation between the two wingtip sensors |
 | `MagLC` | Compensated gradient (nT/m) |
 | `Mag1D`, `Mag2D` | 4th difference of `Mag1` / `Mag2` as recorded by the system: noise of each sensor |
 

@@ -15,8 +15,8 @@ Column reference
 Mag1, Mag2   : raw total-field readings from the two scalar magnetometers (nT)
 Mag1C, Mag2C : compensated field — aircraft interference removed by the onboard
                FOM/compensation system during flight (nT)
-MagL         : raw gradient between the two sensors (nT/m): (Mag1 − Mag2) / 10.56
-               exactly (checked on two flights)
+MagL         : raw gradient between the two wingtip sensors (nT/m): (Mag1 − Mag2) / 10.56
+               exactly (checked on two flights); 10.56 m = distance between the sensors
 MagLC        : compensated gradient (nT/m)
 Mag1D, Mag2D : 4th difference of Mag1 / Mag2 as recorded by the system (noise of
                each sensor); plotted as recorded, not recomputed
@@ -235,7 +235,7 @@ def plot_summary(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
     nrows = (n + ncols - 1) // ncols
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(6 * ncols, 3 * nrows), squeeze=False)
-    fig.suptitle(f"Flight {flight_id} — Total field summary (all lines)", fontsize=12)
+    fig.suptitle(f"Flight {flight_id} — Total field summary (all lines)", fontsize=12, y=0.995)
 
     for idx, lid in enumerate(line_ids):
         r, c = divmod(idx, ncols)
@@ -245,14 +245,14 @@ def plot_summary(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
         )
         dist = _cumulative_distance_m(seg)
 
-        if _has_data(seg, 'Mag1'):
-            ax.plot(dist, seg['Mag1'].values, color='#c0c0c0', linewidth=0.5)
-        if _has_data(seg, 'Mag1C'):
-            ax.plot(dist, seg['Mag1C'].values, color='steelblue', linewidth=0.7)
-        if _has_data(seg, 'Mag2'):
-            ax.plot(dist, seg['Mag2'].values, color='#d8d8d8', linewidth=0.5)
-        if _has_data(seg, 'Mag2C'):
-            ax.plot(dist, seg['Mag2C'].values, color='darkorange', linewidth=0.7)
+        for col, color, lw, label in (
+            ('Mag1',  '#9ecae1',   0.7, 'Mag1 (raw)'),
+            ('Mag1C', 'steelblue',  0.8, 'Mag1C (compensated)'),
+            ('Mag2',  '#fdae6b',    0.7, 'Mag2 (raw)'),
+            ('Mag2C', 'darkorange',     0.8, 'Mag2C (compensated)'),
+        ):
+            if _has_data(seg, col):
+                ax.plot(dist, seg[col].values, color=color, linewidth=lw, label=label)
 
         ax.set_title(f"Line {int(lid)}", fontsize=8)
         ax.grid(True, alpha=0.3)
@@ -263,7 +263,12 @@ def plot_summary(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
         r, c = divmod(idx, ncols)
         axes[r][c].set_visible(False)
 
-    plt.tight_layout()
+    handles, labels = axes[0][0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', ncol=4, fontsize=9,
+               bbox_to_anchor=(0.5, 0.965))
+    fig.supxlabel('Distance along the line (m)')
+    fig.supylabel('Total field (nT)')
+    plt.tight_layout(rect=[0.02, 0.02, 1, 0.93])
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=120, bbox_inches='tight')
     plt.close(fig)
@@ -308,6 +313,46 @@ _SCALE_GROUPS = [
 ]
 
 
+def _available_groups(on_line: pd.DataFrame) -> list[list[str]]:
+    """The groups of _SCALE_GROUPS restricted to the columns that have data."""
+    groups = []
+    for group in _SCALE_GROUPS:
+        cols = [c for c in group if c in on_line.columns and on_line[c].notna().any()]
+        if cols:
+            groups.append(cols)
+    return groups
+
+
+def _group_scale(on_line: pd.DataFrame, cols: list[str]) -> tuple[float, float, str]:
+    """Colour limits and colormap shared by the columns of one group."""
+    symmetric = {col: sym for col, _, sym in _MAP_COLS}
+    pooled  = np.concatenate([on_line[c].dropna().values for c in cols])
+    p2, p98 = np.nanpercentile(pooled, [2, 98])
+    if symmetric[cols[0]]:
+        vabs = max(abs(p2), abs(p98))
+        return -vabs, vabs, 'RdBu_r'
+    return p2, p98, 'RdYlBu_r'
+
+
+def _draw_map(ax, on_line: pd.DataFrame, col: str, group: list[str],
+              aspect: float, fs: int = 7) -> None:
+    """Scatter map of one column, coloured with the scale shared by its group."""
+    titles = {c: t for c, t, _ in _MAP_COLS}
+    vmin, vmax, cmap = _group_scale(on_line, group)
+    valid = on_line[['Xgps', 'Ygps', col]].dropna()
+    sc = ax.scatter(valid['Xgps'], valid['Ygps'], c=valid[col],
+                    s=0.5, cmap=cmap, vmin=vmin, vmax=vmax, rasterized=True)
+    cb = plt.colorbar(sc, ax=ax, shrink=0.8)
+    cb.set_label({'Mag1': 'nT', 'MagL': 'nT/m'}.get(group[0], 'as recorded'), fontsize=fs)
+    cb.ax.tick_params(labelsize=fs - 1)
+    ax.set_aspect(aspect)
+    ax.set_title(titles[col], fontsize=fs + 1, pad=4)
+    ax.set_xlabel('Longitude (°)', fontsize=fs)
+    ax.set_ylabel('Latitude (°)', fontsize=fs)
+    ax.tick_params(labelsize=fs - 1)
+    ax.grid(alpha=0.3)
+
+
 def graficar_mapas_campo(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
     """
     Scatter maps of the magnetic columns in geographic coordinates (lon/lat).
@@ -317,47 +362,19 @@ def graficar_mapas_campo(on_line: pd.DataFrame, flight_id: str, out_path: Path) 
     one colour scale (pooled 2nd–98th percentile, so outliers do not wash it out):
     blue = low, red = high. Gradients and 4th differences are centred on 0.
     """
-    titles    = {col: title for col, title, _ in _MAP_COLS}
-    symmetric = {col: sym for col, _, sym in _MAP_COLS}
-    rows = []
-    for group in _SCALE_GROUPS:
-        cols = [c for c in group if c in on_line.columns and on_line[c].notna().any()]
-        if cols:
-            rows.append(cols)
+    rows = _available_groups(on_line)
     if not rows:
         return
 
-    ncols    = max(len(r) for r in rows)
-    lat_mean = on_line['Ygps'].mean()
-    aspect   = 1.0 / np.cos(np.radians(lat_mean))   # correct for lat compression
+    ncols  = max(len(r) for r in rows)
+    aspect = 1.0 / np.cos(np.radians(on_line['Ygps'].mean()))   # correct for lat compression
 
     fig, axes = plt.subplots(len(rows), ncols, figsize=(7 * ncols, 6 * len(rows)),
                              squeeze=False)
 
     for r, cols in enumerate(rows):
-        pooled  = np.concatenate([on_line[c].dropna().values for c in cols])
-        p2, p98 = np.nanpercentile(pooled, [2, 98])
-        if symmetric[cols[0]]:
-            vabs = max(abs(p2), abs(p98))
-            vmin, vmax, cmap = -vabs, vabs, 'RdBu_r'
-        else:
-            vmin, vmax, cmap = p2, p98, 'RdYlBu_r'
-
         for i, col in enumerate(cols):
-            ax    = axes[r, i]
-            valid = on_line[['Xgps', 'Ygps', col]].dropna()
-            sc = ax.scatter(valid['Xgps'], valid['Ygps'], c=valid[col],
-                            s=0.5, cmap=cmap, vmin=vmin, vmax=vmax, rasterized=True)
-            cb = plt.colorbar(sc, ax=ax, shrink=0.8)
-            cb.set_label({'Mag1': 'nT', 'MagL': 'nT/m'}.get(cols[0], 'as recorded'), fontsize=7)
-            cb.ax.tick_params(labelsize=6)
-            ax.set_aspect(aspect)
-            ax.set_title(titles[col], fontsize=8, pad=4)
-            ax.set_xlabel('Longitude (°)', fontsize=7)
-            ax.set_ylabel('Latitude (°)', fontsize=7)
-            ax.tick_params(labelsize=6)
-            ax.grid(alpha=0.3)
-
+            _draw_map(axes[r, i], on_line, col, cols, aspect)
         for j in range(len(cols), ncols):
             axes[r, j].set_visible(False)
 
@@ -368,6 +385,28 @@ def graficar_mapas_campo(on_line: pd.DataFrame, flight_id: str, out_path: Path) 
     fig.savefig(out_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     print(f'  [M2] Field maps: {out_path}')
+
+
+def graficar_mapas_individuales(on_line: pd.DataFrame, out_dir: Path) -> None:
+    """
+    One PNG per magnetic column (campaign_map_<column>.png): the same maps as the
+    mosaic, each in its own image. Maps of the same group keep the same colour scale.
+    """
+    groups = _available_groups(on_line)
+    if not groups:
+        return
+
+    aspect = 1.0 / np.cos(np.radians(on_line['Ygps'].mean()))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for cols in groups:
+        for col in cols:
+            fig, ax = plt.subplots(figsize=(11, 7))
+            _draw_map(ax, on_line, col, cols, aspect, fs=10)
+            plt.tight_layout()
+            out_path = out_dir / f'campaign_map_{col}.png'
+            fig.savefig(out_path, dpi=150, bbox_inches='tight')
+            plt.close(fig)
+            print(f'  [M2] Map: {out_path}')
 
 
 def exportar_geopackage(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
@@ -492,6 +531,7 @@ def inspect_all(per_line: bool = True) -> None:
     # ── Consolidated field maps ───────────────────────────────────────────────
     out_maps = out_base / 'campaign_field_maps.png'
     graficar_mapas_campo(df_all, 'campaign', out_maps)
+    graficar_mapas_individuales(df_all, out_base / 'maps')
 
     # ── Consolidated GeoPackage ───────────────────────────────────────────────
     out_gpkg = out_base / 'campaign_raw.gpkg'

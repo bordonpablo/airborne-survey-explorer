@@ -13,12 +13,12 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 
 | Script | Role |
 |---|---|
-| `run.py` | **Main entry point.** Reads `line_selection.csv` and runs steps 1–2 (lag correction). |
+| `run.py` | **Main entry point.** Reads `line_selection.csv` and runs steps 1–8 (all, or `--steps 1,2`, `--steps 3`, ...). |
 | `inspect_raw.py` | **Raw inspection.** Five-panel PNG per line before any correction. |
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
 | `validate.py` | **Specialist comparison.** Reads Geosoft .dat/.ddf files and compares columns. |
 | `validate.py` — see also `data/reference/` | Reads Geosoft .dat/.ddf and compares specialist columns against ours. |
-| `diurnal.py` | Diurnal correction (base station subtraction). [pending] |
+| `diurnal.py` | Diurnal correction (base station subtraction). |
 | `igrf.py` | **IGRF-13 removal.** Computes and subtracts IGRF total field at each sample point using ppigrf. |
 | `heading.py` | **Heading correction.** Empirical DC offset per heading direction (E/W). No calibration flight required. |
 | `average_sensors.py` | **Sensor average.** Combines Mag1 and Mag2 using fourth-difference noise criterion. |
@@ -75,6 +75,7 @@ Produces the following outputs (all under `outputs/<campaign>/<run_name>/m02/ins
 | `<date>/flight_X_line_Y.png` | per line | 5-panel profile (total field, gradient, 4th difference, attitude, altimetry) |
 | `<date>/flight_X_summary.png` | per flight | Panel 1 thumbnails for all lines |
 | `campaign_field_maps.png` | **whole campaign** | Scatter maps in lon/lat, one row per group sharing one colour scale (blue = low, red = high): total field (`Mag1`, `Mag2`, `Mag1C`, `Mag2C`), gradients (`MagL`, `MagLC`), 4th differences (`Mag1D`, `Mag2D`) |
+| `maps/campaign_map_<column>.png` | **whole campaign** | The same maps, one image per column (`Mag1`, `Mag2`, `Mag1C`, `Mag2C`, `MagL`, `MagLC`, `Mag1D`, `Mag2D`); maps of one group keep the same colour scale |
 | `campaign_raw.gpkg` | **whole campaign** | GeoPackage (EPSG:4326) — one layer per column, all selected lines |
 
 The consolidated map and GeoPackage are only generated when running without arguments or with `maps` (whole-campaign mode). At M2 stage, line selection is already decided — the consolidated view is what matters.
@@ -84,7 +85,7 @@ The consolidated map and GeoPackage are only generated when running without argu
 | Panel | Columns | Description |
 |---|---|---|
 | 1 — Total field | `Mag1`, `Mag1C`, `Mag2`, `Mag2C` | Raw vs compensated for each sensor. `Mag1C`/`Mag2C` = aircraft interference removed by the onboard compensation system during flight. |
-| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two sensors (nT/m). `MagLC` = compensated gradient (nT/m). |
+| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two wingtip sensors, 10.56 m apart (nT/m). `MagLC` = compensated gradient (nT/m). |
 | 3 — 4th difference | `Mag1D`, `Mag2D` | 4th difference of `Mag1` and `Mag2` as recorded by the system: the noise of each sensor along the line. Plotted as recorded, not recomputed. |
 | 4 — Attitude | `Roll`, `Pitch`, `Yaw` | Aircraft orientation. Used to diagnose heading-dependent noise. |
 | 5 — Altimetry | `Ralt`, `Lalt` | Radar altimeter (feet in the raw data, converted to m) and laser altimeter (m). Compared against the nominal drape altitude. |
@@ -94,56 +95,16 @@ Every column the aircraft delivers is described in
 
 > **Note:** there is no pre-averaged magnetometer output from the aircraft. The sensor average is computed in step 6 of M2 processing (`average_sensors.py`).
 
-### Step 1 — Estimate GPS lag
+### Steps 1–2 — GPS lag
 
-The lag function requires a concatenated DataFrame with all selected lines.
-Call it from a script or the Python REPL:
-
-```python
-import pandas as pd
-import yaml
-from pathlib import Path
-from src.m02_magnetics.lag import estimate_lag
-
-PROJECT_ROOT = Path('.')
-with open(PROJECT_ROOT / 'config' / 'project.yaml') as f:
-    config = yaml.safe_load(f)
-
-campaign = config['campaign']['name']
-run_name = config['campaign']['run_name']
-interim  = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
-
-# Load all selected parquets (adapt to your selection)
-frames = []
-for pq in interim.rglob('flight_*_prepared.parquet'):
-    frames.append(pd.read_parquet(pq))
-df = pd.concat(frames, ignore_index=True)
-df = df[df['line_valid'] & df['line_id'].notna()]
-
-result = estimate_lag(df, config)
-print(result)
+```powershell
+python -m src.m02_magnetics.run --steps 1,2
 ```
 
-Terminal output example:
-```
-[M2 LAG] Velocidad media     : 55.3 m/s
-[M2 LAG] Paso espacial       : 5.5 m
-[M2 LAG] Pares E/O encontrados: 12
-[M2 LAG] ──────────────────────────────────────────────────
-[M2 LAG] Lag mediano   : +0.41 s
-[M2 LAG] Lag std       : 0.08 s
-[M2 LAG] Lag tolerable : 1.13 s  (= spacing/4 / v)
-[M2 LAG] Pares usados  : 12
-[M2 LAG] Decisión      : LAG_NEGLIGIBLE
-```
-
-### Step 2 — Apply lag (only if LAG_SIGNIFICANT)
-
-```python
-from src.m02_magnetics.lag import apply_lag
-
-df_corrected = apply_lag(df_flight, lag_s=result['lag_median_s'])
-```
+Needs lines flown twice in opposite directions (it reads all of `line_selection.csv`, selected
+or not); without them the decision is `LAG_UNKNOWN` and nothing is corrected.
+Saves `lag_report.json`, one `flight_XXXXX_m02.parquet` per flight, and the lag diagnostic
+and campaign map (see Outputs). Steps 3–8 run the same way: `--steps 3`, `--steps 4`, ...
 
 ### Validate against specialist data
 

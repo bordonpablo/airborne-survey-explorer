@@ -163,11 +163,7 @@ def plot_lag_diagnostic(
     if lag_result.get('decision') == 'LAG_UNKNOWN':
         return
 
-    cfg_path = PROJECT_ROOT / 'config' / 'project.yaml'
-    with open(cfg_path) as f:
-        cfg = yaml.safe_load(f)
-
-    pares = _identificar_pares(df_all, cfg['survey_design']['line_spacing_m'])
+    pares = _identificar_pares(df_all)
     if not pares:
         return
 
@@ -388,14 +384,18 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
     # ── Steps 1–2: Lag correction ─────────────────────────────────────────────
     if 1 in steps or 2 in steps:
         print("\n── Step 1: GPS–magnetometer lag estimation ─────────────────────────")
+        # All lines of line_selection.csv, selected or not: the lines flown twice in opposite
+        # directions are what the lag test needs, and only one of each pair is selected.
+        lag_cols = ['flight_id', 'line_id', 'line_valid', 'Xgps', 'Ygps', 'M3clk',
+                    'Mag1C', 'Mag2C', 'Yaw']
         parts = []
-        for _, row in selected.iterrows():
-            pq = interim_root / 'm00' / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
+        for (date, fid), rows in line_sel.groupby(['date', 'flight_id']):
+            pq = interim_root / 'm00' / date / f"flight_{fid}_prepared.parquet"
             if not pq.exists():
                 print(f"  Not found: {pq}")
                 continue
-            df  = pd.read_parquet(pq)
-            seg = df[(df['line_id'] == row['line_id']) & df['line_valid']]
+            df  = pd.read_parquet(pq, columns=lag_cols)
+            seg = df[df['line_id'].isin(rows['line_id']) & df['line_valid']]
             if not seg.empty:
                 parts.append(seg)
 

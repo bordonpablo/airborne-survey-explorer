@@ -29,6 +29,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+MAX_LAG_S     = 2.0      # ventana de búsqueda de la cross-correlación (un lag real es una fracción de segundo)
+MIN_OVERLAP_M = 2000.0   # tramo común mínimo que debe tener un par de pasadas
+
 
 # ---------------------------------------------------------------------------
 # Utilidades internas
@@ -45,11 +48,11 @@ def _cumulative_distance_m(df: pd.DataFrame) -> np.ndarray:
     return np.concatenate([[0.0], np.cumsum(d)])
 
 
-def _velocidad_media_ms(df: pd.DataFrame) -> float:
-    """Velocidad media en m/s calculada a partir de posiciones GPS y M3clk."""
-    seg = df.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps', 'M3clk'])
+def _velocidad_segmento_ms(seg: pd.DataFrame) -> float | None:
+    """Velocidad mediana (m/s) de un solo segmento, a partir de posiciones GPS y M3clk."""
+    seg = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps', 'M3clk'])
     if len(seg) < 2:
-        return 50.0
+        return None
     lon = np.radians(seg['Xgps'].values)
     lat = np.radians(seg['Ygps'].values)
     dt_s = np.diff(seg['M3clk'].values) / 1000.0
@@ -59,8 +62,24 @@ def _velocidad_media_ms(df: pd.DataFrame) -> float:
     d_m = 6_371_000.0 * np.sqrt(dlat**2 + (np.cos(lat_mid) * dlon)**2)
     mask = dt_s > 0
     if not mask.any():
-        return 50.0
+        return None
     return float(np.median(d_m[mask] / dt_s[mask]))
+
+
+def _velocidad_media_ms(df: pd.DataFrame) -> float:
+    """
+    Velocidad media en m/s: mediana de las velocidades de cada segmento (flight_id, line_id).
+
+    M3clk arranca de cero en cada vuelo, por eso las diferencias se calculan dentro de
+    cada segmento. Ordenar filas de distintos vuelos por M3clk y diferenciarlas juntas
+    mezcla posiciones lejanas con tiempos casi iguales y da velocidades absurdas.
+    """
+    if {'flight_id', 'line_id'}.issubset(df.columns):
+        v = [_velocidad_segmento_ms(seg) for _, seg in df.groupby(['flight_id', 'line_id'])]
+        v = [x for x in v if x is not None]
+        return float(np.median(v)) if v else 50.0
+    v = _velocidad_segmento_ms(df)
+    return 50.0 if v is None else v
 
 
 def _yaw_medio_circular(yaw: np.ndarray) -> float:
@@ -85,35 +104,70 @@ def _direccion_linea(yaw: np.ndarray) -> str:
     return 'S'
 
 
-def _perfil_weste_este(seg: pd.DataFrame, paso_m: float) -> np.ndarray | None:
+def _con_campo_medio(seg: pd.DataFrame) -> pd.DataFrame:
     """
-    Interpola Mag1C a una grilla espacial regular orientada de oeste a este.
+    Agrega 'mag' = promedio de Mag1C y Mag2C y descarta filas sin posición o sin campo.
 
-    Para líneas voladas en dirección O (hacia el oeste), invierte el orden
-    temporal para que el perfil vaya siempre W→E en el espacio.
-    Resta la media para eliminar el nivel DC (paso necesario antes de correlacionar).
-
-    Retorna None si el segmento tiene menos de 10 puntos válidos.
+    Los magnetómetros están en las puntas de las alas (~10.56 m entre sí), a ambos lados
+    del GPS. Su promedio queda sobre la traza del GPS y cancela el desfase lateral, que
+    de otro modo se parecería a un corrimiento a lo largo de la línea (con signo opuesto
+    en cada sensor).
     """
-    seg = seg.sort_values('M3clk').dropna(subset=['Xgps', 'Ygps', 'Mag1C'])
-    if len(seg) < 10:
+    cols = [c for c in ('Mag1C', 'Mag2C') if c in seg.columns]
+    seg = seg.sort_values('M3clk').copy()
+    seg['mag'] = seg[cols].mean(axis=1)
+    return seg.dropna(subset=['Xgps', 'Ygps', 'mag'])
+
+
+def _perfiles_alineados(seg_e: pd.DataFrame, seg_o: pd.DataFrame, paso_m: float):
+    """
+    Campo magnético (promedio de Mag1C y Mag2C) de dos pasadas sobre la MISMA grilla
+    de coordenada Este (m), centrados en 0.
+
+    Se alinea por coordenada absoluta y no por distancia desde el inicio de cada línea:
+    cada pasada empieza en un punto distinto, y ese desfase se confundiría con lag.
+    El orden temporal no importa: la pasada hacia el oeste queda también ordenada W→E.
+
+    Retorna (p_e, p_o), o None si algún segmento tiene menos de 10 puntos o el tramo
+    común es menor que MIN_OVERLAP_M.
+    """
+    segs = [_con_campo_medio(s) for s in (seg_e, seg_o)]
+    if any(len(s) < 10 for s in segs):
         return None
 
-    dist = _cumulative_distance_m(seg)
-    mag  = seg['Mag1C'].values.copy()
+    lat0 = np.radians(np.mean([s['Ygps'].mean() for s in segs]))   # misma latitud para ambas
+    perfiles = []
+    for s in segs:
+        x = np.radians(s['Xgps'].values) * np.cos(lat0) * 6_371_000.0
+        m = s['mag'].values
+        orden = np.argsort(x)
+        x, m = x[orden], m[orden]
+        keep = np.concatenate([[True], np.diff(x) > 0])
+        perfiles.append((x[keep], m[keep]))
 
-    # Si la línea va de E→O, invertir para obtener perfil W→E
-    if seg['Xgps'].iloc[-1] < seg['Xgps'].iloc[0]:
-        dist = dist[-1] - dist[::-1]
-        mag  = mag[::-1]
-
-    d_max    = dist[-1]
-    d_regular = np.arange(0, d_max, paso_m)
-    if len(d_regular) < 20:
+    (xe, me), (xo, mo) = perfiles
+    a, b = max(xe[0], xo[0]), min(xe[-1], xo[-1])
+    if b - a < MIN_OVERLAP_M:
         return None
 
-    perfil = np.interp(d_regular, dist, mag)
-    return perfil - perfil.mean()
+    grilla = np.arange(a, b, paso_m)
+    p_e = np.interp(grilla, xe, me)
+    p_o = np.interp(grilla, xo, mo)
+    return p_e - p_e.mean(), p_o - p_o.mean()
+
+
+def _offset_muestras(p_e: np.ndarray, p_o: np.ndarray, paso_m: float, vel_ms: float) -> int:
+    """
+    Corrimiento (en muestras de la grilla) que mejor alinea p_o con p_e, dentro de ±MAX_LAG_S.
+
+    Convención de numpy: k > 0 significa que p_e queda k muestras a la derecha de p_o.
+    """
+    n = len(p_e)
+    corr = np.correlate(p_e, p_o, mode='full')
+    k = np.arange(-(n - 1), n)
+    max_k = int(MAX_LAG_S * 2.0 * vel_ms / paso_m)
+    ventana = np.abs(k) <= max_k
+    return int(k[ventana][np.argmax(corr[ventana])])
 
 
 def _estimar_lag_par(
@@ -123,54 +177,35 @@ def _estimar_lag_par(
     vel_ms: float,
 ) -> float | None:
     """
-    Estima el lag GPS-magnetómetro (segundos) para un par de líneas opuestas.
+    Estima el lag GPS-magnetómetro (segundos) para una misma línea volada en sentidos opuestos.
 
-    Método: cross-correlación normalizada entre los perfiles W→E de ambas líneas.
-    La diferencia de posición de la misma anomalía entre los dos perfiles es
-    2 × lag_m (ambas líneas se desplazan en sentidos opuestos por igual magnitud),
-    por eso se divide el offset de la correlación por 2.
+    Método: cross-correlación entre los perfiles de ambas pasadas, sobre la misma
+    coordenada Este. La diferencia de posición de la misma anomalía entre los dos
+    perfiles es 2 × lag_m (las pasadas se desplazan en sentidos opuestos por igual
+    magnitud), por eso se divide el offset de la correlación por 2.
 
-    Convención de signo:
+    Convención de signo (verificada con apply_lag: aplicar +lag_s reduce el desfase):
         lag_s > 0  →  GPS detrás del magnetómetro (caso típico)
         lag_s < 0  →  GPS adelantado (caso poco común)
     """
-    p_e = _perfil_weste_este(seg_e, paso_m)
-    p_o = _perfil_weste_este(seg_o, paso_m)
-
-    if p_e is None or p_o is None:
+    perfiles = _perfiles_alineados(seg_e, seg_o, paso_m)
+    if perfiles is None:
         return None
 
-    n = min(len(p_e), len(p_o))
-    if n < 20:
-        return None
-
-    p_e = p_e[:n]
-    p_o = p_o[:n]
-
-    # Cross-correlación: c[k] tiene pico en k donde p_o[i-lag] ≈ p_e[i]
-    # lag = k - (n-1).  Positivo → p_o está a la derecha de p_e.
-    corr      = np.correlate(p_e, p_o, mode='full')
-    lags_idx  = np.arange(-(n - 1), n)
-    lag_samples = int(lags_idx[np.argmax(corr)])
-
-    # El desplazamiento observable = 2 × lag_m → dividir por 2
-    lag_m = abs(lag_samples) * paso_m / 2.0
-    lag_s = lag_m / vel_ms if vel_ms > 0 else 0.0
-
-    return float(np.sign(lag_samples) * lag_s)
+    k = _offset_muestras(perfiles[0], perfiles[1], paso_m, vel_ms)
+    return float(k * paso_m / (2.0 * vel_ms)) if vel_ms > 0 else 0.0
 
 
-def _identificar_pares(df: pd.DataFrame, line_spacing_m: float) -> list:
+def _identificar_pares(df: pd.DataFrame) -> list:
     """
-    Identifica pares de líneas paralelas E/O para la estimación del lag.
+    Identifica las líneas voladas dos veces en sentidos opuestos (mismo line_id, distinto vuelo).
 
-    Prioridad 1: mismo line_id, distinto flight_id, dirección opuesta.
-                 Ocurre cuando una línea fue re-volada en sentido contrario.
-    Prioridad 2: líneas adyacentes (patrón lawnmower E-O-E-O), enlazadas
-                 por la mínima diferencia de latitud media.
+    Es el único caso en que la misma traza se mide hacia el este y hacia el oeste, así
+    que la diferencia de posición de una misma anomalía se debe solo al lag. Con líneas
+    vecinas (250 m) no sirve: el corrimiento entre ellas lo domina la geología.
 
     Retorna lista de tuplas (fila_e, fila_o), cada una es una Serie de pandas
-    con columnas: flight_id, line_id, direccion, lat_med.
+    con columnas: flight_id, line_id, direccion.
     """
     registros = []
     for (fid, lid), seg in df.groupby(['flight_id', 'line_id']):
@@ -180,60 +215,16 @@ def _identificar_pares(df: pd.DataFrame, line_spacing_m: float) -> list:
         dir_linea = _direccion_linea(seg_v['Yaw'].values)
         if dir_linea not in ('E', 'O'):
             continue
-        registros.append({
-            'flight_id': fid,
-            'line_id':   lid,
-            'direccion': dir_linea,
-            'lat_med':   float(seg_v['Ygps'].median()),
-        })
+        registros.append({'flight_id': fid, 'line_id': lid, 'direccion': dir_linea})
 
     if not registros:
         return []
 
-    segs = pd.DataFrame(registros)
-    usados: set[tuple] = set()
     pares = []
-
-    # Prioridad 1: mismo line_id, flight_id distinto, dirección opuesta
-    for lid in segs['line_id'].unique():
-        grupo = segs[segs['line_id'] == lid]
-        if 'E' not in grupo['direccion'].values or 'O' not in grupo['direccion'].values:
-            continue
-        fila_e = grupo[grupo['direccion'] == 'E'].iloc[0]
-        fila_o = grupo[grupo['direccion'] == 'O'].iloc[0]
-        k_e = (fila_e['flight_id'], fila_e['line_id'])
-        k_o = (fila_o['flight_id'], fila_o['line_id'])
-        if k_e not in usados and k_o not in usados:
-            pares.append((fila_e, fila_o))
-            usados.add(k_e)
-            usados.add(k_o)
-
-    # Prioridad 2: pares adyacentes por latitud (patrón lawnmower)
-    espaciado_deg = line_spacing_m / 111_000.0
-    lineas_e = segs[segs['direccion'] == 'E'].copy()
-    lineas_o = segs[segs['direccion'] == 'O'].copy()
-
-    for _, fila_e in lineas_e.iterrows():
-        k_e = (fila_e['flight_id'], fila_e['line_id'])
-        if k_e in usados:
-            continue
-
-        disponibles_o = lineas_o[
-            ~lineas_o.apply(lambda r: (r['flight_id'], r['line_id']) in usados, axis=1)
-        ]
-        if disponibles_o.empty:
-            break
-
-        dists_lat = (disponibles_o['lat_med'] - fila_e['lat_med']).abs()
-        idx_min   = dists_lat.idxmin()
-
-        if dists_lat[idx_min] <= 1.5 * espaciado_deg:
-            fila_o = disponibles_o.loc[idx_min]
-            k_o    = (fila_o['flight_id'], fila_o['line_id'])
-            pares.append((fila_e, fila_o))
-            usados.add(k_e)
-            usados.add(k_o)
-
+    for _, grupo in pd.DataFrame(registros).groupby('line_id'):
+        if 'E' in grupo['direccion'].values and 'O' in grupo['direccion'].values:
+            pares.append((grupo[grupo['direccion'] == 'E'].iloc[0],
+                          grupo[grupo['direccion'] == 'O'].iloc[0]))
     return pares
 
 
@@ -247,13 +238,17 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
 
     Algoritmo
     ---------
-    Para cada par de líneas E/O:
-        1. Extraer perfil Mag1C vs distancia acumulada (W→E para ambas).
-        2. Restar la media de línea (eliminar nivel DC).
-        3. Cross-correlación: el pico en offset k indica un desplazamiento
+    Para cada línea volada en ambos sentidos (mismo line_id, una pasada E y otra O):
+        1. Perfil de ambas pasadas (promedio de Mag1C y Mag2C) sobre la misma
+           coordenada Este, sin nivel DC.
+        2. Cross-correlación: el pico en offset k indica un desplazamiento
            total de 2 × lag_m entre los perfiles.
-        4. lag_s = (k × paso_m) / (2 × velocidad_media).
+        3. lag_s = (k × paso_m) / (2 × velocidad_media).
     Reportar: mediana de los lags estimados por par.
+
+    Las líneas vecinas no sirven como par: lo que las desplaza es la geología.
+    Hay que pasar todas las pasadas disponibles, no solo las seleccionadas,
+    porque las repeticiones son las que forman los pares.
 
     Criterio de decisión
     --------------------
@@ -282,7 +277,7 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
     print(f"[M2 LAG] Mean velocity       : {vel_ms:.1f} m/s")
     print(f"[M2 LAG] Spatial step        : {paso_m:.1f} m")
 
-    pares = _identificar_pares(df_all_lines, line_spacing_m)
+    pares = _identificar_pares(df_all_lines)
     print(f"[M2 LAG] E/W pairs found     : {len(pares)}")
 
     resultado_vacio = {
@@ -317,7 +312,7 @@ def estimate_lag(df_all_lines: pd.DataFrame, config: dict) -> dict:
         lag_s = _estimar_lag_par(seg_e, seg_o, paso_m, vel_ms)
         if lag_s is not None:
             lags.append(lag_s)
-            print(f"[M2 LAG]   Pair line {k_e[1]} (E) vs {k_o[1]} (W): lag = {lag_s:+.3f} s")
+            print(f"[M2 LAG]   Line {k_e[1]}  E flight {k_e[0]} / W flight {k_o[0]}: lag = {lag_s:+.3f} s")
 
     if not lags:
         print("[M2 LAG] Cross-correlation returned no valid results.")
@@ -438,21 +433,15 @@ def plot_lag_diagnosis(
     """
     vel_ms = _velocidad_media_ms(pd.concat([seg_e, seg_o], ignore_index=True))
 
-    p_e = _perfil_weste_este(seg_e, paso_m)
-    p_o = _perfil_weste_este(seg_o, paso_m)
-
-    if p_e is None or p_o is None:
+    perfiles = _perfiles_alineados(seg_e, seg_o, paso_m)
+    if perfiles is None:
         print("[M2 LAG] Not enough data for diagnosis.")
         return
-
-    n = min(len(p_e), len(p_o))
-    p_e = p_e[:n]
-    p_o = p_o[:n]
+    p_e, p_o = perfiles
+    n = len(p_e)
 
     # Offset de la cross-correlación (en muestras del perfil espacial)
-    corr     = np.correlate(p_e, p_o, mode='full')
-    lags_idx = np.arange(-(n - 1), n)
-    lag_peak_samples = int(lags_idx[np.argmax(corr)])
+    lag_peak_samples = _offset_muestras(p_e, p_o, paso_m, vel_ms)
 
     lid_e = int(seg_e['line_id'].iloc[0])
     lid_o = int(seg_o['line_id'].iloc[0])
@@ -469,8 +458,8 @@ def plot_lag_diagnosis(
     ax = axes[0]
     ax.set_title("Before correction (visible offset between anomalies)")
     ax.plot(dist, p_e, color='steelblue',  linewidth=0.9, label=f'Line {lid_e} (E→)')
-    ax.plot(dist, p_o, color='darkorange', linewidth=0.9, label=f'Line {lid_o} (←W reversed to W→E)')
-    ax.set_ylabel('Mag1C (nT, centered)')
+    ax.plot(dist, p_o, color='darkorange', linewidth=0.9, label=f'Line {lid_o} (←W)')
+    ax.set_ylabel('Mean of Mag1C and Mag2C (nT, centered)')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
     desplaz_m = abs(lag_peak_samples) * paso_m
@@ -485,22 +474,22 @@ def plot_lag_diagnosis(
 
     ls = lag_peak_samples
     if ls > 0:
-        # p_o a la derecha de p_e → desplazar p_o hacia la izquierda
+        # p_e queda ls muestras a la derecha de p_o → desplazar p_o hacia la derecha
         p_o_alin = np.empty(n)
-        p_o_alin[:n - ls] = p_o[ls:]
-        p_o_alin[n - ls:] = np.nan
+        p_o_alin[:ls] = np.nan
+        p_o_alin[ls:] = p_o[:n - ls]
     elif ls < 0:
         ls_abs = abs(ls)
         p_o_alin = np.empty(n)
-        p_o_alin[:ls_abs] = np.nan
-        p_o_alin[ls_abs:] = p_o[:n - ls_abs]
+        p_o_alin[:n - ls_abs] = p_o[ls_abs:]
+        p_o_alin[n - ls_abs:] = np.nan
     else:
         p_o_alin = p_o.copy()
 
     ax.plot(dist, p_e,      color='steelblue',  linewidth=0.9, label=f'Line {lid_e} (E→)')
     ax.plot(dist, p_o_alin, color='darkorange', linewidth=0.9, label=f'Line {lid_o} (aligned)')
-    ax.set_ylabel('Mag1C (nT, centered)')
-    ax.set_xlabel('Cumulative distance (m)')
+    ax.set_ylabel('Mean of Mag1C and Mag2C (nT, centered)')
+    ax.set_xlabel('Distance along the common track (m)')
     ax.legend(fontsize=8)
     ax.grid(True, alpha=0.3)
 
