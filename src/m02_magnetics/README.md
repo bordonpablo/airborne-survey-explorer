@@ -16,8 +16,7 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 | `run.py` | **Main entry point.** Reads `line_selection.csv` and runs steps 1–8 (all, or `--steps 1,2`, `--steps 3`, ...). |
 | `inspect_raw.py` | **Raw inspection.** Five-panel PNG per line before any correction. |
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
-| `validate.py` | **Specialist comparison.** Reads Geosoft .dat/.ddf files and compares columns. |
-| `validate.py` — see also `data/reference/` | Reads Geosoft .dat/.ddf and compares specialist columns against ours. |
+| `validate.py` | **Reference comparison.** Reads Geosoft .dat/.ddf files (see `data/reference/`) and compares columns. |
 | `diurnal.py` | Diurnal correction (base station subtraction). |
 | `igrf.py` | **IGRF-13 removal.** Computes and subtracts IGRF total field at each sample point using ppigrf. |
 | `heading.py` | **Heading correction.** Empirical DC offset per heading direction (E/W). No calibration flight required. |
@@ -42,7 +41,7 @@ The chain starts from `Mag1C` / `Mag2C` (compensated in flight). Step 0 is only 
 | 4 | `igrf.py` | ✅ Remove IGRF-13 reference field (ppigrf, input: lon, lat, alt km, UTC date) | `Mag1_IGRF`, `Mag2_IGRF` |
 | 5 | `heading.py` | ✅ Empirical heading correction — DC offset estimated from mean difference between E and W lines | `Mag1_IGRF_head`, `Mag2_IGRF_head` |
 | 6 | `average_sensors.py` | ✅ Combine Mag1 and Mag2 — plain average; only the quieter sensor if the other is > 2× noisier (4th-difference noise test) | `Mag_IGRF_head`, `sensor_used` |
-| 7 | `levelling.py` | ✅ Crossover DC offset per production line (tie lines as reference). Eastern edge limited by 5 missing ties — see specialist report. | `Mag_IGRF_head_level` |
+| 7 | `levelling.py` | ✅ Crossover DC offset per production line (tie lines as reference). Eastern edge limited by 5 missing ties. | `Mag_IGRF_head_level` |
 | 8 | `microlevelling.py` | ✅ Along-line minus across-line smooth — corrugation removed | `Mag_Final` |
 
 ---
@@ -97,16 +96,20 @@ Every column the aircraft delivers is described in
 
 ### Steps 1–2 — GPS lag
 
+Checks whether the magnetic readings and the GPS positions are out of sync (the magnetometer
+reports each value slightly late, so anomalies end up shifted along the line). It measures the
+shift on lines flown twice in opposite directions. If it is larger than the tolerance, the GPS
+positions are shifted to correct it; otherwise the data is left unchanged.
+
 ```powershell
 python -m src.m02_magnetics.run --steps 1,2
 ```
 
-Needs lines flown twice in opposite directions (it reads all of `line_selection.csv`, selected
-or not); without them the decision is `LAG_UNKNOWN` and nothing is corrected.
-Saves `lag_report.json`, one `flight_XXXXX_m02.parquet` per flight, and the lag diagnostic
-and campaign map (see Outputs). Steps 3–8 run the same way: `--steps 3`, `--steps 4`, ...
+What to look at: `lag_report.json` (decision `LAG_NEGLIGIBLE`, `LAG_SIGNIFICANT`, or
+`LAG_UNKNOWN` if there are no such lines) and the `lag_diagnosis_*.png` figure.
+Also saves one `flight_XXXXX_m02.parquet` per flight. Steps 3–8 run the same way: `--steps 3`, ...
 
-### Validate against specialist data
+### Validate against reference data
 
 ```python
 from src.m02_magnetics.validate import read_specialist_data, compare_columns
@@ -126,14 +129,16 @@ stats = compare_columns(df_ours, 'Mag1C', df_ref, 'Mag1_C', label='Mag1C compens
 |---|---|
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 5-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
-| `outputs/<campaign>/<run_name>/m02/lag_report.json` | Lag estimation result (median, std, decision) |
-| `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg` | Consolidated GeoPackage — all selected lines after lag correction, one layer per magnetic column |
-| `data/interim/<campaign>/<run_name>/<date>/flight_XXXXX_m02.parquet` | Per-flight parquet with lag correction applied |
-| `outputs/<campaign>/<run_name>/reference/` | Specialist reference maps and GeoPackage — see `data/reference/README.md` |
+| `outputs/<campaign>/<run_name>/m02/lag_report.json` | Lag result: median, std, tolerance, number of pairs, decision |
+| `outputs/<campaign>/<run_name>/m02/lag_diagnosis_line<id>_line<id>.png` | The two passes of one line (east and west) before and after aligning |
+| `outputs/<campaign>/<run_name>/m02/step_02_lag.gpkg`, `step_02_lag_map.png` | `Mag1C` / `Mag2C` of the selected lines after steps 1–2 (same values as the input: the lag moves positions, not values). Later steps add their own `step_<NN>_<name>` files |
+| `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg`, `campaign_m02_map.png` | Consolidated GeoPackage and map of all selected lines, one layer per magnetic column |
+| `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data: copy of the M0 parquet plus `lag_applied`; GPS positions are shifted only if the decision is `LAG_SIGNIFICANT` |
+| `outputs/<campaign>/<run_name>/reference/` | Reference maps and GeoPackage — see `data/reference/README.md` |
 
 ---
 
 ## Reference
 
-- Specialist processing report and reference data: `data/reference/`
+- Reference data: `data/reference/`
 - Correction chain explained: [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md)
