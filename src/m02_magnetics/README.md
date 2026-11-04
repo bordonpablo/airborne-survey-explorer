@@ -104,11 +104,24 @@ positions are shifted to correct it; otherwise the data is left unchanged.
 python -m src.m02_magnetics.run --steps 1,2
 ```
 
-What to look at: `lag_report.json` (decision `LAG_NEGLIGIBLE`, `LAG_SIGNIFICANT`, or
-`LAG_UNKNOWN` if there are no such lines), the `lag_diagnosis_*.png` figure and
-`lag_effect_map.png` (how much the lag would change the data, in nT).
-Also saves one `flight_XXXXX_m02.parquet` per flight. Steps 3–8 run the same way: `--steps 3`, ...
-How the lag is measured and when it is applied: [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
+Everything is saved in `outputs/<campaign>/<run_name>/m02/step_01_02_lag/`:
+
+| File | What it shows | Good sign |
+|---|---|---|
+| `lag_report.json` | `lag_median_s`: the measured lag. `lag_tolerable_s`: the limit above which it is corrected. `decision`: what was done | `decision` = `LAG_NEGLIGIBLE` |
+| `lag_diagnosis_*.png` | The same line flown east and west, before and after aligning | The two curves nearly overlap |
+| `lag_effect_map.png` | How much the data would change if the lag were applied (nT) | Mostly white |
+
+**How to read the numbers.** The lag is the delay of the magnetometer. At the average speed
+(38 m/s), 0.2 s means a position error of 7.6 m. It is only corrected if it exceeds
+`lag_tolerable_s` (about 1.6 s, or 62 m: a quarter of the 250 m line spacing). Below that the
+decision is `LAG_NEGLIGIBLE`: too small to matter, nothing is changed. With 0.2 s, the magnetic
+value changes by less than 1 nT in 95 % of the points. `LAG_UNKNOWN` means there were no lines
+flown in both directions to measure it.
+
+The data continue to the next steps in `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet`
+(a copy of the M0 data plus `lag_applied`). Steps 3–8 run the same way: `--steps 3`, ...
+How the lag is measured: [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 
 ---
 
@@ -118,11 +131,9 @@ How the lag is measured and when it is applied: [docs/m02_correction_chain.md](.
 |---|---|
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 5-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
-| `outputs/<campaign>/<run_name>/m02/lag_report.json` | Lag result: median, std, tolerance, number of pairs, decision, and the size of the effect (`effect_nT`: median, p95, p99, max) |
-| `outputs/<campaign>/<run_name>/m02/lag_effect_map.png` | Change of `Mag1C` and `Mag2C` at each point if the estimated lag were applied (after − before, nT). Computed even when the lag is negligible; the data are not modified |
-| `outputs/<campaign>/<run_name>/m02/lag_diagnosis_line<id>_line<id>.png` | The two passes of one line (east and west) before and after aligning |
-| `outputs/<campaign>/<run_name>/m02/step_02_lag.gpkg`, `step_02_lag_map.png` | `Mag1C` / `Mag2C` of the selected lines after steps 1–2 (same values as the input: the lag moves positions, not values). Later steps add their own `step_<NN>_<name>` files |
-| `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg`, `campaign_m02_map.png` | Consolidated GeoPackage and map of all selected lines, one layer per magnetic column |
+| `outputs/<campaign>/<run_name>/m02/step_01_02_lag/` | `lag_report.json` (with the size of the effect in `effect_nT`), `lag_diagnosis_line<id>_line<id>.png`, `lag_effect_map.png` — see Steps 1–2 |
+| `outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/` | One GeoPackage and one map per later step |
+| `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg`, `campaign_m02_map.png` | Consolidated GeoPackage and map of all selected lines, one layer per magnetic column. Only generated with step 8 |
 | `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data: copy of the M0 parquet plus `lag_applied`; GPS positions are shifted only if the decision is `LAG_SIGNIFICANT` |
 
 ---

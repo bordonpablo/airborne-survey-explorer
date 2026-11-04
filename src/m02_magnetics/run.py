@@ -10,8 +10,10 @@ Input:
 
 Output:
     data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet
-    outputs/<campaign>/<run_name>/m02/lag_report.json
-    outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg   (all selected lines)
+    outputs/<campaign>/<run_name>/m02/step_01_02_lag/     (lag_report.json, lag_diagnosis_*.png,
+                                                           lag_effect_map.png)
+    outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/   (one folder per later step)
+    outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg   (all selected lines; only with step 8)
 
 Steps implemented:
     1–2. GPS lag correction   (lag.py)
@@ -320,7 +322,9 @@ def export_step_output(
     id_base  = df_all[['flight_id', 'line_id']].copy()
 
     # ── GeoPackage ────────────────────────────────────────────────────────────
-    gpkg_path = out_root / f'step_{step_name}.gpkg'
+    step_dir  = out_root / f'step_{step_name}'
+    step_dir.mkdir(parents=True, exist_ok=True)
+    gpkg_path = step_dir / f'step_{step_name}.gpkg'
     if gpkg_path.exists():
         gpkg_path.unlink()
     first = True
@@ -364,7 +368,7 @@ def export_step_output(
 
     fig.suptitle(f'Step {step_name} — {" → ".join(available)}', fontsize=10)
     plt.tight_layout()
-    map_path = out_root / f'step_{step_name}_map.png'
+    map_path = step_dir / f'step_{step_name}_map.png'
     fig.savefig(map_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     print(f"  Step map:        {map_path.relative_to(PROJECT_ROOT)}")
@@ -447,6 +451,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
     interim_root = PROJECT_ROOT / 'data' / 'interim' / campaign / run_name
     out_root     = PROJECT_ROOT / 'outputs' / campaign / run_name / 'm02'
     out_root.mkdir(parents=True, exist_ok=True)
+    lag_dir      = out_root / 'step_01_02_lag'
 
     print(f"Campaign : {campaign}")
     print(f"Run      : {run_name}")
@@ -489,7 +494,8 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
         print(f"  {len(df_all):,} valid rows from {len(parts)} segments")
         lag_result = estimate_lag(df_all, cfg)
 
-        report_path = out_root / 'lag_report.json'
+        lag_dir.mkdir(parents=True, exist_ok=True)
+        report_path = lag_dir / 'lag_report.json'
         with open(report_path, 'w') as f:
             json.dump(
                 {k: float(v) if hasattr(v, '__float__') else v
@@ -523,13 +529,11 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
         print(f"\n  Lag decision : {lag_result['decision']}")
         print(f"  Lag value    : {lag_result['lag_median_s']:+.3f} s")
 
-        plot_lag_diagnostic(df_all, lag_result, out_root)
-        plot_lag_effect(selected, interim_root, lag_result, out_root)
-        export_step_output(selected, interim_root, out_root,
-                           '02_lag', ['Mag1C', 'Mag2C'])
+        plot_lag_diagnostic(df_all, lag_result, lag_dir)
+        plot_lag_effect(selected, interim_root, lag_result, lag_dir)
     else:
         # Load lag result from previous run if skipping steps 1-2
-        report_path = out_root / 'lag_report.json'
+        report_path = lag_dir / 'lag_report.json'
         if report_path.exists():
             with open(report_path) as f:
                 lag_result = json.load(f)
@@ -742,18 +746,19 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
                                    '08_microlevelling',
                                    ['Mag_IGRF_head_level', 'Mag_Final'])
 
-    # ── Consolidated GeoPackage + map ─────────────────────────────────────────
-    print("\n── Consolidated GeoPackage ─────────────────────────────────────────")
-    export_geopackage(selected, interim_root, out_root / 'campaign_m02.gpkg')
+    # ── Consolidated GeoPackage + map (final product, only with the last step) ─
+    if 8 in steps:
+        print("\n── Consolidated GeoPackage ─────────────────────────────────────────")
+        export_geopackage(selected, interim_root, out_root / 'campaign_m02.gpkg')
 
-    print("\n── Campaign map ────────────────────────────────────────────────────")
-    plot_campaign_map(selected, interim_root, lag_result, out_root / 'campaign_m02_map.png')
+        print("\n── Campaign map ────────────────────────────────────────────────────")
+        plot_campaign_map(selected, interim_root, lag_result, out_root / 'campaign_m02_map.png')
 
-    sep = '─' * 55
-    print(f"\n{sep}")
-    print(f"  GeoPackage  : outputs/{campaign}/{run_name}/m02/campaign_m02.gpkg")
-    print(f"  Campaign map: outputs/{campaign}/{run_name}/m02/campaign_m02_map.png")
-    print(f"{sep}")
+        sep = '─' * 55
+        print(f"\n{sep}")
+        print(f"  GeoPackage  : outputs/{campaign}/{run_name}/m02/campaign_m02.gpkg")
+        print(f"  Campaign map: outputs/{campaign}/{run_name}/m02/campaign_m02_map.png")
+        print(f"{sep}")
 
 
 if __name__ == '__main__':
