@@ -45,19 +45,6 @@ def _along_track_km(df: pd.DataFrame) -> np.ndarray:
     return np.concatenate([[0.0], np.cumsum(d)])
 
 
-def _fourth_diff_stats(mag: np.ndarray) -> tuple[float, float]:
-    """
-    RMS and max |value| (nT) of the 4th difference of a magnetic channel.
-
-    Δ⁴f_i = f_{i-2} − 4·f_{i-1} + 6·f_i − 4·f_{i+1} + f_{i+2}. It cancels any smooth
-    signal (geology, diurnal drift), so what remains is sensor / platform noise.
-    """
-    if len(mag) < 5:
-        return np.nan, np.nan
-    d4 = np.diff(mag, n=4)
-    return float(np.sqrt(np.nanmean(d4 ** 2))), float(np.nanmax(np.abs(d4)))
-
-
 def _spike_mask(mag: np.ndarray, threshold_nT: float = 100.0, window: int = 21) -> np.ndarray:
     """Flags points that deviate from a rolling median by more than threshold_nT."""
     s = pd.Series(mag)
@@ -182,7 +169,8 @@ def detail_figure(
     settled by the time a line reaches M1 (see Module 0 for that).
 
     Altitude reference lines come exclusively from TestSurveyNav thresholds.
-    The magnetics panel adds a 4th-difference/spike readout (informative only — no
+    The magnetics panels add a spike readout and the 4th-difference channels
+    recorded by the system, Mag1D/Mag2D (informative only — no
     TestSurveyNav threshold exists for it). The radiometric and VLF panels
     flag with a red note when a channel looks flat or empty, since that
     usually means the sensor wasn't actually recording on this line.
@@ -192,14 +180,14 @@ def detail_figure(
     flight = seg['flight_id'].iloc[0]
     lid    = int(seg['line_id'].iloc[0])
 
-    fig = plt.figure(figsize=(16, 16))
+    fig = plt.figure(figsize=(16, 18))
     fig.suptitle(
         f"M1 QC Detail — Flight {flight}  ·  Line {lid}",
         fontsize=13, fontweight='bold',
     )
 
     gs = gridspec.GridSpec(
-        6, 2,
+        7, 2,
         width_ratios=[1, 2.5],
         hspace=0.12,
         wspace=0.28,
@@ -211,10 +199,11 @@ def detail_figure(
     ax_att  = fig.add_subplot(gs[1, 1], sharex=ax_ralt)
     ax_yaw  = fig.add_subplot(gs[2, 1], sharex=ax_ralt)
     ax_mag  = fig.add_subplot(gs[3, 1], sharex=ax_ralt)
-    ax_rad  = fig.add_subplot(gs[4, 1], sharex=ax_ralt)
-    ax_vlf  = fig.add_subplot(gs[5, 1], sharex=ax_ralt)
+    ax_d4   = fig.add_subplot(gs[4, 1], sharex=ax_ralt)
+    ax_rad  = fig.add_subplot(gs[5, 1], sharex=ax_ralt)
+    ax_vlf  = fig.add_subplot(gs[6, 1], sharex=ax_ralt)
 
-    for a in (ax_ralt, ax_att, ax_yaw, ax_mag, ax_rad):
+    for a in (ax_ralt, ax_att, ax_yaw, ax_mag, ax_d4, ax_rad):
         plt.setp(a.get_xticklabels(), visible=False)
 
     # ---- GPS map -------------------------------------------------------------
@@ -269,12 +258,11 @@ def detail_figure(
     ax_yaw.grid(True, alpha=0.3)
     ax_yaw.tick_params(labelsize=7)
 
-    # ---- Mag1 + Mag2 (+ 4th-difference / spike readout — informative only) -
+    # ---- Mag1 + Mag2 (+ spike readout — informative only) ------------------
     for col, color in [('Mag1', 'navy'), ('Mag2', 'darkorange')]:
         if col in seg.columns:
             ax_mag.plot(dist, seg[col].values, color=color,
                         linewidth=0.8, label=col, alpha=0.85)
-    notes = []
     if 'Mag1' in seg.columns:
         mag1 = seg['Mag1'].values
         mask = _spike_mask(mag1)
@@ -282,18 +270,28 @@ def detail_figure(
         if n_spikes > 0:
             ax_mag.scatter(dist[mask], mag1[mask], color='red', s=18,
                            zorder=5, label=f'Spikes ({n_spikes})')
-        rms, mx = _fourth_diff_stats(mag1)
-        notes.append(f'Mag1  Δ⁴ rms={rms:.2f}  max={mx:.2f} nT   spikes={n_spikes}')
-    if 'Mag2' in seg.columns:
-        rms, mx = _fourth_diff_stats(seg['Mag2'].values)
-        notes.append(f'Mag2  Δ⁴ rms={rms:.2f}  max={mx:.2f} nT')
-    if notes:
-        ax_mag.text(0.01, 0.95, '\n'.join(notes), transform=ax_mag.transAxes,
+        ax_mag.text(0.01, 0.95, f'Mag1 spikes={n_spikes}', transform=ax_mag.transAxes,
                     fontsize=7, va='top', color='dimgray')
     ax_mag.set_ylabel('Magnetometer (nT)', fontsize=8)
     ax_mag.legend(fontsize=7, loc='upper right')
     ax_mag.grid(True, alpha=0.3)
     ax_mag.tick_params(labelsize=7)
+
+    # ---- Mag1D / Mag2D — 4th-difference channels as recorded by the system ---
+    for col, color in [('Mag1D', 'navy'), ('Mag2D', 'darkorange')]:
+        if col in seg.columns:
+            ax_d4.plot(dist, seg[col].values, color=color,
+                       linewidth=0.7, label=col, alpha=0.85)
+    notes = [f'{col}  rms={np.sqrt(np.nanmean(seg[col].values ** 2)):.2f}'
+             f'  max|.|={np.nanmax(np.abs(seg[col].values)):.2f}'
+             for col in ('Mag1D', 'Mag2D') if col in seg.columns]
+    if notes:
+        ax_d4.text(0.01, 0.95, '\n'.join(notes), transform=ax_d4.transAxes,
+                   fontsize=7, va='top', color='dimgray')
+    ax_d4.set_ylabel('Mag 4th difference\n(as recorded)', fontsize=8)
+    ax_d4.legend(fontsize=7, loc='upper right')
+    ax_d4.grid(True, alpha=0.3)
+    ax_d4.tick_params(labelsize=7)
 
     # ---- Radiometric counts (Sk/Su/Sth) — sensor-alive check --------------
     for col, color in [('Sk', 'tab:blue'), ('Su', 'tab:orange'), ('Sth', 'tab:green')]:

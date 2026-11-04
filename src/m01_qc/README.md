@@ -25,10 +25,10 @@ Prerequisite: `line_selection.csv` (Module 0, step 3).
    python -m src.m01_qc.run 22.04.2022 00427 10010
    ```
 
-   6-panel snapshot: GPS track, altitude (`Ralt` blue, `Lalt` purple, allowed band
-   dashed orange/red), Roll/Pitch, Yaw, Mag1/Mag2 (4th-difference rms/max and spike
-   count), SPC and VLF (red when a channel looks flat or missing). Informational
-   only: it does not affect pass/fail.
+   7-panel snapshot: GPS track, altitude (`Ralt` blue, `Lalt` purple, allowed band
+   dashed orange/red), Roll/Pitch, Yaw, Mag1/Mag2 (with spike count), Mag1D/Mag2D
+   (4th-difference channels as recorded, with rms and max), SPC and VLF (red when a
+   channel looks flat or missing). Informational only: it does not affect pass/fail.
 
 3. Decide: set `selected = False` in `line_selection.csv` for lines that should
    not enter Module 2. A failed line that is the only flight for its `line_id`
