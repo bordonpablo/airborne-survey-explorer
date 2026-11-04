@@ -14,7 +14,7 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 | Script | Role |
 |---|---|
 | `run.py` | **Main entry point.** Reads `line_selection.csv` and runs steps 1–2 (lag correction). |
-| `inspect_raw.py` | **Raw inspection.** Four-panel PNG per line before any correction. |
+| `inspect_raw.py` | **Raw inspection.** Five-panel PNG per line before any correction. |
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
 | `validate.py` | **Specialist comparison.** Reads Geosoft .dat/.ddf files and compares columns. |
 | `validate.py` — see also `data/reference/` | Reads Geosoft .dat/.ddf and compares specialist columns against ours. |
@@ -59,27 +59,34 @@ python -m src.m02_magnetics.inspect_raw 22.04.2022 00447
 
 # One specific line
 python -m src.m02_magnetics.inspect_raw 22.04.2022 00447 1001
+
+# Only the campaign-wide maps and GeoPackage (no per-line PNGs)
+python -m src.m02_magnetics.inspect_raw maps
 ```
 
 Produces the following outputs (all under `outputs/<campaign>/<run_name>/m02/inspection/`):
 
 | File | Scope | Contents |
 |---|---|---|
-| `<date>/flight_X_line_Y.png` | per line | 4-panel profile (total field, gradient, attitude, altimetry) |
+| `<date>/flight_X_line_Y.png` | per line | 5-panel profile (total field, gradient, 4th difference, attitude, altimetry) |
 | `<date>/flight_X_summary.png` | per flight | Panel 1 thumbnails for all lines |
-| `campaign_field_maps.png` | **whole campaign** | Scatter maps in lon/lat — one subplot per column (Mag1, Mag1C, Mag2, Mag2C, MagL, MagLC) |
+| `campaign_field_maps.png` | **whole campaign** | Scatter maps in lon/lat, one row per group sharing one colour scale (blue = low, red = high): total field (`Mag1`, `Mag2`, `Mag1C`, `Mag2C`), gradients (`MagL`, `MagLC`), 4th differences (`Mag1D`, `Mag2D`) |
 | `campaign_raw.gpkg` | **whole campaign** | GeoPackage (EPSG:4326) — one layer per column, all selected lines |
 
-The consolidated map and GeoPackage are only generated when running without arguments (whole-campaign mode). At M2 stage, line selection is already decided — the consolidated view is what matters.
+The consolidated map and GeoPackage are only generated when running without arguments or with `maps` (whole-campaign mode). At M2 stage, line selection is already decided — the consolidated view is what matters.
 
 **Panels and columns shown:**
 
 | Panel | Columns | Description |
 |---|---|---|
 | 1 — Total field | `Mag1`, `Mag1C`, `Mag2`, `Mag2C` | Raw vs compensated for each sensor. `Mag1C`/`Mag2C` = aircraft interference removed by the onboard compensation system during flight. |
-| 2 — Vertical gradient | `MagL`, `MagLC` | `MagL` = Mag1 − Mag2 (raw difference between the two sensors). `MagLC` = compensated gradient. Sensitive to shallow sources. |
-| 3 — Attitude | `Roll`, `Pitch`, `Yaw` | Aircraft orientation. Used to diagnose heading-dependent noise. |
-| 4 — Altimetry | `Ralt`, `Lalt` | Radar and laser altimeter (height above ground). Compared against the nominal drape altitude. |
+| 2 — Gradient | `MagL`, `MagLC` | `MagL` = `(Mag1 − Mag2) / 10.56`, the raw gradient between the two sensors. `MagLC` = compensated gradient. Unit and the meaning of 10.56 are not documented. |
+| 3 — 4th difference | `Mag1D`, `Mag2D` | 4th difference of `Mag1` and `Mag2` as recorded by the system: the noise of each sensor along the line. Plotted as recorded, not recomputed. |
+| 4 — Attitude | `Roll`, `Pitch`, `Yaw` | Aircraft orientation. Used to diagnose heading-dependent noise. |
+| 5 — Altimetry | `Ralt`, `Lalt` | Radar altimeter (feet in the raw data, converted to m) and laser altimeter (m). Compared against the nominal drape altitude. |
+
+Every column the aircraft delivers is described in
+[docs/m02_correction_chain.md](../../docs/m02_correction_chain.md#columns-delivered-by-the-aircraft).
 
 > **Note:** there is no pre-averaged magnetometer output from the aircraft. The sensor average is computed in step 6 of M2 processing (`average_sensors.py`).
 
@@ -152,7 +159,7 @@ stats = compare_columns(df_ours, 'Mag1C', df_ref, 'MAG1COMP', label='Mag1C compe
 
 | Path | Contents |
 |---|---|
-| `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 4-panel inspection figure per line |
+| `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 5-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
 | `outputs/<campaign>/<run_name>/m02/lag_report.json` | Lag estimation result (median, std, decision) |
 | `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg` | Consolidated GeoPackage — all selected lines after lag correction, one layer per magnetic column |

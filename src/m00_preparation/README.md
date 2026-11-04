@@ -99,6 +99,11 @@ Each file contains four layers:
 - `line_points` — valid on-line points only (`line_valid = True`), point by point (WGS84)
 - `flight_lines` — each `(flight_id, line_id)` segment as a LineString, valid rows only (WGS84)
 
+The point layers only carry a few data columns (`Mag1`, `Mag2`, `Ralt`, `Sk`, `Su`, `Sth`).
+The other magnetic columns the aircraft delivers (`Mag1C`, `Mag2C`, `MagL`, `MagLC`,
+`Mag1D`, `Mag2D`) are in the parquet and in `export_selected`; see
+`docs/m02_correction_chain.md` ("Where to see these columns").
+
 ### Step 2b — Inspect a segment (optional)
 
 Before committing to a selection, check whether each line was actually flown the

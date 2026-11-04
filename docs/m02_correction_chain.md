@@ -5,13 +5,42 @@ The order is fixed: each correction assumes the previous one has already been ap
 
 ---
 
+## Columns delivered by the aircraft
+
+These come from the MAG file and keep the aircraft's own names. Everything the
+chain adds later uses a different name (next section), so the two never mix.
+
+| Column | What it is |
+|---|---|
+| `Mag1`, `Mag2` | Raw total field of magnetometer 1 and 2 (nT), before compensation. |
+| `Mag1C`, `Mag2C` | The same field after the in-flight compensation system removed the aircraft's own magnetic interference (nT). **The chain starts from these.** |
+| `MagL` | Raw gradient between the two sensors: exactly `(Mag1 − Mag2) / 10.56` (checked on two flights). Unit and meaning of 10.56 are not documented; probably nT per metre of sensor separation. Not used by any correction step. |
+| `MagLC` | Compensated gradient. Close to `(Mag1C − Mag2C) / 12.9` but not exact. Not used by any correction step. |
+| `Mag1D`, `Mag2D` | 4th difference of `Mag1` and `Mag2` as recorded by the system: a measure of each sensor's noise. Not used by any correction step; `average_sensors.py` computes its own 4th-difference noise. |
+
+### Where to see these columns
+
+| File | Which of these columns it has |
+|---|---|
+| Raw `MAG00xxx.txt` (in each day's folder under `data/raw/`) | All, as recorded |
+| M0 parquet `data/interim/<campaign>/<run_name>/m00/<date>/flight_XXXXX_prepared.parquet` | All, one row per sample. **This is what M2 reads.** |
+| M0 GeoPackage `outputs/.../m00/<date>/<date>.gpkg` (`export_qgis`) | Only `Mag1` and `Mag2` |
+| M0 export `outputs/.../m00/selected_export/..._selected.{csv,xyz,gpkg}` (`export_selected`) | All |
+| M2 `inspect_raw.py`: per-line PNG, `campaign_field_maps.png`, `campaign_raw.gpkg` | All |
+
+Plotting them: [src/m02_magnetics/README.md](../src/m02_magnetics/README.md), Step 0.
+
+---
+
 ## Columns produced at each step
+
+The aircraft's in-flight compensation is **not** one of these steps: it is already
+in `Mag1C` / `Mag2C`, which is where the chain starts. Every column below is created by M2.
 
 | Step | Input | Output column | What is removed |
 |------|-------|---------------|-----------------|
-| 0 | Mag1_raw | **Mag1_C** | Aircraft magnetic interference (done in-flight by the compensation system) |
-| 1–2 | Mag1_C | *(position corrected)* | GPS–magnetometer timing lag |
-| 3 | Mag1_C | **Mag1_Diurnal** | Diurnal variation (ionospheric/magnetospheric noise, measured at base station) |
+| 1–2 | `Mag1C` | *(position corrected)* | GPS–magnetometer timing lag |
+| 3 | `Mag1C` | **Mag1_Diurnal** | Diurnal variation (ionospheric/magnetospheric noise, measured at base station) |
 | 4 | Mag1_Diurnal | **Mag1_IGRF** | Earth's main field (IGRF-13 model). **First time the result is a small anomaly (~±tens of nT)** |
 | 5 | Mag1_IGRF | **Mag1_IGRF_head** | Residual heading-dependent aircraft interference not removed in step 0 |
 | 6 | Mag1_IGRF_head + Mag2_IGRF_head | **Mag_IGRF_head** | — (average of both sensors; quieter sensor gets more weight or the noisy one is discarded) |

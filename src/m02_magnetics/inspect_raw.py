@@ -1,11 +1,12 @@
 """
 Module 2 — Raw signal inspection (before any correction).
 
-Generates a 4-panel PNG per survey line, x-axis = cumulative distance along the line (m):
+Generates a 5-panel PNG per survey line, x-axis = cumulative distance along the line (m):
     Panel 1 — Total field: Mag1 / Mag1C and Mag2 / Mag2C (raw vs compensated)
-    Panel 2 — Vertical gradient: MagL / MagLC (raw vs compensated)
-    Panel 3 — Aircraft attitude: Roll, Pitch (left axis) and Yaw (right axis)
-    Panel 4 — Altimetry: Ralt (radar), Lalt (laser, if valid), nominal drape altitude
+    Panel 2 — Gradient: MagL / MagLC (raw vs compensated)
+    Panel 3 — 4th difference as recorded: Mag1D / Mag2D (noise of each sensor)
+    Panel 4 — Aircraft attitude: Roll, Pitch (left axis) and Yaw (right axis)
+    Panel 5 — Altimetry: Ralt (radar), Lalt (laser, if valid), nominal drape altitude
 
 Also generates one summary PNG per flight (Panel 1 thumbnails for every line).
 
@@ -14,9 +15,13 @@ Column reference
 Mag1, Mag2   : raw total-field readings from the two scalar magnetometers (nT)
 Mag1C, Mag2C : compensated field — aircraft interference removed by the onboard
                FOM/compensation system during flight (nT)
-MagL         : raw vertical gradient = Mag1 − Mag2 (nT); bird vs stinger separation
-MagLC        : compensated vertical gradient (nT)
-Ralt         : radar altimeter — height above ground (m)
+MagL         : raw gradient between the two sensors: (Mag1 − Mag2) / 10.56 exactly
+               (checked on two flights); unit not documented
+MagLC        : compensated gradient; close to (Mag1C − Mag2C) / 12.9, not exact
+Mag1D, Mag2D : 4th difference of Mag1 / Mag2 as recorded by the system (noise of
+               each sensor); plotted as recorded, not recomputed
+Ralt         : radar altimeter — height above ground, in FEET in the raw data
+               (converted to m with RALT_TO_M for plotting)
 Lalt         : laser altimeter — height above ground (m), if fitted
 
 Note: there is no pre-averaged magnetometer output from the aircraft.
@@ -35,6 +40,9 @@ Usage
 
     # One specific line
     python -m src.m02_magnetics.inspect_raw 22.04.2022 00447 1001
+
+    # Only the campaign-wide maps and GeoPackage (no per-line PNGs)
+    python -m src.m02_magnetics.inspect_raw maps
 """
 
 import sys
@@ -50,7 +58,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.m00_preparation.read_survey_nav import read_survey_thresholds
+from src.m00_preparation.read_survey_nav import read_survey_thresholds, RALT_TO_M
 
 
 def load_config() -> dict:
@@ -75,7 +83,8 @@ def _has_data(seg: pd.DataFrame, col: str) -> bool:
 
 def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> None:
     """
-    PNG de 4 paneles para una línea de vuelo: campo total, gradiente, actitud, altimetría.
+    PNG de 5 paneles para una línea de vuelo: campo total, gradiente, 4ª diferencia,
+    actitud, altimetría.
 
     El geofísico usa esta figura para evaluar la calidad de la compensación en tiempo
     real antes de aplicar correcciones adicionales.
@@ -85,7 +94,7 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
     flight_id = seg['flight_id'].iloc[0]
     line_id = int(seg['line_id'].iloc[0])
 
-    fig, axes = plt.subplots(4, 1, figsize=(16, 12), sharex=True)
+    fig, axes = plt.subplots(5, 1, figsize=(16, 15), sharex=True)
     fig.suptitle(
         f"Flight {flight_id}  |  Line {line_id}  |  Raw vs Compensated",
         fontsize=13,
@@ -120,7 +129,7 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
     # --- Panel 2: Vertical gradient ---
     ax = axes[1]
     if _has_data(seg, 'MagL'):
-        ax.plot(dist, seg['MagL'].values, color='#bbbbbb', linewidth=0.7, label='MagL raw (Mag1−Mag2)')
+        ax.plot(dist, seg['MagL'].values, color='#bbbbbb', linewidth=0.7, label='MagL raw')
     if _has_data(seg, 'MagLC'):
         ax.plot(dist, seg['MagLC'].values, color='seagreen', linewidth=0.9, label='MagLC compensated')
     ax.axhline(0, color='gray', linewidth=0.5, linestyle='--')
@@ -130,12 +139,31 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
         ax.annotate(f'std(MagLC) = {std_lc:.2f} nT', xy=(0.02, 0.97),
                     xycoords='axes fraction', va='top', fontsize=8, color='seagreen')
 
-    ax.set_ylabel('Vertical gradient (nT)')
+    ax.set_ylabel('Gradient (as recorded)')
     ax.legend(fontsize=8, loc='upper right')
     ax.grid(True, alpha=0.3)
 
-    # --- Panel 3: Aircraft attitude ---
+    # --- Panel 3: 4th difference as recorded (noise of each sensor) ---
     ax = axes[2]
+    if _has_data(seg, 'Mag1D'):
+        ax.plot(dist, seg['Mag1D'].values, color='steelblue', linewidth=0.7, label='Mag1D')
+    if _has_data(seg, 'Mag2D'):
+        ax.plot(dist, seg['Mag2D'].values, color='darkorange', linewidth=0.7, label='Mag2D')
+    ax.axhline(0, color='gray', linewidth=0.5, linestyle='--')
+
+    notes = [f'{col}  rms={np.sqrt(np.nanmean(seg[col].values ** 2)):.3f}'
+             f'  max|.|={np.nanmax(np.abs(seg[col].values)):.2f}'
+             for col in ('Mag1D', 'Mag2D') if _has_data(seg, col)]
+    if notes:
+        ax.annotate('   '.join(notes), xy=(0.02, 0.97), xycoords='axes fraction',
+                    va='top', fontsize=8)
+
+    ax.set_ylabel('4th difference (as recorded)')
+    ax.legend(fontsize=8, loc='upper right')
+    ax.grid(True, alpha=0.3)
+
+    # --- Panel 4: Aircraft attitude ---
+    ax = axes[3]
     ax_yaw = ax.twinx()
 
     if _has_data(seg, 'Roll'):
@@ -156,10 +184,10 @@ def plot_line(seg: pd.DataFrame, survey_thresholds: dict, out_path: Path) -> Non
     ax.legend(lines1 + lines2, labels1 + labels2, fontsize=8, loc='upper right')
     ax.grid(True, alpha=0.3)
 
-    # --- Panel 4: Altimetry ---
-    ax = axes[3]
+    # --- Panel 5: Altimetry ---
+    ax = axes[4]
     if _has_data(seg, 'Ralt'):
-        ax.plot(dist, seg['Ralt'].values, color='steelblue', linewidth=0.8, label='Ralt (radar)')
+        ax.plot(dist, seg['Ralt'].values * RALT_TO_M, color='steelblue', linewidth=0.8, label='Ralt (radar)')
 
     if 'Lalt' in seg.columns:
         lalt_valid = seg['Lalt'].dropna()
@@ -264,57 +292,77 @@ _MAP_COLS = [
     ('Mag1C', 'Mag1C — Compensated total field (nT)',       False),
     ('Mag2',  'Mag2 — Raw total field (nT)',                False),
     ('Mag2C', 'Mag2C — Compensated total field (nT)',       False),
-    ('MagL',  'MagL — Raw vertical gradient (nT)',          True),
-    ('MagLC', 'MagLC — Compensated vertical gradient (nT)', True),
+    ('MagL',  'MagL — Raw gradient (as recorded)',          True),
+    ('MagLC', 'MagLC — Compensated gradient (as recorded)', True),
+    ('Mag1D', 'Mag1D — 4th difference of Mag1 (as recorded)', True),
+    ('Mag2D', 'Mag2D — 4th difference of Mag2 (as recorded)', True),
+]
+
+
+# Columns whose maps share one colour scale, one group per row, so the maps of a row
+# can be compared directly.
+_SCALE_GROUPS = [
+    ['Mag1', 'Mag2', 'Mag1C', 'Mag2C'],   # total field
+    ['MagL', 'MagLC'],                     # gradients
+    ['Mag1D', 'Mag2D'],                    # 4th differences
 ]
 
 
 def graficar_mapas_campo(on_line: pd.DataFrame, flight_id: str, out_path: Path) -> None:
     """
-    Scatter maps of all magnetic columns in geographic coordinates (lon/lat).
-    One subplot per column; x = longitude, y = latitude.
-    Color limits use the 2nd–98th percentile to suppress outliers.
+    Scatter maps of the magnetic columns in geographic coordinates (lon/lat).
+
+    One row per group in _SCALE_GROUPS (total field / gradients / 4th differences),
+    one subplot per column; x = longitude, y = latitude. The columns of a row share
+    one colour scale (pooled 2nd–98th percentile, so outliers do not wash it out):
+    blue = low, red = high. Gradients and 4th differences are centred on 0.
     """
-    available = [(col, title, sym) for col, title, sym in _MAP_COLS
-                 if col in on_line.columns and on_line[col].notna().any()]
-    if not available:
+    titles    = {col: title for col, title, _ in _MAP_COLS}
+    symmetric = {col: sym for col, _, sym in _MAP_COLS}
+    rows = []
+    for group in _SCALE_GROUPS:
+        cols = [c for c in group if c in on_line.columns and on_line[c].notna().any()]
+        if cols:
+            rows.append(cols)
+    if not rows:
         return
 
-    n     = len(available)
-    ncols = 3
-    nrows = (n + ncols - 1) // ncols
+    ncols    = max(len(r) for r in rows)
     lat_mean = on_line['Ygps'].mean()
     aspect   = 1.0 / np.cos(np.radians(lat_mean))   # correct for lat compression
 
-    fig, axes = plt.subplots(nrows, ncols, figsize=(7 * ncols, 6 * nrows))
-    axes_flat  = np.array(axes).flatten() if n > 1 else [axes]
+    fig, axes = plt.subplots(len(rows), ncols, figsize=(7 * ncols, 6 * len(rows)),
+                             squeeze=False)
 
-    for i, (col, title, sym) in enumerate(available):
-        ax    = axes_flat[i]
-        valid = on_line[['Xgps', 'Ygps', col]].dropna()
-        p2, p98 = np.nanpercentile(valid[col], [2, 98])
-        if sym:
+    for r, cols in enumerate(rows):
+        pooled  = np.concatenate([on_line[c].dropna().values for c in cols])
+        p2, p98 = np.nanpercentile(pooled, [2, 98])
+        if symmetric[cols[0]]:
             vabs = max(abs(p2), abs(p98))
             vmin, vmax, cmap = -vabs, vabs, 'RdBu_r'
         else:
-            vmin, vmax, cmap = p2, p98, 'plasma'
+            vmin, vmax, cmap = p2, p98, 'RdYlBu_r'
 
-        sc = ax.scatter(valid['Xgps'], valid['Ygps'], c=valid[col],
-                        s=0.5, cmap=cmap, vmin=vmin, vmax=vmax, rasterized=True)
-        cb = plt.colorbar(sc, ax=ax, shrink=0.8)
-        cb.set_label('nT', fontsize=7)
-        cb.ax.tick_params(labelsize=6)
-        ax.set_aspect(aspect)
-        ax.set_title(title, fontsize=8, pad=4)
-        ax.set_xlabel('Longitude (°)', fontsize=7)
-        ax.set_ylabel('Latitude (°)', fontsize=7)
-        ax.tick_params(labelsize=6)
-        ax.grid(alpha=0.3)
+        for i, col in enumerate(cols):
+            ax    = axes[r, i]
+            valid = on_line[['Xgps', 'Ygps', col]].dropna()
+            sc = ax.scatter(valid['Xgps'], valid['Ygps'], c=valid[col],
+                            s=0.5, cmap=cmap, vmin=vmin, vmax=vmax, rasterized=True)
+            cb = plt.colorbar(sc, ax=ax, shrink=0.8)
+            cb.set_label('nT' if r == 0 else 'as recorded', fontsize=7)
+            cb.ax.tick_params(labelsize=6)
+            ax.set_aspect(aspect)
+            ax.set_title(titles[col], fontsize=8, pad=4)
+            ax.set_xlabel('Longitude (°)', fontsize=7)
+            ax.set_ylabel('Latitude (°)', fontsize=7)
+            ax.tick_params(labelsize=6)
+            ax.grid(alpha=0.3)
 
-    for j in range(len(available), len(axes_flat)):
-        axes_flat[j].set_visible(False)
+        for j in range(len(cols), ncols):
+            axes[r, j].set_visible(False)
 
-    fig.suptitle(f'Flight {flight_id} — Field maps (raw and compensated)', fontsize=11)
+    fig.suptitle(f'{flight_id} — magnetic columns from the aircraft '
+                 f'(one colour scale per row)', fontsize=11)
     plt.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150, bbox_inches='tight')
@@ -391,11 +439,11 @@ def inspect(date: str, flight_id: str, line_id: int | None = None) -> None:
         plot_summary(on_line, flight_id, out_resumen)
 
 
-def inspect_all() -> None:
+def inspect_all(per_line: bool = True) -> None:
     """
     Load all selected lines from line_selection.csv, generate per-line profile
-    PNGs, and produce ONE consolidated field-map PNG and GeoPackage for the
-    entire campaign.
+    PNGs (skipped when per_line=False), and produce ONE consolidated field-map
+    PNG and GeoPackage for the entire campaign.
 
     The consolidated outputs are what matters at M2 stage — line selection was
     already decided in M0/M1.
@@ -420,7 +468,8 @@ def inspect_all() -> None:
     print("\n── Per-line profile plots ──────────────────────────────────────────")
     all_segments = []
     for _, row in flights.iterrows():
-        inspect(row['date'], row['flight_id'])
+        if per_line:
+            inspect(row['date'], row['flight_id'])
 
         # Collect selected segments for consolidated outputs
         pq = interim_root / 'm00' / row['date'] / f"flight_{row['flight_id']}_prepared.parquet"
@@ -452,6 +501,8 @@ def inspect_all() -> None:
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         inspect_all()
+    elif sys.argv[1] == 'maps':
+        inspect_all(per_line=False)
     elif len(sys.argv) == 2:
         inspect(sys.argv[1], None)
     else:
