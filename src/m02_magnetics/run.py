@@ -281,6 +281,61 @@ def plot_lag_effect(
     print(f"  Lag effect map: {out_path.relative_to(PROJECT_ROOT)}")
 
 
+def write_lag_summary(lag_dir: Path) -> None:
+    """
+    Plain-language summary of steps 1-2, printed and saved as lag_summary.txt:
+    what was measured, what was (not) changed in the data, and what the lag would change.
+    Reads lag_report.json, so it must run after plot_lag_effect.
+    """
+    with open(lag_dir / 'lag_report.json') as f:
+        r = json.load(f)
+    decision = r['decision']
+    lag, tol = r['lag_median_s'], r['lag_tolerable_s']
+    v        = r['velocity_median_ms']
+    k        = int(r.get('effect_k_samples', 0))
+    eff      = r.get('effect_nT')
+
+    L = ["GPS-magnetometer lag - summary", "=" * 31, ""]
+    if decision == 'LAG_UNKNOWN':
+        L += ["Measured lag : could not be measured (no line flown in both directions)"]
+    else:
+        L += [f"Measured lag : {lag:+.3f} s  (median of {int(r['n_pairs'])} lines flown in both directions)",
+              f"               = {abs(lag) * v:.1f} m of position error at {v:.0f} m/s",
+              f"Tolerance    : {tol:.3f} s  (= {tol * v:.0f} m, a quarter of the line spacing)"]
+    L += [f"Decision     : {decision}", ""]
+
+    L += ["What this correction is",
+          "  It is systematic: the magnetometer delay is the same for every reading, so one",
+          "  value is measured for the whole campaign and applies to all flights. It moves the",
+          "  GPS coordinates (Xgps, Ygps, Zgps) a few samples along the flight direction.",
+          "  The magnetic values and the time are never changed.", ""]
+
+    L += ["What was done in this run"]
+    if decision == 'LAG_SIGNIFICANT':
+        L += [f"  The GPS coordinates were shifted by {k} samples. The last {k} samples of each",
+              "  flight lost their position and are marked line_valid = False. lag_applied = True."]
+    elif decision == 'LAG_NEGLIGIBLE':
+        L += ["  Nothing. The lag is below the tolerance, so the data were left exactly as they",
+              "  are: coordinates unchanged, lag_applied = False."]
+    else:
+        L += ["  Nothing. No lag could be measured, so the data were left exactly as they are:",
+              "  coordinates unchanged, lag_applied = False."]
+    L += [""]
+
+    if eff:
+        verb = "changes" if decision == 'LAG_SIGNIFICANT' else "would change"
+        worst = {m: max(s[m] for s in eff.values())
+                 for m in ('median_nT', 'p95_nT', 'max_nT')}
+        L += [f"How much it {verb} the data (lag_effect_map.png)",
+              f"  Shifting {k} samples ({abs(lag) * v:.1f} m), the magnetic value at a point {verb} by:",
+              f"  median {worst['median_nT']:.2f} nT, 95 % of the points under {worst['p95_nT']:.2f} nT,"
+              f" maximum {worst['max_nT']:.1f} nT."]
+
+    text = "\n".join(L) + "\n"
+    (lag_dir / 'lag_summary.txt').write_text(text, encoding='utf-8')
+    print("\n" + text)
+
+
 def export_step_output(
     selected: pd.DataFrame,
     interim_root: Path,
@@ -531,6 +586,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
 
         plot_lag_diagnostic(df_all, lag_result, lag_dir)
         plot_lag_effect(selected, interim_root, lag_result, lag_dir)
+        write_lag_summary(lag_dir)
     else:
         # Load lag result from previous run if skipping steps 1-2
         report_path = lag_dir / 'lag_report.json'

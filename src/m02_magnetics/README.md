@@ -108,6 +108,7 @@ Everything is saved in `outputs/<campaign>/<run_name>/m02/step_01_02_lag/`:
 
 | File | What it shows | Good sign |
 |---|---|---|
+| `lag_summary.txt` | **Start here.** Plain-language summary (also printed at the end of the run): what was measured, what was or was not changed in the data, and how much it would change | — |
 | `lag_report.json` | `lag_median_s`: the measured lag. `lag_tolerable_s`: the limit above which it is corrected. `decision`: what was done | `decision` = `LAG_NEGLIGIBLE` |
 | `lag_diagnosis_*.png` | The same line flown east and west, before and after aligning | The two curves nearly overlap |
 | `lag_effect_map.png` | How much the data would change if the lag were applied (nT) | Mostly white |
@@ -131,7 +132,7 @@ How the lag is measured: [docs/m02_correction_chain.md](../../docs/m02_correctio
 |---|---|
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 5-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
-| `outputs/<campaign>/<run_name>/m02/step_01_02_lag/` | `lag_report.json` (with the size of the effect in `effect_nT`), `lag_diagnosis_line<id>_line<id>.png`, `lag_effect_map.png` — see Steps 1–2 |
+| `outputs/<campaign>/<run_name>/m02/step_01_02_lag/` | `lag_summary.txt`, `lag_report.json` (with the size of the effect in `effect_nT`), `lag_diagnosis_line<id>_line<id>.png`, `lag_effect_map.png` — see Steps 1–2 |
 | `outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/` | One GeoPackage and one map per later step |
 | `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg`, `campaign_m02_map.png` | Consolidated GeoPackage and map of all selected lines, one layer per magnetic column. Only generated with step 8 |
 | `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data: copy of the M0 parquet plus `lag_applied`; GPS positions are shifted only if the decision is `LAG_SIGNIFICANT` |
