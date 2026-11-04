@@ -1,9 +1,10 @@
 # Module 1 — Quality Control
 
 Checks **how the aircraft flew** each selected line against the thresholds in
-`TestSurveyNav.csv` (altitude, distance off line, speed). It does not judge the
-geophysical sensors: magnetometer and spectrometer quality is looked at in
-Module 2 / 3.
+`TestSurveyNav.csv` (altitude, distance off line, speed). Pass/fail uses only
+these three flight metrics. The detail view also shows sensor values (magnetics,
+radiometry, VLF) so you can inspect them, but they have no threshold and do not
+affect pass/fail.
 
 Prerequisite: `line_selection.csv` (Module 0, step 3).
 
@@ -24,8 +25,9 @@ Prerequisite: `line_selection.csv` (Module 0, step 3).
    python -m src.m01_qc.run 22.04.2022 00427 10010
    ```
 
-   6-panel snapshot: GPS track, altitude, Roll/Pitch, Yaw, Mag1/Mag2 (noise/spike
-   readout), SPC and VLF (red when a channel looks flat or missing). Informational
+   6-panel snapshot: GPS track, altitude (`Ralt` blue, `Lalt` purple, allowed band
+   dashed orange/red), Roll/Pitch, Yaw, Mag1/Mag2 (4th-difference rms/max and spike
+   count), SPC and VLF (red when a channel looks flat or missing). Informational
    only: it does not affect pass/fail.
 
 3. Decide: set `selected = False` in `line_selection.csv` for lines that should
