@@ -7,10 +7,12 @@ this data goes here. Newest entries first inside each step.
 
 ## Steps 1–2: GPS lag
 
-- Measured lag about 0.2 s; at the average speed (38 m/s) that is 7.6 m. Tolerance
-  `lag_tolerable_s` about 1.6 s (62 m, a quarter of the 250 m line spacing).
-- Decision `LAG_NEGLIGIBLE`: positions unchanged. The magnetic value would change by less than
-  1 nT in 95 % of the points.
+- 5 lines were flown in both directions (4 with enough common track). Lags: +0.25, +0.20, +0.20
+  and 0.00 s; median 0.20 s. Resolution 0.05 s, only 4 pairs.
+- Tolerance (line spacing 250 m, average speed 38 m/s): 62.5 m, 1.64 s. 0.2 s is 7.6 m of position
+  error, far below it.
+- Decision `LAG_NEGLIGIBLE`: positions unchanged. If it were applied, the value at a point would
+  change by a median of 0.07 nT, below 0.9 nT in 95 % of the points, 18 nT at most.
 
 ## Step 3: Diurnal correction (run `test_001`)
 
@@ -20,6 +22,14 @@ this data goes here. Newest entries first inside each step.
   The real recording of 24 April (header `23 IV 22`) is stored in `26.04.2022/Tagesgang00434.txt`.
   Matching on absolute UTC time handles it; the duplicate readings are kept once.
 - One base station for the whole campaign (47.808° N, 107.574° E, a reading every ~3 s).
+- With the reference 59150 nT and the base station between 59140 and 59158 nT, the corrections are
+  a few nT.
+- The campaign is flown in the local morning (UTC+8), so every Tagesgang file crosses midnight UTC.
+- MAG `Time` is missing in about 13 % of the rows. Base readings: normal scatter about 0.25 nT,
+  about 1 % discarded as spikes or low quality.
+- The survey area is about 25 km across, small enough for one base station.
+- Raw against filtered (30 s) base station: the correction differs by 0.04 nT (std), 0.09 nT in
+  95 % of the points, 0.70 nT at most. The raw curve is used.
 
 ### Reference level of the diurnal correction — noted 2026-11-10
 
@@ -37,7 +47,7 @@ this data goes here. Newest entries first inside each step.
   night of 23–24 April (22:21 to 03:37) and the selected lines fly 04:50 to 06:05 UTC.
 - The specialist's data has `BaseMag` for that flight (`data/reference/magnetics_example.dat`,
   59140–59150 nT, diurnal −0.4 to +9.7 nT). It is rebuilt as `data/reference/base_station_supplement.csv`
-  (`python -m src.m02_magnetics.base_supplement`) and used only where our base station has no reading.
+  (`python -m src.m02_magnetics.base_supplement 434`) and used only where our base station has no reading.
 - Result: the flight is 100 % corrected (variation −9.7 to +0.3 nT).
 - Limit: it is the specialist's filtered base value, so that flight cannot be validated against his
   result. Replace it when the original Tagesgang file is found.
@@ -46,4 +56,6 @@ this data goes here. Newest entries first inside each step.
 
 ## Step 7: Levelling
 
-- The eastern edge is limited by 5 missing tie lines.
+- The eastern edge is limited by 5 missing tie lines (18 planned traverses and 5 tie lines could not be
+  flown, per the specialist's report). The specialist built artificial tie lines from microlevelled
+  grids; that is not implemented here.

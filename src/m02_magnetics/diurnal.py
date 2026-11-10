@@ -48,7 +48,7 @@ import pandas as pd
 from src.m00_preparation.read_tagesgang import read_tagesgang
 
 MIN_QUALITY    = 94     # base station quality flag (sq): 95-96 is normal, lower ones are mostly spikes
-SPIKE_NT       = 1.0    # reading further than this from the running median is discarded (normal scatter: ~0.25 nT)
+SPIKE_NT       = 1.0    # reading further than this from the running median is discarded (well above the normal scatter)
 MAX_BASE_GAP_S = 60.0   # no interpolation across a gap longer than this between two readings
 
 _ROMAN_MONTHS = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6,
@@ -142,8 +142,8 @@ def flight_utc_s(df: pd.DataFrame) -> np.ndarray:
     """
     Absolute UTC time (seconds since 1970-01-01) of every row of a flight.
 
-    MAG gives Date (YYYYMMDD) and Time. Time is missing in about 13 % of the rows and has
-    glitches (0.0, 0.1 s...) in a few. A time is only trusted if it keeps a nearly constant
+    MAG gives Date (YYYYMMDD) and Time. Time can be missing in some rows and have
+    glitches (0.0, 0.1 s...). A time is only trusted if it keeps a nearly constant
     difference with the M3clk clock of the flight (a glitch is off by hours); the other rows
     are filled by interpolating the trusted ones along M3clk.
     """

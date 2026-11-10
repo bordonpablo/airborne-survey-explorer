@@ -24,17 +24,17 @@ Algorithm (standard crossover levelling)
        δᵢ = mean(diff) over all tie lines crossing line i
 6. Apply: Mag_IGRF_head_level = Mag_IGRF_head − δᵢ
 
-Limitation — missing eastern tie lines
----------------------------------------
-The Mongolia 2022 survey is missing 5 tie lines at the eastern edge (see
-specialist report, Wackerle/Geointrepid). Production lines that only have
-crossovers with the available (western/central) tie lines receive corrections
-based on those crossovers only. Lines with NO crossover at all receive no
-correction (δᵢ = 0). This may leave residual artefacts at the eastern edge.
+Limitation — missing tie lines
+-------------------------------
+If a survey lacks tie lines in part of the area (for example because they could not
+be flown), production lines that only have crossovers with the available tie lines
+receive corrections based on those crossovers only. Lines with NO crossover at all
+receive no correction (δᵢ = 0). This may leave residual artefacts where the tie lines
+are missing.
 
-The specialist addressed this by creating artificial tie lines from microlevelled
-grids. That approach is not implemented here; microlevelling (step 8) is expected
-to attenuate any remaining line-parallel artefacts.
+A possible remedy is to build artificial tie lines from microlevelled grids. That
+approach is not implemented here; microlevelling (step 8) is expected to attenuate any
+remaining line-parallel artefacts.
 
 Adds columns
 ------------

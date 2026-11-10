@@ -202,7 +202,7 @@ def _identificar_pares(df: pd.DataFrame) -> list:
 
     Es el único caso en que la misma traza se mide hacia el este y hacia el oeste, así
     que la diferencia de posición de una misma anomalía se debe solo al lag. Con líneas
-    vecinas (250 m) no sirve: el corrimiento entre ellas lo domina la geología.
+    vecinas (un espaciado de línea) no sirve: el corrimiento entre ellas lo domina la geología.
 
     Retorna lista de tuplas (fila_e, fila_o), cada una es una Serie de pandas
     con columnas: flight_id, line_id, direccion.

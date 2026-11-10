@@ -7,6 +7,8 @@ Outputs (all in one folder):
     diurnal_base_station.png   base station during each flight: raw curve, filtered curve and
                                readings from the supplement table (red)
     diurnal_correction.png     the correction added to the data during each flight
+    diurnal_maps.png           maps of Mag1, Mag2 and their mean, before and after the correction
+    diurnal_correction_map.png map of the correction added at each point
 
 The correction is in diurnal.py. The corrected columns are saved in the m02 parquet of each
 flight (BaseMag, Diurnal, Mag1_Diurnal, Mag2_Diurnal, utc_s).
@@ -85,7 +87,8 @@ def run_diurnal_step(
             'dmax': float((-s.loc[cov, 'Diurnal']).max()) if cov.any() else np.nan,
             'files': sorted(window['source'].unique()),
         })
-        parts.append(s.loc[cov, ['utc_s', 'Diurnal']])
+        parts.append(s.loc[cov, ['utc_s', 'Diurnal', 'Xgps', 'Ygps',
+                                 'Mag1C', 'Mag2C', 'Mag1_Diurnal', 'Mag2_Diurnal']])
 
     if not stats:
         return
@@ -99,6 +102,8 @@ def run_diurnal_step(
         print("  No flight has base station data: nothing corrected.")
         return
     _plot_correction(corrected, stats, base_use, out_dir / 'diurnal_correction.png')
+    _plot_field_maps(corrected, out_dir / 'diurnal_maps.png')
+    _plot_correction_map(corrected, out_dir / 'diurnal_correction_map.png')
     _write_summary(base, stats, corrected, reference_nT, base_use, filter_window_s,
                    out_dir / 'diurnal_summary.txt')
 
@@ -195,6 +200,70 @@ def _plot_correction(corrected, stats, base_use, path: Path) -> None:
     fig.savefig(path, dpi=130, bbox_inches='tight')
     plt.close(fig)
     print(f"  Correction plot: {_rel(path)}")
+
+
+def _plot_field_maps(corrected, path: Path) -> None:
+    """
+    Maps of the field before (Mag1C, Mag2C) and after (Mag1_Diurnal, Mag2_Diurnal) the correction,
+    and of the mean of both sensors. The mean is only for display: the real sensor average is
+    step 6. The two maps of a row share one colour scale, so they can be compared.
+    """
+    c = corrected
+    rows = [
+        (c['Mag1C'], c['Mag1_Diurnal'], 'Mag1C', 'Mag1_Diurnal'),
+        (c['Mag2C'], c['Mag2_Diurnal'], 'Mag2C', 'Mag2_Diurnal'),
+        ((c['Mag1C'] + c['Mag2C']) / 2, (c['Mag1_Diurnal'] + c['Mag2_Diurnal']) / 2,
+         'mean of Mag1C and Mag2C', 'mean of Mag1_Diurnal and Mag2_Diurnal'),
+    ]
+    aspect = 1.0 / np.cos(np.radians(c['Ygps'].mean()))
+    fig, axes = plt.subplots(len(rows), 2, figsize=(15, 6.3 * len(rows)), squeeze=False)
+    for axr, (before, after, name_before, name_after) in zip(axes, rows):
+        lo, hi = np.nanpercentile(np.concatenate([before.dropna(), after.dropna()]), [2, 98])
+        for ax, values, title in zip(axr, (before, after),
+                                     (f"{name_before} (before)", f"{name_after} (after)")):
+            order = np.argsort(np.abs(values.values - np.nanmedian(values.values)))   # extremes on top
+            sc = ax.scatter(c['Xgps'].values[order], c['Ygps'].values[order], c=values.values[order],
+                            s=0.5, cmap='RdYlBu_r', vmin=lo, vmax=hi, rasterized=True)
+            plt.colorbar(sc, ax=ax, shrink=0.8).set_label('nT', fontsize=8)
+            ax.set_aspect(aspect)
+            ax.set_title(title, fontsize=10)
+            ax.set_xlabel('Longitude (°)', fontsize=8)
+            ax.set_ylabel('Latitude (°)', fontsize=8)
+            ax.grid(alpha=0.3)
+    fig.suptitle("Field before and after the diurnal correction (nT)", fontsize=12)
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
+    fig.savefig(path, dpi=120, bbox_inches='tight')
+    plt.close(fig)
+    print(f"  Field maps: {_rel(path)}")
+
+
+def _plot_correction_map(corrected, path: Path) -> None:
+    """
+    Map of the correction added at each point (column Diurnal, nT).
+
+    The correction depends on the time of the flight, not on the place: each line shows the
+    value of the moment it was flown, so the stripes are time, not geology. The map is a check:
+    neighbouring lines flown at different times should not show abrupt jumps.
+    Blue = subtracted from the data, red = added.
+    """
+    corr = corrected['Diurnal']
+    vmax = float(corr.abs().quantile(0.99))
+    aspect = 1.0 / np.cos(np.radians(corrected['Ygps'].mean()))
+    order = np.argsort(np.abs(corr.values))                                   # largest on top
+    fig, ax = plt.subplots(figsize=(9, 8))
+    sc = ax.scatter(corrected['Xgps'].values[order], corrected['Ygps'].values[order],
+                    c=corr.values[order], s=0.5, cmap='RdBu_r', vmin=-vmax, vmax=vmax, rasterized=True)
+    plt.colorbar(sc, ax=ax, shrink=0.8).set_label('nT (blue: subtracted, red: added)', fontsize=8)
+    ax.set_aspect(aspect)
+    ax.set_title(f"Diurnal correction added at each point (nT)\n"
+                 f"median |{corr.abs().median():.1f}|, max |{corr.abs().max():.1f}|", fontsize=10)
+    ax.set_xlabel('Longitude (°)', fontsize=8)
+    ax.set_ylabel('Latitude (°)', fontsize=8)
+    ax.grid(alpha=0.3)
+    plt.tight_layout()
+    fig.savefig(path, dpi=130, bbox_inches='tight')
+    plt.close(fig)
+    print(f"  Correction map: {_rel(path)}")
 
 
 def _write_summary(base, stats, corrected, reference_nT, base_use, filter_window_s, path: Path) -> None:
