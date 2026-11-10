@@ -49,7 +49,7 @@ combines them. The in-flight compensation already happened in the aircraft (`Mag
 | Step | Input | Output column | What is removed |
 |------|-------|---------------|-----------------|
 | 1–2 | `Xgps`, `Ygps`, `Zgps` | same columns, shifted in time (+ `lag_applied`) | GPS–magnetometer timing lag. No magnetic column changes |
-| 3 | `Mag1C`, `Mag2C` | **Mag1_Diurnal**, **Mag2_Diurnal** | Diurnal variation (ionospheric/magnetospheric noise, measured at base station) |
+| 3 | `Mag1C`, `Mag2C` | **Mag1_Diurnal**, **Mag2_Diurnal** (+ `BaseMag`, `Diurnal`) | Diurnal variation (ionospheric/magnetospheric noise, measured at base station) |
 | 4 | Mag1_Diurnal, Mag2_Diurnal | **Mag1_IGRF**, **Mag2_IGRF** | Earth's main field (IGRF-13 model). **First time the result is a small anomaly (~±tens of nT)** |
 | 5 | Mag1_IGRF, Mag2_IGRF | **Mag1_IGRF_head**, **Mag2_IGRF_head** | Residual heading-dependent aircraft interference left by the in-flight compensation |
 | 6 | Mag1_IGRF_head, Mag2_IGRF_head | **Mag_IGRF_head** (+ `sensor_used`) | — (plain average of both sensors; only the quieter one if the other is more than 2× noisier) |
@@ -95,6 +95,48 @@ change by a median of 0.07 nT, below 0.9 nT in 95 % of the points, and 18 nT at 
 **Limits.** Only 4 pairs, with a resolution of 0.05 s. It assumes east–west lines. A fixed
 offset between the sensors and the GPS along the flight direction cannot be told apart from
 a timing lag.
+
+---
+
+## Step 3: Diurnal correction
+
+**What it is.** External currents make the Earth's field vary during the day, by a few nT on a
+quiet day. A base station fixed on the ground records that variation. For each airborne reading
+the base value at the same instant is interpolated and its difference with the reference level is
+subtracted:
+
+    δ(t) = B_base(t) − B_ref        Mag1_Diurnal = Mag1C − δ(t)        Diurnal = −δ(t)
+
+`B_ref` is `igrf_base_field_nT` in `project.yaml` (59150 nT). Only magnetic values change.
+
+**How the base station is matched to the flights.** On **absolute UTC time** (date + time), never
+on the time of day or on the name of the folder:
+
+- Every `Tagesgang` file of every day folder is read. Each one crosses midnight UTC (the field
+  campaign is in the local morning, UTC+8), so the file date comes from its header
+  (`/ID ... file ...  21 IV 22`) and one day is added at each midnight crossed.
+- Each flight has its date in the MAG `Date` column. The MAG `Time` is missing in about 13 % of the
+  rows and has glitches (0.0, 0.1 s...) in a few: a time is only trusted if it keeps a constant
+  difference with the `M3clk` clock, and the rest is interpolated along that clock.
+- Base readings with quality flag below 94, zero values and spikes (more than 1 nT from the running
+  median; normal scatter is about 0.25 nT) are discarded, about 1 % of the readings.
+- A flight sample is only corrected if the base station has readings within 60 s around it. There
+  is no extrapolation: the sample is left empty (NaN).
+
+**What was found in this campaign (`test_001`).**
+
+- 17 of the 18 flights are corrected. Variation between −10.3 and +8.6 nT; the correction added
+  has a median of 3.2 nT, stays under 7.9 nT in 95 % of the points and reaches 10.3 nT at most.
+- The file in the folder `24.04.2022` is a copy of the one in `22.04.2022`. The real recording of
+  24 April (header `23 IV 22`) is stored in the folder `26.04.2022`. Matching by UTC time uses it
+  correctly.
+- Flight 00434 (26.04.2022, 04:50–06:05 UTC) has **no base station record**: the file in its folder is
+  the recording of the night of 23–24 April. Its points are left empty from this step on.
+- There is one base station (same site every day, 47.808° N, 107.574° E, readings every ~3 s).
+
+**Limits.** The variation measured at one point is applied to the whole area, which is reasonable
+for a survey of about 25 km. The correction is as good as the base station readings: it cannot
+fix a flight without them.
 
 ---
 

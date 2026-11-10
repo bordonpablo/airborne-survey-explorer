@@ -16,7 +16,8 @@ see [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 | `run.py` | **Main entry point.** Reads `line_selection.csv` and runs steps 1–8 (all, or `--steps 1,2`, `--steps 3`, ...). |
 | `inspect_raw.py` | **Raw inspection.** Five-panel PNG per line before any correction. |
 | `lag.py` | **GPS lag estimation and correction.** Cross-correlation of opposite-direction pairs. |
-| `diurnal.py` | Diurnal correction (base station subtraction). |
+| `diurnal.py` | Diurnal correction (base station subtraction), matched on absolute UTC time. |
+| `diurnal_report.py` | Runs step 3 and writes its outputs (summary, base station table and plot, before/after maps). |
 | `igrf.py` | **IGRF-13 removal.** Computes and subtracts IGRF total field at each sample point using ppigrf. |
 | `heading.py` | **Heading correction.** Empirical DC offset per heading direction (E/W). No calibration flight required. |
 | `average_sensors.py` | **Sensor average.** Combines Mag1 and Mag2 using fourth-difference noise criterion. |
@@ -36,7 +37,7 @@ The chain starts from `Mag1C` / `Mag2C` (compensated in flight). Step 0 is only 
 | 0 | `inspect_raw.py` | Visual inspection of the columns the aircraft delivers, before any correction | — |
 | 1 | `lag.py` | Estimate GPS–magnetometer lag by cross-correlation of E/W line pairs | — (report only) |
 | 2 | `lag.py` | Apply lag correction (only if decision = LAG_SIGNIFICANT). Shifts the GPS positions; no magnetic column changes | `Xgps`, `Ygps`, `Zgps` (shifted), `lag_applied` |
-| 3 | `diurnal.py` | Subtract base-station diurnal variation interpolated to flight time | `Mag1_Diurnal`, `Mag2_Diurnal` |
+| 3 | `diurnal.py` | Subtract the base-station diurnal variation, matched to the flight on absolute UTC time | `BaseMag`, `Diurnal`, `Mag1_Diurnal`, `Mag2_Diurnal`, `utc_s` |
 | 4 | `igrf.py` | ✅ Remove IGRF-13 reference field (ppigrf, input: lon, lat, alt km, UTC date) | `Mag1_IGRF`, `Mag2_IGRF` |
 | 5 | `heading.py` | ✅ Empirical heading correction — DC offset estimated from mean difference between E and W lines | `Mag1_IGRF_head`, `Mag2_IGRF_head` |
 | 6 | `average_sensors.py` | ✅ Combine Mag1 and Mag2 — plain average; only the quieter sensor if the other is > 2× noisier (4th-difference noise test) | `Mag_IGRF_head`, `sensor_used` |
@@ -124,6 +125,32 @@ The data continue to the next steps in `data/interim/<campaign>/<run_name>/m02/<
 (a copy of the M0 data plus `lag_applied`). Steps 3–8 run the same way: `--steps 3`, ...
 How the lag is measured: [docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
 
+### Step 3 — Diurnal correction
+
+Removes the daily variation of the Earth's field, using the base station that records it on the
+ground. It reads the `Tagesgang` files of **all** the day folders, matches them to each flight on
+absolute UTC time (not on the folder name), and subtracts the variation from `Mag1C` and `Mag2C`.
+Needs steps 1–2 first.
+
+```powershell
+python -m src.m02_magnetics.run --steps 3
+```
+
+Everything is saved in `outputs/<campaign>/<run_name>/m02/step_03_diurnal/`:
+
+| File | What it shows | Good sign |
+|---|---|---|
+| `diurnal_summary.txt` | **Start here.** Per flight: UTC window, % of points corrected and variation. Problems found in the data. How much the data changed | No flight at 0 % |
+| `diurnal_base_station.png` | The base station reading during each flight (shaded = flight) | A smooth curve under the shaded area |
+| `diurnal_before_after.png` | Maps of the field before, after, and the correction added at each point (nT) | Correction of a few nT, changing smoothly from line to line |
+| `diurnal_base_station.csv` | The base station readings used (UTC time, nT, variation, source file) | — |
+
+**How to read the numbers.** The variation (`base − reference`) is how far the field was from the
+reference (59150 nT) at that moment; it is subtracted from the aircraft reading. A few nT is normal
+on a quiet day. Points with no base station reading are left empty (NaN), never extrapolated.
+Why base station files are matched this way, and what was found in this campaign:
+[docs/m02_correction_chain.md](../../docs/m02_correction_chain.md).
+
 ---
 
 ## Outputs
@@ -133,9 +160,10 @@ How the lag is measured: [docs/m02_correction_chain.md](../../docs/m02_correctio
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_line_Y.png` | 5-panel inspection figure per line |
 | `outputs/<campaign>/<run_name>/m02/inspection/<date>/flight_X_summary.png` | Summary grid (Panel 1 only) for a full flight |
 | `outputs/<campaign>/<run_name>/m02/step_01_02_lag/` | `lag_summary.txt`, `lag_report.json` (with the size of the effect in `effect_nT`), `lag_diagnosis_line<id>_line<id>.png`, `lag_effect_map.png` — see Steps 1–2 |
+| `outputs/<campaign>/<run_name>/m02/step_03_diurnal/` | `diurnal_summary.txt`, `diurnal_base_station.png`, `diurnal_before_after.png`, `diurnal_base_station.csv` — see Step 3 |
 | `outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/` | One GeoPackage and one map per later step |
 | `outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg`, `campaign_m02_map.png` | Consolidated GeoPackage and map of all selected lines, one layer per magnetic column. Only generated with step 8 |
-| `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data: copy of the M0 parquet plus `lag_applied`; GPS positions are shifted only if the decision is `LAG_SIGNIFICANT` |
+| `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data: copy of the M0 parquet plus `lag_applied` (steps 1–2; GPS positions are shifted only if the decision is `LAG_SIGNIFICANT`) and the diurnal columns (step 3) |
 
 ---
 

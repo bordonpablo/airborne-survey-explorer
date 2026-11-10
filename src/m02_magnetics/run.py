@@ -12,6 +12,8 @@ Output:
     data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet
     outputs/<campaign>/<run_name>/m02/step_01_02_lag/     (lag_report.json, lag_diagnosis_*.png,
                                                            lag_effect_map.png)
+    outputs/<campaign>/<run_name>/m02/step_03_diurnal/    (diurnal_summary.txt, base station
+                                                           csv and plot, before/after maps)
     outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/   (one folder per later step)
     outputs/<campaign>/<run_name>/m02/campaign_m02.gpkg   (all selected lines; only with step 8)
 
@@ -55,13 +57,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.m02_magnetics.lag import estimate_lag, apply_lag, plot_lag_diagnosis, lag_effect
-from src.m02_magnetics.diurnal import find_tagesgang, apply_diurnal
+from src.m02_magnetics.diurnal_report import run_diurnal_step
 from src.m02_magnetics.igrf import apply_igrf
 from src.m02_magnetics.heading import estimate_heading_bias, apply_heading
 from src.m02_magnetics.average_sensors import apply_sensor_average
 from src.m02_magnetics.levelling import compute_crossover_offsets, apply_levelling
 from src.m02_magnetics.microlevelling import apply_microlevelling
-from src.m00_preparation.read_tagesgang import read_tagesgang
 
 
 def load_config() -> dict:
@@ -599,32 +600,12 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
     # ── Step 3: Diurnal correction ────────────────────────────────────────────
     if 3 in steps:
         print("\n── Step 3: Diurnal correction ───────────────────────────────────────")
-        raw_root  = PROJECT_ROOT / cfg['campaign']['raw_data_path']
-        igrf_base = cfg['magnetics']['igrf_base_field_nT']
-
-        for _, frow in flights.iterrows():
-            date = frow['date']
-            fid  = frow['flight_id']
-            pq   = interim_root / 'm02' / date / f"flight_{fid}_m02.parquet"
-
-            if not pq.exists():
-                print(f"  Skipping {date}/flight_{fid}: m02 parquet not found — run steps 1,2 first")
-                continue
-
-            try:
-                tag_path = find_tagesgang(raw_root, date)
-            except FileNotFoundError as e:
-                print(f"  Skipping {date}/flight_{fid}: {e}")
-                continue
-
-            tag_df  = read_tagesgang(tag_path)
-            df_full = pd.read_parquet(pq)
-            df_out  = apply_diurnal(df_full, tag_df, igrf_base)
-            df_out.to_parquet(pq, index=False)
-            print(f"  Updated: {pq.relative_to(PROJECT_ROOT)}")
-
-        export_step_output(selected, interim_root, out_root,
-                           '03_diurnal', ['Mag1C', 'Mag1_Diurnal'])
+        run_diurnal_step(
+            selected, flights, interim_root,
+            out_root / 'step_03_diurnal',
+            PROJECT_ROOT / cfg['campaign']['raw_data_path'],
+            cfg['magnetics']['igrf_base_field_nT'],
+        )
 
     # ── Step 4: IGRF removal ──────────────────────────────────────────────────
     if 4 in steps:
