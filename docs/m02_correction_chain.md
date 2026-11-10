@@ -107,7 +107,7 @@ subtracted:
 
     δ(t) = B_base(t) − B_ref        Mag1_Diurnal = Mag1C − δ(t)        Diurnal = −δ(t)
 
-`B_ref` is `igrf_base_field_nT` in `project.yaml` (59150 nT). Only magnetic values change.
+`B_ref` is `diurnal_reference_nT` in `project.yaml` (59150 nT), a fixed value, not computed from the IGRF. Only magnetic values change.
 
 **How the base station is matched to the flights.** On **absolute UTC time** (date + time), never
 on the time of day or on the name of the folder:

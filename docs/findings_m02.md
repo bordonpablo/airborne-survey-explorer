@@ -23,7 +23,7 @@ this data goes here. Newest entries first inside each step.
 
 ### Reference level of the diurnal correction — noted 2026-11-10
 
-- `igrf_base_field_nT = 59150` is the value the specialist used (`data/reference/Readme_Especialista_02.txt`,
+- `diurnal_reference_nT = 59150` (named `igrf_base_field_nT` until 2026-11-10) is the value the specialist used (`data/reference/Readme_Especialista_02.txt`,
   "Mongolia 2022"; in their data `BaseMag + Diurnal` = 59150.00 in every row). `Readme_Especialista_01`
   (58690 nT) belongs to another survey.
 - Tried IGRF-13 at the base site (59202 nT) instead: the variation became about −50 nT in every flight,

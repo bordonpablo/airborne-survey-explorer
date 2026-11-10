@@ -17,7 +17,7 @@ Formula
 
 where:
     B_base(t)  : base station reading interpolated to flight time (nT)
-    B_ref      : reference level = igrf_base_field_nT from project.yaml
+    B_ref      : reference level = diurnal_reference_nT from project.yaml
     δ(t)       : diurnal variation (nT); positive when field is above reference
     Mag1C      : compensated total field from the aircraft (nT)
     Mag1_Diurnal: total field after diurnal removal (nT)
@@ -67,7 +67,8 @@ def _header_date(path: Path) -> date | None:
     return None
 
 
-def read_base_station(raw_root: Path, supplement: Path | None = None) -> pd.DataFrame:
+def read_base_station(raw_root: Path, supplement: Path | None = None,
+                      filter_window_s: float = 30.0) -> pd.DataFrame:
     """
     Read every Tagesgang file of every day folder into one table with absolute UTC time.
 
@@ -77,8 +78,11 @@ def read_base_station(raw_root: Path, supplement: Path | None = None) -> pd.Data
     recording copied into two folders) are kept once.
 
     Returns a DataFrame sorted by time with columns utc_s (seconds since 1970-01-01 UTC),
-    nT and source ('<folder>/<file>'). The list of things worth telling the user is in
-    df.attrs['notes'].
+    nT (raw: only spikes and bad readings removed), nT_filt (moving average of filter_window_s
+    seconds, to keep the base station noise out of the airborne data), source
+    ('<folder>/<file>') and supplement (True for readings that come from the supplement table;
+    those are already filtered, so nT_filt = nT). The list of things worth telling the user is
+    in df.attrs['notes'].
     """
     parts, notes = [], []
     for path in sorted(raw_root.glob('*/Tagesgang*')):
@@ -109,6 +113,10 @@ def read_base_station(raw_root: Path, supplement: Path | None = None) -> pd.Data
         notes.append(f"{src}: {n} readings are a copy of another file (same recording in two "
                      f"folders); kept once.")
     base = base[~dup].reset_index(drop=True)
+    base['supplement'] = False
+    seconds = pd.to_datetime(base['utc_s'], unit='s')
+    base['nT_filt'] = (base['nT'].set_axis(seconds)
+                       .rolling(f'{int(filter_window_s)}s', center=True, min_periods=1).mean().values)
 
     # Supplement (base_supplement.py): used only where our own base station has no reading
     if supplement is not None and Path(supplement).exists():
@@ -117,11 +125,14 @@ def read_base_station(raw_root: Path, supplement: Path | None = None) -> pd.Data
         i = np.searchsorted(tb, te)
         gap = np.minimum(np.abs(tb[np.clip(i, 0, len(tb) - 1)] - te),
                          np.abs(tb[np.clip(i - 1, 0, len(tb) - 1)] - te))
-        extra = extra[gap > MAX_BASE_GAP_S]
+        extra = extra[gap > MAX_BASE_GAP_S].assign(supplement=True)
+        extra['nT_filt'] = extra['nT']                    # already filtered
         if len(extra):
             notes.append(f"{len(extra):,} readings come from the supplement {Path(supplement).name} "
-                         f"({extra['source'].iloc[0]}): periods where this campaign has no recording.")
-            base = (pd.concat([base, extra[['utc_s', 'nT', 'source']]], ignore_index=True)
+                         f"({extra['source'].iloc[0]}): periods where this campaign has no recording. "
+                         f"They are already filtered, so they look smoother than our own readings "
+                         f"(red in diurnal_base_station.png).")
+            base = (pd.concat([base, extra[['utc_s', 'nT', 'nT_filt', 'source', 'supplement']]], ignore_index=True)
                     .sort_values('utc_s', kind='stable').reset_index(drop=True))
     base.attrs['notes'] = notes
     return base
@@ -152,7 +163,8 @@ def flight_utc_s(df: pd.DataFrame) -> np.ndarray:
 def apply_diurnal(
     df: pd.DataFrame,
     base: pd.DataFrame,
-    igrf_base_nT: float,
+    reference_nT: float,
+    use: str = 'raw',
 ) -> pd.DataFrame:
     """
     Apply the diurnal correction to Mag1C and Mag2C using the base station table.
@@ -171,12 +183,15 @@ def apply_diurnal(
     ----------
     df           : flight DataFrame with Date, time_s, M3clk, Mag1C, Mag2C
     base         : output of read_base_station
-    igrf_base_nT : reference level (igrf_base_field_nT in project.yaml)
+    reference_nT : reference level (diurnal_reference_nT in project.yaml)
+    use          : base station curve to subtract, 'raw' or 'filtered' (base_station_use in project.yaml)
     """
     df = df.copy()
     t  = flight_utc_s(df)
     tb = base['utc_s'].values
-    bb = base['nT'].values
+    if use not in ('raw', 'filtered'):
+        raise ValueError(f"base_station_use must be 'raw' or 'filtered', not {use!r}")
+    bb = base['nT_filt' if use == 'filtered' else 'nT'].values
 
     idx   = np.searchsorted(tb, t)                       # tb[idx-1] <= t < tb[idx]
     left  = np.clip(idx - 1, 0, len(tb) - 1)
@@ -186,7 +201,7 @@ def apply_diurnal(
     base_interp = np.full(len(df), np.nan)
     base_interp[covered] = np.interp(t[covered], tb, bb)
 
-    delta = base_interp - igrf_base_nT                   # diurnal variation δ(t)
+    delta = base_interp - reference_nT                  # diurnal variation δ(t)
 
     df['utc_s']   = t
     df['BaseMag'] = base_interp

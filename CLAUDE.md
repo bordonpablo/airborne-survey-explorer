@@ -195,7 +195,7 @@ survey_design:                       # parameters from the flight plan (survey g
   line_direction_deg: 90             # E-W
 
 magnetics:
-  igrf_base_field_nT: 59150
+  diurnal_reference_nT: 59150
   igrf_model: "IGRF-13"
 
 gridding:

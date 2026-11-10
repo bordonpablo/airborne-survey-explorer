@@ -604,8 +604,10 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
             selected, flights, interim_root,
             out_root / 'step_03_diurnal',
             PROJECT_ROOT / cfg['campaign']['raw_data_path'],
-            cfg['magnetics']['igrf_base_field_nT'],
+            cfg['magnetics']['diurnal_reference_nT'],
             PROJECT_ROOT / cfg['magnetics']['base_station_supplement'],
+            cfg['magnetics']['base_station_use'],
+            cfg['magnetics']['base_filter_window_s'],
         )
 
     # ── Step 4: IGRF removal ──────────────────────────────────────────────────

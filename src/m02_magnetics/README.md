@@ -34,11 +34,14 @@ Results and problems found in the campaign: [docs/findings_m02.md](../../docs/fi
 ### Columns of step 3
 
 - `BaseMag`: field measured by the ground base station (nT), interpolated to the time of each airborne sample. Time series, not a map.
-- `Diurnal`: correction to add (nT) = `igrf_base_field_nT − BaseMag`. It is the daily variation with the sign changed.
+- `Diurnal`: correction to add (nT) = `diurnal_reference_nT − BaseMag`. It is the daily variation with the sign changed.
 - `Mag1_Diurnal`, `Mag2_Diurnal`: `Mag1C` / `Mag2C` + `Diurnal`.
 
-`igrf_base_field_nT` (59150) is the base value the specialist used. Where a flight has no recording of its own
-(`base_station_supplement` in `project.yaml`, built by `base_supplement.py`), the specialist's `BaseMag` is used.
+`diurnal_reference_nT` in `project.yaml` is the fixed reference level of the correction. The base station has a raw
+curve and a filtered one (moving average, `base_filter_window_s`); `base_station_use` (`raw` or `filtered`) chooses
+which one is subtracted, and `diurnal_base_station.png` draws both. Where a flight has no recording of its own, a
+supplementary table (`base_station_supplement`, built by `base_supplement.py`) can fill it; those readings are drawn
+in red.
 
 ---
 
@@ -62,7 +65,7 @@ Parameters come from `config/project.yaml` (`magnetics`, `campaign`).
 |---|---|
 | `outputs/<campaign>/<run_name>/m02/inspection/` | Step 0: per-line PNGs, campaign maps, GeoPackage |
 | `outputs/<campaign>/<run_name>/m02/step_01_02_lag/` | `lag_summary.txt` (start here), `lag_report.json`, diagnosis plots |
-| `outputs/<campaign>/<run_name>/m02/step_03_diurnal/` | `diurnal_summary.txt` (start here), base-station plot and table, before/after maps |
+| `outputs/<campaign>/<run_name>/m02/step_03_diurnal/` | `diurnal_summary.txt` (start here), base-station plot (raw and filtered) and table, correction-vs-time plot |
 | `outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/` | One GeoPackage and one map per later step |
 | `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data, columns added step by step |
 

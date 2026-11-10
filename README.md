@@ -91,7 +91,7 @@ survey_design:                       # flight plan geometry
   line_direction_deg: 90             # 90 = E-W production lines
 
 magnetics:
-  igrf_base_field_nT: 59150          # regional IGRF field at the survey area
+  diurnal_reference_nT: 59150        # fixed base value of the diurnal correction
   igrf_model: "IGRF-13"
 
 gridding:
