@@ -30,10 +30,26 @@ Process → IGRF → Remove IGRF.
 """
 
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import ppigrf
+
+
+def coefficient_file(model: str) -> str:
+    """
+    Coefficient file of ppigrf for a model name such as 'IGRF-13' (igrf_model in project.yaml).
+
+    ppigrf evaluates its LATEST model when no file is given, so the model is always chosen
+    explicitly here: the IGRF is revised every five years and the values for the same date
+    differ between versions (tens of nT for dates after the last definitive epoch).
+    """
+    path = Path(ppigrf.__file__).parent / (model.replace('-', '').upper() + '.shc')
+    if not path.exists():
+        available = sorted(p.stem for p in path.parent.glob('IGRF*.shc'))
+        raise ValueError(f"IGRF model {model!r} not available in ppigrf (found: {available})")
+    return str(path)
 
 
 def date_from_folder(date_str: str) -> datetime:
@@ -52,9 +68,10 @@ def compute_igrf(
     lat: np.ndarray,
     alt_m: np.ndarray,
     date: datetime,
+    model: str,
 ) -> np.ndarray:
     """
-    Compute IGRF-13 total field intensity at each sample point.
+    Compute the IGRF total field intensity at each sample point.
 
     Parameters
     ----------
@@ -63,6 +80,7 @@ def compute_igrf(
     alt_m : ellipsoidal height from GPS (metres); NaN values are replaced by
             the column median before computation
     date  : UTC date of the flight
+    model : model name, e.g. 'IGRF-13' (igrf_model in project.yaml)
 
     Returns
     -------
@@ -70,12 +88,12 @@ def compute_igrf(
     """
     alt_km = np.where(np.isfinite(alt_m), alt_m, np.nanmedian(alt_m)) / 1000.0
 
-    Be, Bn, Bu = ppigrf.igrf(lon, lat, alt_km, date)
+    Be, Bn, Bu = ppigrf.igrf(lon, lat, alt_km, date, coeff_fn=coefficient_file(model))
     F = np.sqrt(np.asarray(Be)**2 + np.asarray(Bn)**2 + np.asarray(Bu)**2)
     return F.flatten()
 
 
-def apply_igrf(df: pd.DataFrame, date_str: str) -> pd.DataFrame:
+def apply_igrf(df: pd.DataFrame, date_str: str, model: str) -> pd.DataFrame:
     """
     Remove the IGRF reference field from Mag1_Diurnal and Mag2_Diurnal.
 
@@ -88,6 +106,7 @@ def apply_igrf(df: pd.DataFrame, date_str: str) -> pd.DataFrame:
     ----------
     df       : flight DataFrame with Xgps, Ygps, Zgps, Mag1_Diurnal, Mag2_Diurnal
     date_str : flight date folder name (DD.MM.YYYY)
+    model    : model name, e.g. 'IGRF-13' (igrf_model in project.yaml)
     """
     df   = df.copy()
     date = date_from_folder(date_str)
@@ -96,7 +115,7 @@ def apply_igrf(df: pd.DataFrame, date_str: str) -> pd.DataFrame:
     lat   = df['Ygps'].values
     alt_m = df['Zgps'].values if 'Zgps' in df.columns else np.full(len(df), 100.0)
 
-    F_igrf = compute_igrf(lon, lat, alt_m, date)
+    F_igrf = compute_igrf(lon, lat, alt_m, date, model)
     df['IGRF'] = F_igrf
 
     if 'Mag1_Diurnal' in df.columns:
@@ -106,7 +125,7 @@ def apply_igrf(df: pd.DataFrame, date_str: str) -> pd.DataFrame:
 
     f_mean  = float(np.nanmean(F_igrf))
     f_range = float(np.nanmax(F_igrf) - np.nanmin(F_igrf))
-    print(f"  [IGRF] Date: {date.strftime('%Y-%m-%d')}  |  "
+    print(f"  [IGRF] Model: {model}  |  Date: {date.strftime('%Y-%m-%d')}  |  "
           f"F mean: {f_mean:.1f} nT  |  "
           f"spatial range: {f_range:.2f} nT")
 

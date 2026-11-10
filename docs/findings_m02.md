@@ -54,6 +54,21 @@ this data goes here. Newest entries first inside each step.
 - Check of the method: in flights 427 and 456 our `Diurnal` equals the specialist's (std 0.07 nT,
   at most 0.36 nT).
 
+## Step 4: IGRF — noted 2026-11-10
+
+- Our first run differed from the specialist's `IGRF` by a constant of about −36 nT (−36.2 on
+  22 April, −37.1 on 14 May; same spatial pattern, std ≤ 0.1 nT).
+- Cause: `ppigrf.igrf` evaluates its latest model (IGRF-14) when no coefficient file is given, so
+  the code was not using the `igrf_model: "IGRF-13"` of `project.yaml`, which it never read. For
+  2022 the two versions differ by tens of nT. The model is now chosen from `project.yaml`.
+- With IGRF-13 the difference to the specialist is −1.55 nT, constant over the 18 flights (std
+  0.01–0.1 nT). It matches a height about 50 m lower than the GPS height at 31.7 nT/km, e.g. a
+  different height reference; not confirmed.
+- The specialist's `Mag1_IGRF` is not `Mag1_Diurnal − IGRF`: it is `Mag1_Diurnal − IGRF + 55.000 nT`
+  (std 0.005 nT, all flights, both sensors). A fixed constant added after the IGRF removal, which
+  centres the anomaly around zero. Our code does not add it, so our `Mag1_IGRF` is about 55 nT
+  lower than his. Decision pending (configurable constant or automatic centring).
+
 ## Step 7: Levelling
 
 - The eastern edge is limited by 5 missing tie lines (18 planned traverses and 5 tie lines could not be

@@ -629,7 +629,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
                 print(f"  Skipping {date}/flight_{fid}: Mag1_Diurnal not found — run step 3 first")
                 continue
 
-            df_out = apply_igrf(df_full, date)
+            df_out = apply_igrf(df_full, date, cfg['magnetics']['igrf_model'])
             df_out.to_parquet(pq, index=False)
             print(f"  Updated: {pq.relative_to(PROJECT_ROOT)}")
 
