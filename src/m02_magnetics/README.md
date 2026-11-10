@@ -25,6 +25,12 @@ Results and problems found in the campaign: [docs/findings_m02.md](../../docs/fi
 
 `run.py` is the entry point: it reads `line_selection.csv` and runs the steps.
 
+### Steps 1–2 (GPS lag)
+
+- The magnetometer reports each value slightly late, so anomalies end up shifted along the line. Step 1 measures that shift on lines flown in both directions; step 2 corrects it only if it is larger than the tolerance (`lag_tolerable_s`, a quarter of the line spacing).
+- `lag_summary.txt` and `lag_report.json` give the measured lag and the decision: `LAG_NEGLIGIBLE` (nothing changed), `LAG_SIGNIFICANT` (GPS positions shifted) or `LAG_UNKNOWN` (no lines in both directions).
+- `lag_applied` marks whether the shift was applied. No magnetic column changes in these steps.
+
 ### Columns of step 3
 
 - `BaseMag`: field measured by the ground base station (nT), interpolated to the time of each airborne sample. Time series, not a map.
