@@ -605,6 +605,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
             out_root / 'step_03_diurnal',
             PROJECT_ROOT / cfg['campaign']['raw_data_path'],
             cfg['magnetics']['igrf_base_field_nT'],
+            PROJECT_ROOT / cfg['magnetics']['base_station_supplement'],
         )
 
     # ── Step 4: IGRF removal ──────────────────────────────────────────────────

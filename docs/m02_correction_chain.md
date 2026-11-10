@@ -123,16 +123,7 @@ on the time of day or on the name of the folder:
 - A flight sample is only corrected if the base station has readings within 60 s around it. There
   is no extrapolation: the sample is left empty (NaN).
 
-**What was found in this campaign (`test_001`).**
-
-- 17 of the 18 flights are corrected. Variation between −10.3 and +8.6 nT; the correction added
-  has a median of 3.2 nT, stays under 7.9 nT in 95 % of the points and reaches 10.3 nT at most.
-- The file in the folder `24.04.2022` is a copy of the one in `22.04.2022`. The real recording of
-  24 April (header `23 IV 22`) is stored in the folder `26.04.2022`. Matching by UTC time uses it
-  correctly.
-- Flight 00434 (26.04.2022, 04:50–06:05 UTC) has **no base station record**: the file in its folder is
-  the recording of the night of 23–24 April. Its points are left empty from this step on.
-- There is one base station (same site every day, 47.808° N, 107.574° E, readings every ~3 s).
+Results and problems found in this campaign: [findings_m02.md](findings_m02.md).
 
 **Limits.** The variation measured at one point is applied to the whole area, which is reasonable
 for a survey of about 25 km. The correction is as good as the base station readings: it cannot

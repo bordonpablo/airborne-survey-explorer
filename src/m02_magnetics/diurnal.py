@@ -67,7 +67,7 @@ def _header_date(path: Path) -> date | None:
     return None
 
 
-def read_base_station(raw_root: Path) -> pd.DataFrame:
+def read_base_station(raw_root: Path, supplement: Path | None = None) -> pd.DataFrame:
     """
     Read every Tagesgang file of every day folder into one table with absolute UTC time.
 
@@ -109,6 +109,20 @@ def read_base_station(raw_root: Path) -> pd.DataFrame:
         notes.append(f"{src}: {n} readings are a copy of another file (same recording in two "
                      f"folders); kept once.")
     base = base[~dup].reset_index(drop=True)
+
+    # Supplement (base_supplement.py): used only where our own base station has no reading
+    if supplement is not None and Path(supplement).exists():
+        extra = pd.read_csv(supplement)
+        tb, te = base['utc_s'].values, extra['utc_s'].values
+        i = np.searchsorted(tb, te)
+        gap = np.minimum(np.abs(tb[np.clip(i, 0, len(tb) - 1)] - te),
+                         np.abs(tb[np.clip(i - 1, 0, len(tb) - 1)] - te))
+        extra = extra[gap > MAX_BASE_GAP_S]
+        if len(extra):
+            notes.append(f"{len(extra):,} readings come from the supplement {Path(supplement).name} "
+                         f"({extra['source'].iloc[0]}): periods where this campaign has no recording.")
+            base = (pd.concat([base, extra[['utc_s', 'nT', 'source']]], ignore_index=True)
+                    .sort_values('utc_s', kind='stable').reset_index(drop=True))
     base.attrs['notes'] = notes
     return base
 

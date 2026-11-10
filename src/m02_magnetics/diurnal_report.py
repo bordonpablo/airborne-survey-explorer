@@ -42,11 +42,12 @@ def run_diurnal_step(
     out_dir: Path,
     raw_root: Path,
     igrf_base_nT: float,
+    supplement: Path | None = None,
 ) -> None:
     """Apply the diurnal correction to every selected flight and write the outputs."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    base = read_base_station(raw_root)
+    base = read_base_station(raw_root, supplement)
     print(f"  Base station: {len(base):,} readings from {base['source'].nunique()} files")
     for note in base.attrs['notes']:
         print(f"  [DIURNAL] {note}")
