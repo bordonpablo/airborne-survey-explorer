@@ -144,8 +144,9 @@ Notes
 
     '08_microlevelling': """# Step 8 — Micro-levelling (decorrugation)
 
-Removes the small stripes that remain along the lines after the levelling, filtering the
-across-line direction. The result is the final column `Mag_Final`.
+Removes the narrow stripes parallel to the lines that remain after the levelling: the along-line
+smooth of each line is compared with its two neighbouring lines and the difference is subtracted.
+The result is the final column `Mag_Final`.
 
 | File | What it is |
 |------|------------|
@@ -155,7 +156,7 @@ across-line direction. The result is the final column `Mag_Final`.
 Notes
 - `Mag_Final` is the residual magnetic anomaly of module 2, without the +55 nT constant of the
   reference processing (see the step 4 README).
-- The filter wavelength is derived from the line spacing in `project.yaml` (`line_spacing_m`).
+- The cutoff is 4 × the line spacing in `project.yaml` (`line_spacing_m`).
 - Micro-levelling can remove real geology that is elongated across the lines: compare the two
   maps before trusting fine detail.
 

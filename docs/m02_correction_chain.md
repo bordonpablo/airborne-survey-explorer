@@ -154,11 +154,121 @@ correction is as good as the base station readings: it cannot fix a flight witho
 
 ---
 
+## Step 4: IGRF removal
+
+**What it is.** The IGRF (International Geomagnetic Reference Field) is a model of the Earth's
+main field, produced in the liquid core. It is about 99 % of the measured field. Removing it
+leaves the small anomaly caused by the magnetisation of the crust.
+
+**Formula** (nT):
+
+    F_IGRF(lon, lat, h, t) = sqrt(Be² + Bn² + Bu²)
+    Mag1_IGRF = Mag1_Diurnal − F_IGRF
+
+`Be`, `Bn`, `Bu` are the east, north and up components of the model at the position of the sample,
+`h` the GPS ellipsoidal height and `t` the date of the flight (the field drifts about 100 nT per
+year). The result is saved in `IGRF`, `Mag1_IGRF` and `Mag2_IGRF`.
+
+**Model.** `igrf_model` in `project.yaml`. `ppigrf` evaluates its newest model when no coefficient
+file is given, and for recent dates two versions differ by tens of nT, so the code always chooses
+the model explicitly.
+
+**Note: constant of the reference processing.** The reference specialist adds a fixed +55 nT after
+removing the IGRF, to centre the anomaly around zero. Here it is not added, so the `*_IGRF`
+columns are about 55 nT lower than his. To compare, subtract 55 nT from his values.
+
+In Oasis Montaj: *Process → IGRF → Remove IGRF*.
+
+---
+
+## Step 5: Heading correction
+
+**What it is.** The in-flight compensation leaves a small residual that depends on the direction
+the aircraft flies relative to the Earth's field. It shows as an offset between lines flown in
+opposite directions.
+
+**How it is estimated.** From the data, with no calibration flight. Each line is classified east
+or west by the circular mean of its `Yaw`; for each sensor:
+
+    bias = (mean_E − mean_W) / 2
+
+with `mean_E` and `mean_W` the average level of the east and west lines. If neighbouring lines
+cover the same geology, their difference is aircraft, and each direction is off by half of it
+in opposite senses. Samples flying east get `−bias`, samples flying west `+bias`. Each sensor has
+its own bias because they sit at different places on the aircraft. The correction is saved per
+sample in `Mag1_heading_bias_nT` / `Mag2_heading_bias_nT`.
+
+**Limits.** It assumes that east and west lines have the same average geology (reasonable for a
+dense, regular survey, not with a strong regional gradient). It only corrects the average level,
+not the noise that changes with heading. N–S lines (tie lines) are not corrected. The constant of
+step 4 does not matter here: it cancels in `mean_E − mean_W`. The rigorous alternative
+(Tolles–Lawson, 16 terms) needs a dedicated calibration flight.
+
+---
+
+## Step 6: Average of the two magnetometers
+
+**What it is.** Two sensors measuring the same field have independent noise; their average has
+about 1/√2 of the noise of each.
+
+**How the sensors are weighed.** The noise of each sensor is estimated with the fourth difference,
+which removes the geology (long wavelength) and keeps the noise:
+
+    Δ⁴B[i] = B[i−2] − 4B[i−1] + 6B[i] − 4B[i+1] + B[i+2]
+    noise = std(Δ⁴B) / √70
+
+If one sensor has more than twice the noise of the other, only the quieter one is used; otherwise
+the average. Done per flight: `sensor_used` (`avg`, `Mag1` or `Mag2`) says which. Result:
+`Mag_IGRF_head`.
+
+---
+
+## Step 7: Tie-line levelling
+
+**What it is.** A production line and a tie line cross at one point and must read the same
+there. The differences at the crossings give the DC offset of each production line.
+
+**Method.** For each production line (E–W) and each tie line (N–S) that crosses it:
+
+    diff = value_production − value_tie
+    offset_i = mean(diff) over all the tie lines that cross line i
+    Mag_IGRF_head_level = Mag_IGRF_head − offset_i
+
+The tie lines are the fixed reference (offset 0). The offset is saved in `level_offset_nT`. The
+crossing point is approximated by the median longitude of the tie line and the median latitude of
+the production line.
+
+**Limits.** A line with no crossing gets offset 0, so where tie lines are missing the stripes
+remain. Step 8 reduces them but does not replace the tie lines.
+
+---
+
+## Step 8: Micro-levelling (decorrugation)
+
+**What it is.** After the levelling, narrow stripes parallel to the lines remain, caused by
+effects that change quickly along the line and that one constant per line cannot remove.
+
+**Method.** With all the production lines together:
+
+    smooth_i(x) = moving average of Mag_IGRF_head_level along line i, window = cutoff / sample spacing
+    trend(x)    = mean( smooth_(i−1)(x), smooth_(i+1)(x) )      (the two neighbouring lines)
+    corrugation_i(x) = smooth_i(x) − trend(x)
+    Mag_Final = Mag_IGRF_head_level − corrugation_i(x)
+
+`cutoff` is `4 × line_spacing_m` (`project.yaml`) by default.
+
+**Limits.** A shorter cutoff removes real geology elongated across the lines; a longer one leaves
+part of the stripes. The first and last line have only one neighbour and get a less constrained
+correction. Compare the maps before and after before trusting fine detail.
+
+---
+
 ## Why this order
 
 - **Diurnal before IGRF**: the diurnal signal can be tens of nT — if not removed first, it biases the IGRF residual.
 - **IGRF before heading**: the heading correction is fitted to the residual anomaly field; the main field (tens of thousands of nT) would completely dominate and hide the heading effect.
 - **Average after heading**: both sensors must be corrected for heading independently before combining, because their heading responses can differ.
+- **Heading before levelling**: heading is a systematic effect that depends on direction; if it is not removed first, levelling absorbs it line by line.
 - **Levelling after everything else**: adjusts remaining DC offsets between lines; requires the signal to already be a clean anomaly.
 - **Micro-levelling last**: a spatial filter — it can only work cleanly after levelling has removed the large line-to-line steps.
 

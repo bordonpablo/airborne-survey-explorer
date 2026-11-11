@@ -43,6 +43,14 @@ which one is subtracted, and `diurnal_base_station.png` draws both. Where a flig
 supplementary table (`base_station_supplement`, built by `base_supplement.py`) can fill it; those readings are drawn
 in red.
 
+### Steps 4–8 (what each one does and reads)
+
+- **Step 4 (IGRF)**: subtracts the main field of the model named in `project.yaml` (`igrf_model`) at each sample's position, GPS height and date. Reads `Mag1_Diurnal` / `Mag2_Diurnal`. The reference processing adds a constant of +55 nT after this step to centre the anomaly; we do not (see the README of `step_04_igrf/`).
+- **Step 5 (heading)**: estimated from the data, no calibration flight. Each line is classified E or W by its mean `Yaw`; the bias of each sensor is `(mean_E − mean_W) / 2` and is subtracted on E samples and added on W samples. N–S lines are not corrected. It assumes the geology is the same on average for E and W lines. The 55 nT constant cancels in the difference.
+- **Step 6 (average)**: `Mag_IGRF_head` is the mean of both sensors, or only the quieter one if the other is clearly noisier; `sensor_used` records the choice per flight.
+- **Step 7 (levelling)**: adjusts each line by a constant so that production and tie lines agree at their crossings. Needs the tie lines; where they are missing the line stays unlevelled. Offset saved in `level_offset_nT`.
+- **Step 8 (micro-levelling)**: removes the line-parallel stripes left after levelling: the along-line smooth of each line is compared with its two neighbours and the difference is subtracted (cutoff 4 × `line_spacing_m`). Produces `Mag_Final`. Also writes the consolidated GeoPackage and campaign map.
+
 ---
 
 ## Run
@@ -50,10 +58,16 @@ in red.
 ```powershell
 python -m src.m02_magnetics.inspect_raw            # step 0, whole campaign
 python -m src.m02_magnetics.inspect_raw 22.04.2022 00447 1001   # one line
-python -m src.m02_magnetics.run --steps 1,2        # lag
-python -m src.m02_magnetics.run --steps 3          # diurnal (needs 1,2)
-python -m src.m02_magnetics.run --steps 4          # ... and so on up to 8
+python -m src.m02_magnetics.run                    # steps 1–8, whole campaign
+python -m src.m02_magnetics.run --steps 3          # only one step (needs the previous ones done)
+python -m src.m02_magnetics.run --steps 4,5,6,7,8  # from step 4 on
+python -m src.m02_magnetics.run 22.04.2022 --steps 1,2   # one day only
 ```
+
+Re-running: steps 1–2 rebuild the per-flight parquet from M0 and erase the columns of steps 3–8, so after
+them run everything again. Steps 3–8 overwrite their own columns but not the later ones: after repeating
+a step, repeat the steps that follow. Output folders are not emptied; files with the same name are
+overwritten, so you only need to delete a folder to remove stale files.
 
 Parameters come from `config/project.yaml` (`magnetics`, `campaign`).
 
@@ -69,4 +83,6 @@ Parameters come from `config/project.yaml` (`magnetics`, `campaign`).
 | `outputs/<campaign>/<run_name>/m02/step_<NN>_<name>/` | One GeoPackage and one map per later step |
 | `data/interim/<campaign>/<run_name>/m02/<date>/flight_XXXXX_m02.parquet` | Per-flight data, columns added step by step |
 
-Every step writes a `*_summary.txt` in plain language: read that first.
+| `outputs/.../m02/**/README.md` | Written in every output folder: what each file/plot is and notes (e.g. the +55 nT constant) |
+
+Steps 1–2 and 3 write a `*_summary.txt` in plain language: read that first. Steps 4–8 write a map and a GeoPackage; their `README.md` explains how to read them.
