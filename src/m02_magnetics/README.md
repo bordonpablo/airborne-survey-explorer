@@ -18,7 +18,7 @@ Results and problems found in the campaign: [docs/findings_m02.md](../../docs/fi
 | 2 | `lag.py` | Apply the lag correction if it is significant | `lag_applied` | Whether the GPS shift was applied (True/False) |
 | 3 | `diurnal.py`, `diurnal_report.py` | Subtract the base-station diurnal variation | `BaseMag`, `Diurnal`, `Mag1_Diurnal`, `Mag2_Diurnal`, `utc_s` | `BaseMag`: field measured by the base station at that instant (nT). `Diurnal`: correction to add = reference − `BaseMag`. `Mag1_Diurnal` / `Mag2_Diurnal`: `Mag1C` / `Mag2C` + `Diurnal`. `utc_s`: UTC time of the sample (s since 1970-01-01) |
 | 4 | `igrf.py` | Remove the IGRF-13 reference field | `IGRF`, `Mag1_IGRF`, `Mag2_IGRF` | `IGRF`: main field of the model at the sample (nT). `Mag1_IGRF` / `Mag2_IGRF`: `Mag1_Diurnal` / `Mag2_Diurnal` − `IGRF`, the residual anomaly |
-| 5 | `heading.py` | Heading correction | `Mag1_IGRF_head`, `Mag2_IGRF_head` | `Mag1_IGRF` / `Mag2_IGRF` after the heading correction |
+| 5 | `heading.py` | Heading correction, one bias per sensor | `Mag1_IGRF_head`, `Mag2_IGRF_head`, `Mag1_heading_bias_nT`, `Mag2_heading_bias_nT` | `Mag1_IGRF` / `Mag2_IGRF` after the heading correction; the `..._heading_bias_nT` columns are the correction added at each sample (nT) |
 | 6 | `average_sensors.py` | Combine Mag1 and Mag2 | `Mag_IGRF_head`, `sensor_used` | `Mag_IGRF_head`: the two sensors combined into one. `sensor_used`: which sensor(s) went into it |
 | 7 | `levelling.py` | Tie-line levelling | `Mag_IGRF_head_level` | `Mag_IGRF_head` after removing the line-to-line offsets |
 | 8 | `microlevelling.py` | Micro-levelling | `Mag_Final` | `Mag_IGRF_head_level` after removing the along-line corrugation: the residual magnetic anomaly |

@@ -26,6 +26,10 @@ field difference can only come from heading-dependent aircraft interference. The
 factor of 1/2 comes from the fact that both lines are equally offset from the
 true geological value but in opposite directions.
 
+Each sensor is corrected with its own bias: the two sensors sit at different places on the
+aircraft and can have different heading responses, so the bias is estimated separately
+from the Mag1 and from the Mag2 line levels.
+
 Limitations
 -----------
 - Assumes the mean geological signal is the same for E and W lines across the
@@ -38,9 +42,10 @@ Limitations
 
 Adds columns
 ------------
-    Mag1_IGRF_head : Mag1_IGRF after heading correction (nT)
-    Mag2_IGRF_head : Mag2_IGRF after heading correction (nT)
-    heading_bias_nT: the bias value applied to each sample (positive for W lines)
+    Mag1_IGRF_head       : Mag1_IGRF after heading correction (nT)
+    Mag2_IGRF_head       : Mag2_IGRF after heading correction (nT)
+    Mag1_heading_bias_nT : the correction added to Mag1_IGRF at each sample (nT)
+    Mag2_heading_bias_nT : the correction added to Mag2_IGRF at each sample (nT)
 """
 
 import numpy as np
@@ -119,10 +124,10 @@ def estimate_heading_bias(
 
 def apply_heading(
     df: pd.DataFrame,
-    bias: float,
+    biases: dict[str, float],
 ) -> pd.DataFrame:
     """
-    Apply the heading correction to one flight's DataFrame.
+    Apply the heading correction to one flight's DataFrame, each sensor with its own bias.
 
     Each sample is corrected based on the instantaneous Yaw:
         E heading → subtract bias
@@ -131,35 +136,29 @@ def apply_heading(
 
     Parameters
     ----------
-    df   : flight DataFrame with Yaw, Mag1_IGRF, Mag2_IGRF
-    bias : heading bias in nT (from estimate_heading_bias)
+    df     : flight DataFrame with Yaw and the columns named in biases
+    biases : heading bias in nT of each column, e.g. {'Mag1_IGRF': 0.6, 'Mag2_IGRF': 1.7}
+             (from estimate_heading_bias). The output column is the same name with
+             'IGRF' replaced by 'IGRF_head'.
     """
     df = df.copy()
 
-    if 'Yaw' not in df.columns or bias == 0.0:
-        for col in ('Mag1_IGRF', 'Mag2_IGRF'):
-            if col in df.columns:
-                df[col.replace('IGRF', 'IGRF_head')] = df[col]
-        df['heading_bias_nT'] = 0.0
-        return df
+    if 'Yaw' in df.columns:
+        rad = np.radians(df['Yaw'].values % 360)
+        mean_angle = np.degrees(np.arctan2(np.sin(rad), np.cos(rad))) % 360
+        is_east = (mean_angle >= 45) & (mean_angle < 135)       # per-sample sign follows heading
+        is_west = (mean_angle >= 225) & (mean_angle < 315)
+    else:
+        is_east = is_west = np.zeros(len(df), dtype=bool)
 
-    yaw = df['Yaw'].values
-    rad = np.radians(yaw % 360)
-    mean_angle = np.degrees(np.arctan2(np.sin(rad), np.cos(rad))) % 360
-
-    # Per-sample correction: sign follows heading
-    is_east = (mean_angle >= 45) & (mean_angle < 135)
-    is_west = (mean_angle >= 225) & (mean_angle < 315)
-
-    correction = np.zeros(len(df))
-    correction[is_east] = -bias
-    correction[is_west] = +bias
-
-    df['heading_bias_nT'] = correction
-
-    for col in ('Mag1_IGRF', 'Mag2_IGRF'):
-        if col in df.columns:
-            out_col = col.replace('IGRF', 'IGRF_head')
-            df[out_col] = df[col] + correction
+    for col, bias in biases.items():
+        if col not in df.columns:
+            continue
+        correction = np.zeros(len(df))
+        correction[is_east] = -bias
+        correction[is_west] = +bias
+        sensor = col.split('_')[0]                              # 'Mag1' or 'Mag2'
+        df[f'{sensor}_heading_bias_nT'] = correction
+        df[col.replace('IGRF', 'IGRF_head')] = df[col] + correction
 
     return df

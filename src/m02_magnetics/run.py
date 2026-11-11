@@ -659,7 +659,11 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
             if 'Mag1_IGRF' not in df_all_h.columns:
                 print("  Mag1_IGRF not found — run step 4 first.")
             else:
-                bias = estimate_heading_bias(df_all_h, col='Mag1_IGRF')
+                biases = {}
+                for col in ('Mag1_IGRF', 'Mag2_IGRF'):
+                    if col in df_all_h.columns:
+                        print(f"  [HEADING] {col}")
+                        biases[col] = estimate_heading_bias(df_all_h, col=col)
 
                 for _, frow in flights.iterrows():
                     date = frow['date']
@@ -668,7 +672,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
                     if not pq.exists():
                         continue
                     df_full = pd.read_parquet(pq)
-                    df_out  = apply_heading(df_full, bias)
+                    df_out  = apply_heading(df_full, biases)
                     df_out.to_parquet(pq, index=False)
                     print(f"  Updated: {pq.relative_to(PROJECT_ROOT)}")
 

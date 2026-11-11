@@ -69,6 +69,17 @@ this data goes here. Newest entries first inside each step.
   centres the anomaly around zero. Our code does not add it, so our `Mag1_IGRF` is about 55 nT
   lower than his. Decision pending (configurable constant or automatic centring).
 
+## Step 5: Heading — noted 2026-11-10
+
+- The code estimated one bias from Mag1 and applied it to both sensors. The specialist's report
+  gives a different heading effect per sensor (Mag1 ±0.5 nT, Mag2 ±1.7 nT).
+- Now each sensor has its own bias. Ours: Mag1 ±0.59 nT, Mag2 ±1.80 nT (42 east and 47 west lines).
+  Against the specialist's correction at each sample: Mag1 differs by 0.10 nT on average (0.20 at
+  most), Mag2 by 0.16 nT (0.48 at most). The remaining difference is about the rounding of his values.
+- Tie lines (N–S) get no correction, as in the specialist's processing.
+- The correction compared is `Mag_IGRF_head − Mag_IGRF`, which does not depend on the pending
+  constant of step 4.
+
 ## Step 7: Levelling
 
 - The eastern edge is limited by 5 missing tie lines (18 planned traverses and 5 tie lines could not be
