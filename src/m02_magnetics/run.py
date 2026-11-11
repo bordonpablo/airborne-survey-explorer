@@ -25,13 +25,8 @@ Steps implemented:
     6.   Sensor average       (average_sensors.py)
     7.   Tie-line levelling   (levelling.py)
     8.   Micro-levelling      (microlevelling.py)
-    7. Tie-line levelling     (levelling.py)
-    8. Micro-levelling        (microlevelling.py)
-    4. IGRF removal          (igrf.py)
-    5. Heading correction    (heading.py)
-    6. Sensor average        (average_sensors.py)
-    7. Tie-line levelling    (levelling.py)
-    8. Micro-levelling       (microlevelling.py)
+
+Each output folder also gets a README.md (output_notes.py) explaining its files and notes.
 
 Usage:
     python -m src.m02_magnetics.run                        # all implemented steps, full campaign
@@ -63,6 +58,7 @@ from src.m02_magnetics.heading import estimate_heading_bias, apply_heading
 from src.m02_magnetics.average_sensors import apply_sensor_average
 from src.m02_magnetics.levelling import compute_crossover_offsets, apply_levelling
 from src.m02_magnetics.microlevelling import apply_microlevelling
+from src.m02_magnetics.output_notes import write_readme
 
 
 def load_config() -> dict:
@@ -428,6 +424,7 @@ def export_step_output(
     fig.savefig(map_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     print(f"  Step map:        {map_path.relative_to(PROJECT_ROOT)}")
+    write_readme(step_dir, step_name)
 
 
 def export_geopackage(
@@ -588,6 +585,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
         plot_lag_diagnostic(df_all, lag_result, lag_dir)
         plot_lag_effect(selected, interim_root, lag_result, lag_dir)
         write_lag_summary(lag_dir)
+        write_readme(lag_dir, '01_02_lag')
     else:
         # Load lag result from previous run if skipping steps 1-2
         report_path = lag_dir / 'lag_report.json'
@@ -609,6 +607,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
             cfg['magnetics']['base_station_use'],
             cfg['magnetics']['base_filter_window_s'],
         )
+        write_readme(out_root / 'step_03_diurnal', '03_diurnal')
 
     # ── Step 4: IGRF removal ──────────────────────────────────────────────────
     if 4 in steps:
@@ -797,6 +796,7 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
 
         print("\n── Campaign map ────────────────────────────────────────────────────")
         plot_campaign_map(selected, interim_root, lag_result, out_root / 'campaign_m02_map.png')
+        write_readme(out_root, 'campaign')
 
         sep = '─' * 55
         print(f"\n{sep}")

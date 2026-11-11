@@ -67,7 +67,8 @@ this data goes here. Newest entries first inside each step.
 - The specialist's `Mag1_IGRF` is not `Mag1_Diurnal − IGRF`: it is `Mag1_Diurnal − IGRF + 55.000 nT`
   (std 0.005 nT, all flights, both sensors). A fixed constant added after the IGRF removal, which
   centres the anomaly around zero. Our code does not add it, so our `Mag1_IGRF` is about 55 nT
-  lower than his. Decision pending (configurable constant or automatic centring).
+  lower than his. Decision (2026-11-11): the constant is NOT added; it is documented in the
+  `README.md` of `step_04_igrf/`. When comparing with his columns, subtract 55 nT from his.
 
 ## Step 5: Heading — noted 2026-11-10
 
