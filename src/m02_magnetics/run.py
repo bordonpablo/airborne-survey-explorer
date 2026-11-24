@@ -54,7 +54,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.m02_magnetics.lag import estimate_lag, apply_lag, plot_lag_diagnosis, lag_effect
 from src.m02_magnetics.diurnal_report import run_diurnal_step
 from src.m02_magnetics.igrf import apply_igrf
-from src.m02_magnetics.heading import estimate_heading_bias, apply_heading
+from src.m02_magnetics.heading import estimate_heading_bias, apply_heading, heading_summary
 from src.m02_magnetics.average_sensors import apply_sensor_average
 from src.m02_magnetics.levelling import compute_crossover_offsets, apply_levelling
 from src.m02_magnetics.microlevelling import apply_microlevelling
@@ -370,6 +370,12 @@ def export_step_output(
     if not available:
         return
 
+    # Difference "after − before" (last column minus first), shown as an extra panel/layer
+    show_diff = len(available) >= 2
+    if show_diff:
+        df_all['delta'] = df_all[available[-1]] - df_all[available[0]]
+    plot_cols = available + (['delta'] if show_diff else [])
+
     geometry = [Point(lon, lat) for lon, lat in zip(df_all['Xgps'], df_all['Ygps'])]
     id_base  = df_all[['flight_id', 'line_id']].copy()
 
@@ -380,7 +386,7 @@ def export_step_output(
     if gpkg_path.exists():
         gpkg_path.unlink()
     first = True
-    for col in available:
+    for col in plot_cols:
         sub  = id_base.copy()
         sub[col] = df_all[col].values
         gdf  = gpd.GeoDataFrame(sub, geometry=geometry, crs='EPSG:4326')
@@ -391,16 +397,16 @@ def export_step_output(
     # ── Map PNG ───────────────────────────────────────────────────────────────
     lat_mean = df_all['Ygps'].mean()
     aspect   = 1.0 / np.cos(np.radians(lat_mean))
-    n        = len(available)
+    n        = len(plot_cols)
     fig, axes = plt.subplots(1, n, figsize=(9 * n, 7))
     if n == 1:
         axes = [axes]
 
     sym_cols = {'Mag1_Diurnal', 'Mag2_Diurnal', 'Mag1_IGRF', 'Mag2_IGRF',
                 'Mag1_IGRF_head', 'Mag2_IGRF_head', 'Mag_IGRF_head',
-                'Mag_IGRF_head_level', 'Mag_Final'}
+                'Mag_IGRF_head_level', 'Mag_Final', 'delta'}
 
-    for ax, col in zip(axes, available):
+    for ax, col in zip(axes, plot_cols):
         valid = df_all[['Xgps', 'Ygps', col]].dropna()
         p2, p98 = np.nanpercentile(valid[col], [2, 98])
         if col in sym_cols:
@@ -413,7 +419,8 @@ def export_step_output(
         cb = plt.colorbar(sc, ax=ax, shrink=0.8)
         cb.set_label('nT', fontsize=7)
         ax.set_aspect(aspect)
-        ax.set_title(col, fontsize=9)
+        ax.set_title(f'Δ = {available[-1]} − {available[0]}' if col == 'delta' else col,
+                     fontsize=9)
         ax.set_xlabel('Longitude (°)', fontsize=7)
         ax.set_ylabel('Latitude (°)', fontsize=7)
         ax.grid(alpha=0.3)
@@ -424,6 +431,17 @@ def export_step_output(
     fig.savefig(map_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     print(f"  Step map:        {map_path.relative_to(PROJECT_ROOT)}")
+
+    # ── Per-line statistics of the change (after − before) ────────────────────
+    if show_diff:
+        stats = (df_all.groupby(['flight_id', 'line_id'])['delta']
+                 .agg(mean='mean', std='std', max_abs=lambda s: s.abs().max())
+                 .reset_index())
+        stats_path = step_dir / f'step_{step_name}_line_stats.csv'
+        stats.to_csv(stats_path, index=False)
+        print(f"  Line stats:      {stats_path.relative_to(PROJECT_ROOT)}")
+        print(f"  Change (after − before): mean {df_all['delta'].mean():+.3f} nT, "
+              f"max |Δ| {df_all['delta'].abs().max():.3f} nT")
     write_readme(step_dir, step_name)
 
 
@@ -677,6 +695,12 @@ def main(target_date: str | None = None, steps: set[int] | None = None) -> None:
 
                 export_step_output(selected, interim_root, out_root,
                                    '05_heading', ['Mag1_IGRF', 'Mag1_IGRF_head'])
+
+                summary = heading_summary(df_all_h, biases)
+                print(summary)
+                head_dir = out_root / 'step_05_heading'
+                head_dir.mkdir(parents=True, exist_ok=True)
+                (head_dir / 'heading_summary.txt').write_text(summary, encoding='utf-8')
 
     # ── Step 6: Sensor average ────────────────────────────────────────────────
     if 6 in steps:

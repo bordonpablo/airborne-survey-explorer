@@ -122,6 +122,44 @@ def estimate_heading_bias(
     return bias
 
 
+def heading_summary(df_all: pd.DataFrame, biases: dict[str, float]) -> str:
+    """
+    Text table of the E and W line-mean levels before and after the heading
+    correction, per sensor. After the correction both means should coincide
+    (their difference is zero by construction); the table documents the bias
+    removed and the E−W separation that existed before.
+
+    Parameters
+    ----------
+    df_all : concatenated selected line segments (flight_id, line_id, Yaw, cols)
+    biases : {'Mag1_IGRF': bias_nT, ...} as returned by estimate_heading_bias
+    """
+    lines = ["Heading correction summary (line-mean levels, nT)", ""]
+    for col, bias in biases.items():
+        if col not in df_all.columns or 'Yaw' not in df_all.columns:
+            continue
+        means = {'E': [], 'W': []}
+        for _, seg in df_all.groupby(['flight_id', 'line_id']):
+            seg = seg.dropna(subset=['Yaw', col])
+            if len(seg) < 10:
+                continue
+            d = _classify_heading(seg['Yaw'].values)
+            if d in means:
+                means[d].append(float(seg[col].mean()))
+        if not means['E'] or not means['W']:
+            lines.append(f"{col}: not enough E/W lines")
+            continue
+        mu_e, mu_w = np.mean(means['E']), np.mean(means['W'])
+        lines += [
+            f"{col}  (bias = {bias:+.3f} nT; {len(means['E'])} E lines, {len(means['W'])} W lines)",
+            f"  before: mean E = {mu_e:+.3f}   mean W = {mu_w:+.3f}   E−W = {mu_e - mu_w:+.3f}",
+            f"  after : mean E = {mu_e - bias:+.3f}   mean W = {mu_w + bias:+.3f}   "
+            f"E−W = {(mu_e - bias) - (mu_w + bias):+.3f}",
+            "",
+        ]
+    return "\n".join(lines)
+
+
 def apply_heading(
     df: pd.DataFrame,
     biases: dict[str, float],
